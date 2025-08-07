@@ -150,7 +150,14 @@ def main():
         print("\n\n👋 Server stopped by user")
     except Exception as e:
         print(f"\n❌ Server failed to start: {str(e)}")
-        if config.DEBUG:
+        # Only show traceback if we can access DEBUG setting
+        try:
+            from app import config
+            if config.DEBUG:
+                import traceback
+                traceback.print_exc()
+        except ImportError:
+            # If we can't import config, just show basic error info
             import traceback
             traceback.print_exc()
         sys.exit(1)

@@ -27,6 +27,121 @@ Frontend (HTML/JS) → Backend (Flask) → [DeepSeek API + Vector Search + Cache
 2. **DeepSeek API Key** - Get one from [DeepSeek](https://platform.deepseek.com/)
 3. **Redis** (optional, for caching - falls back to memory cache if not available)
 
+#### Redis Installation (Optional but Recommended)
+
+Redis provides better caching performance than the fallback memory cache. Here's how to install it:
+
+**macOS:**
+```bash
+# Using Homebrew (recommended)
+brew install redis
+brew services start redis
+
+# Using MacPorts
+sudo port install redis
+sudo port load redis
+
+# Manual installation
+wget http://download.redis.io/redis-stable.tar.gz
+tar xvzf redis-stable.tar.gz
+cd redis-stable
+make
+sudo make install
+redis-server
+```
+
+**Ubuntu/Debian:**
+```bash
+# Using apt (recommended)
+sudo apt update
+sudo apt install redis-server
+sudo systemctl start redis-server
+sudo systemctl enable redis-server
+
+# Using snap
+sudo snap install redis
+
+# Manual installation
+wget http://download.redis.io/redis-stable.tar.gz
+tar xvzf redis-stable.tar.gz
+cd redis-stable
+make
+sudo make install
+redis-server
+```
+
+**CentOS/RHEL/Fedora:**
+```bash
+# Using dnf/yum
+sudo dnf install redis  # or: sudo yum install redis
+sudo systemctl start redis
+sudo systemctl enable redis
+
+# Using EPEL repository (CentOS/RHEL)
+sudo yum install epel-release
+sudo yum install redis
+
+# Manual installation
+wget http://download.redis.io/redis-stable.tar.gz
+tar xvzf redis-stable.tar.gz
+cd redis-stable
+make
+sudo make install
+redis-server
+```
+
+**Windows:**
+```bash
+# Using Windows Subsystem for Linux (WSL) - recommended
+wsl --install
+# Then follow Ubuntu instructions above
+
+# Using Chocolatey
+choco install redis-64
+
+# Using Docker (cross-platform)
+docker run -d -p 6379:6379 --name redis redis:alpine
+
+# Manual: Download from https://github.com/microsoftarchive/redis/releases
+```
+
+**Docker (Cross-platform):**
+```bash
+# Start Redis in a container
+docker run -d -p 6379:6379 --name redis redis:alpine
+
+# Or using docker-compose (create docker-compose.yml):
+version: '3'
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+volumes:
+  redis_data:
+```
+
+**Alternative: Cloud Redis Services**
+- Redis Cloud (redis.com)
+- AWS ElastiCache
+- Google Cloud Memorystore
+- Azure Cache for Redis
+
+**Verify Redis Installation:**
+```bash
+# Test Redis connection
+redis-cli ping
+# Should return: PONG
+
+# Or check if Redis is listening
+netstat -an | grep 6379
+# Or: lsof -i :6379
+```
+
+**Note:** If Redis installation fails or you prefer not to install it, the application will automatically use an in-memory cache as fallback.
+
 ### Installation
 
 1. **Clone or navigate to the project directory**
@@ -40,17 +155,31 @@ Frontend (HTML/JS) → Backend (Flask) → [DeepSeek API + Vector Search + Cache
    pip install -r requirements.txt
    ```
 
-3. **Set up environment variables**
+3. **Install and start Redis (optional but recommended)**
+   ```bash
+   # macOS with Homebrew
+   brew install redis
+   brew services start redis
+   
+   # Ubuntu/Debian
+   sudo apt install redis-server
+   sudo systemctl start redis-server
+   
+   # Or use Docker (cross-platform)
+   docker run -d -p 6379:6379 --name redis redis:alpine
+   ```
+
+4. **Set up environment variables**
    ```bash
    export DEEPSEEK_API_KEY="your_deepseek_api_key_here"
    ```
 
-4. **Start the backend server**
+5. **Start the backend server**
    ```bash
    python run.py
    ```
 
-5. **Open the frontend**
+6. **Open the frontend**
    - Open `frontend/index.html` in your web browser
    - Or serve it with a simple HTTP server:
      ```bash
@@ -163,6 +292,49 @@ curl -X POST http://localhost:5000/chat \
 
 1. **Large Knowledge Base**: Consider reducing chunk size or using GPU acceleration
 2. **Cache Size**: Monitor Redis memory usage or in-memory cache size
+
+### Redis Connection Issues
+
+If you see "Redis connection failed" warnings:
+
+1. **Redis Not Running**: 
+   ```bash
+   # Check if Redis is running
+   redis-cli ping
+   # Should return: PONG
+   
+   # If not running, start Redis:
+   # macOS (Homebrew): brew services start redis
+   # Ubuntu/Debian: sudo systemctl start redis-server
+   # Manual: redis-server
+   ```
+
+2. **Wrong Host/Port**: Check your environment variables:
+   ```bash
+   export REDIS_HOST=localhost  # or your Redis host
+   export REDIS_PORT=6379       # or your Redis port
+   ```
+
+3. **Redis Not Installed**: The app will work without Redis using memory cache
+   - Follow the Redis installation instructions above
+   - Or continue using the built-in memory cache (less performance)
+
+4. **Firewall/Network Issues**:
+   ```bash
+   # Test network connectivity
+   telnet localhost 6379
+   # Or: nc -z localhost 6379
+   ```
+
+5. **Redis Configuration**: Check Redis config file (usually `/etc/redis/redis.conf`):
+   ```bash
+   # Ensure Redis is not in protected mode for local development
+   protected-mode no
+   bind 127.0.0.1
+   port 6379
+   ```
+
+**Note**: The application gracefully falls back to memory caching if Redis is unavailable.
 
 ## Development
 

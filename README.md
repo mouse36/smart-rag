@@ -179,7 +179,7 @@ smart-rag/
 │   ├── run.py             # Startup script
 │   ├── requirements.txt   # Python dependencies
 │   ├── knowledge_base/    # Knowledge base files
-│   └── data/             # Generated embeddings and indices
+│   └── cache/            # Generated embeddings and indices
 └── frontend/
     └── index.html        # Chat interface
 ```

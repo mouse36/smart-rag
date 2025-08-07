@@ -43,11 +43,11 @@ class Config:
         )
         self.EMBEDDINGS_CACHE_PATH = os.getenv(
             'EMBEDDINGS_CACHE_PATH',
-            os.path.join(os.path.dirname(__file__), 'data', 'embeddings.pkl')
+            os.path.join(os.path.dirname(__file__), 'cache', 'embeddings.pkl')
         )
         self.INDEX_CACHE_PATH = os.getenv(
             'INDEX_CACHE_PATH',
-            os.path.join(os.path.dirname(__file__), 'data', 'faiss_index.bin')
+            os.path.join(os.path.dirname(__file__), 'cache', 'faiss_index.bin')
         )
         
         # Response generation settings
@@ -56,13 +56,13 @@ class Config:
         self.TEMPERATURE = float(os.getenv('TEMPERATURE', 0.7))
         self.TOP_P = float(os.getenv('TOP_P', 0.9))
         
-        # Create data directory if it doesn't exist
-        self._ensure_data_directory()
+        # Create cache directory if it doesn't exist
+        self._ensure_cache_directory()
     
-    def _ensure_data_directory(self):
-        """Ensure the data directory exists"""
-        data_dir = os.path.join(os.path.dirname(__file__), 'data')
-        os.makedirs(data_dir, exist_ok=True)
+    def _ensure_cache_directory(self):
+        """Ensure the cache directory exists"""
+        cache_dir = os.path.join(os.path.dirname(__file__), 'cache')
+        os.makedirs(cache_dir, exist_ok=True)
     
     def validate(self) -> Optional[str]:
         """Validate configuration and return error message if invalid"""

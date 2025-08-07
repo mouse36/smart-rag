@@ -131,22 +131,22 @@ def check_knowledge_base():
     
     return True
 
-def check_data_directory():
-    """Check and create data directory for caching"""
-    print("\n💾 Checking data directory...")
+def check_cache_directory():
+    """Check and create cache directory for caching"""
+    print("\n💾 Checking cache directory...")
     
     backend_dir = Path(__file__).parent
-    data_dir = backend_dir / 'data'
+    cache_dir = backend_dir / 'cache'
     
-    if not data_dir.exists():
+    if not cache_dir.exists():
         try:
-            data_dir.mkdir()
-            print(f"✅ Created data directory: {data_dir}")
+            cache_dir.mkdir()
+            print(f"✅ Created cache directory: {cache_dir}")
         except Exception as e:
-            print(f"❌ Could not create data directory: {e}")
+            print(f"❌ Could not create cache directory: {e}")
             return False
     else:
-        print(f"✅ Data directory exists: {data_dir}")
+        print(f"✅ Cache directory exists: {cache_dir}")
     
     return True
 
@@ -223,7 +223,7 @@ def main():
         check_pip_packages,
         check_environment_variables,
         check_knowledge_base,
-        check_data_directory,
+        check_cache_directory,
         check_redis_connection,
         check_deepseek_api,
     ]

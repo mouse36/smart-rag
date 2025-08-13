@@ -95,12 +95,12 @@
 
         .btn-ghost:hover {
             background: #fff8f0;
-            border-color: #ff6900;
-            color: #ff6900;
+            border-color: #ff8900;
+            color: #ff8900;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #ff6900 0%, #fcb900 100%);
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
             color: white;
             border: none;
             box-shadow: 0 4px 15px rgba(255, 105, 0, 0.3);
@@ -134,7 +134,7 @@
         }
 
         .hero {
-            background: linear-gradient(135deg, #ff6900 0%, #fcb900 100%);
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
             color: white;
             padding: 120px 0 80px;
             text-align: center;
@@ -186,7 +186,7 @@
 
         .btn-hero {
             background: white;
-            color: #ff6900;
+            color: #ff8900;
             padding: 18px 40px;
             font-size: 18px;
             font-weight: 600;
@@ -261,14 +261,14 @@
         .feature-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 60px rgba(255, 105, 0, 0.15);
-            border-color: #ff6900;
+            border-color: #ff8900;
         }
 
         .feature-icon {
             width: 80px;
             height: 80px;
             margin: 0 auto 25px;
-            background: linear-gradient(135deg, #ff6900 0%, #fcb900 100%);
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -291,7 +291,7 @@
 
         /* Login Page */
         .login-page {
-            background: linear-gradient(135deg, #ff6900 0%, #fcb900 100%);
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -331,7 +331,7 @@
 
         .form-input:focus {
             outline: none;
-            border-color: #ff6900;
+            border-color: #ff8900;
         }
 
         .error-message {
@@ -419,7 +419,7 @@
         }
 
         .menu-item:hover, .menu-item.active {
-            background: #ff6900;
+            background: #ff8900;
             color: white;
         }
 
@@ -472,7 +472,7 @@
         .profile-pic {
             width: 32px;
             height: 32px;
-            background: #ff6900;
+            background: #ff8900;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -512,7 +512,7 @@
         }
 
         .message.user .message-avatar {
-            background: #ff6900;
+            background: #ff8900;
         }
 
         .message.assistant .message-avatar {
@@ -528,7 +528,7 @@
         }
 
         .message.user .message-content {
-            background: #ff6900;
+            background: #ff8900;
             color: white;
         }
 
@@ -560,7 +560,7 @@
         }
 
         .recommendation:hover {
-            background: #ff6900;
+            background: #ff8900;
             color: white;
         }
 
@@ -589,13 +589,13 @@
 
         .input-field:focus {
             outline: none;
-            border-color: #ff6900;
+            border-color: #ff8900;
         }
 
         .send-button {
             width: 50px;
             height: 50px;
-            background: #ff6900;
+            background: #ff8900;
             border: none;
             border-radius: 50%;
             color: white;
@@ -607,7 +607,7 @@
         }
 
         .send-button:hover {
-            background: #e55900;
+            background: #ff8900;
             transform: scale(1.05);
         }
 
@@ -615,6 +615,59 @@
             background: #cbd5e0;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* API Mode Banner */
+        .api-mode-banner {
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
+            color: white;
+            padding: 12px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .api-mode-banner.show {
+            display: flex;
+        }
+
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .banner-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            font-size: 12px;
+        }
+
+        .banner-text {
+            flex: 1;
+        }
+
+        .banner-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+            font-size: 16px;
+        }
+
+        .banner-close:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .typing-indicator {
@@ -676,7 +729,7 @@
         }
 
         .settings-nav-item:hover, .settings-nav-item.active {
-            background: #ff6900;
+            background: #ff8900;
             color: white;
         }
 
@@ -1086,6 +1139,18 @@
                     </div>
                 </div>
                 
+                <!-- API Mode Banner -->
+                <div class="api-mode-banner" id="api-mode-banner">
+                    <div class="banner-content">
+                        <div class="banner-icon">⚡</div>
+                        <div class="banner-text">
+                            <strong>Demo Mode:</strong> This system is currently using placeholder responses for demonstration purposes. 
+                            To enable real AI responses, contact your administrator to configure the API settings.
+                        </div>
+                    </div>
+                    <button class="banner-close" onclick="closeBanner()" title="Close banner">&times;</button>
+                </div>
+                
                 <div class="messages-area" id="messages">
                     <!-- Messages will be added dynamically -->
                 </div>
@@ -1265,6 +1330,13 @@
                     const data = await response.json();
                     console.log('Backend health check:', data);
                     
+                    // Check API mode and show banner if in placeholder mode
+                    if (data.api_mode && !data.api_mode.api_calls_enabled && shouldShowBanner()) {
+                        showApiBanner();
+                    } else {
+                        hideApiBanner();
+                    }
+                    
                     if (data.status !== 'healthy') {
                         showBackendWarning('Backend is not fully ready. Some features may not work properly.');
                     }
@@ -1274,6 +1346,8 @@
             } catch (error) {
                 console.warn('Backend health check failed:', error);
                 showBackendWarning('Backend server is not available. Please ensure it is running to access the knowledge base.');
+                // Hide banner on error since we can't determine the mode
+                hideApiBanner();
             }
         }
         
@@ -1840,6 +1914,32 @@ Error: ${error.message}
                     `;
                     break;
             }
+        }
+
+        // API Banner Functions
+        function showApiBanner() {
+            const banner = document.getElementById('api-mode-banner');
+            if (banner) {
+                banner.classList.add('show');
+            }
+        }
+
+        function hideApiBanner() {
+            const banner = document.getElementById('api-mode-banner');
+            if (banner) {
+                banner.classList.remove('show');
+            }
+        }
+
+        function closeBanner() {
+            hideApiBanner();
+            // Optionally store in localStorage to remember user preference
+            localStorage.setItem('api-banner-dismissed', 'true');
+        }
+
+        // Check if banner was previously dismissed
+        function shouldShowBanner() {
+            return localStorage.getItem('api-banner-dismissed') !== 'true';
         }
         
         // Initialize page functionality when DOM is loaded

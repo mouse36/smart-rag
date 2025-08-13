@@ -25,8 +25,12 @@ class DeepSeekClient:
         }
         self._ready = False
         
-        # Test connection on initialization
-        self._test_connection()
+        # Test connection on initialization only if API calls are enabled
+        if config.API_CALLS_ENABLED:
+            self._test_connection()
+        else:
+            self._ready = True  # Mark as ready for placeholder mode
+            logger.info("DeepSeek client initialized in placeholder mode (API calls disabled)")
     
     def _test_connection(self):
         """Test connection to DeepSeek API"""
@@ -45,12 +49,18 @@ class DeepSeekClient:
     
     def is_ready(self) -> bool:
         """Check if the DeepSeek client is ready"""
+        if not self.config.API_CALLS_ENABLED:
+            return self._ready  # Just check if ready flag is set for placeholder mode
         return self._ready and bool(self.api_key)
     
     def generate_response(self, user_message: str, context_passages: List[Dict[str, Any]]) -> str:
-        """Generate a response using DeepSeek API with context"""
+        """Generate a response using DeepSeek API with context or return placeholder"""
         if not self.is_ready():
             raise RuntimeError("DeepSeek client not ready")
+        
+        # If API calls are disabled, return placeholder response
+        if not self.config.API_CALLS_ENABLED:
+            return self._get_placeholder_response(user_message, context_passages)
         
         try:
             # Prepare the context
@@ -157,6 +167,29 @@ Please provide a helpful, accurate response based on the context provided. If th
             logger.error(f"Failed to decode JSON response: {str(e)}")
             raise
     
+    def _get_placeholder_response(self, user_message: str, context_passages: List[Dict[str, Any]]) -> str:
+        """Get a placeholder response when API calls are disabled"""
+        # Create a response that mentions some context if available
+        context_info = ""
+        if context_passages:
+            sources = [passage.get('source_file', 'Unknown') for passage in context_passages[:3]]
+            context_info = f"\n\n*Based on information from: {', '.join(set(sources))}*"
+        
+        placeholder_responses = [
+            f"Thank you for your question: '{user_message}'\n\nThis is a placeholder response for demonstration purposes. In the real system, I would provide detailed, evidence-based guidance about selective mutism based on our comprehensive knowledge base.{context_info}",
+            
+            f"I understand you're asking about: '{user_message}'\n\nThis is a sample response. When API calls are enabled, I would analyze your question against our extensive selective mutism resources and provide specific, helpful guidance tailored to your situation.{context_info}",
+            
+            f"Your question: '{user_message}'\n\nPlaceholder response: In normal operation, I would draw from our knowledge base containing expert guidance on selective mutism to provide you with accurate, practical advice. This demo mode shows the system is working correctly.{context_info}"
+        ]
+        
+        # Use a simple hash to consistently return the same response for the same question
+        import hashlib
+        response_index = int(hashlib.md5(user_message.encode()).hexdigest(), 16) % len(placeholder_responses)
+        
+        logger.info(f"Returned placeholder response for: {user_message[:50]}...")
+        return placeholder_responses[response_index]
+    
     def _get_fallback_response(self) -> str:
         """Get a fallback response when API fails"""
         return """I apologize, but I'm experiencing technical difficulties at the moment. 
@@ -174,6 +207,8 @@ For specific guidance tailored to your situation, please consult with a qualifie
         """Get client statistics"""
         return {
             'ready': self.is_ready(),
+            'api_calls_enabled': self.config.API_CALLS_ENABLED,
+            'mode': 'live_api' if self.config.API_CALLS_ENABLED else 'placeholder',
             'model': self.model,
             'base_url': self.base_url,
             'max_response_length': self.config.MAX_RESPONSE_LENGTH,

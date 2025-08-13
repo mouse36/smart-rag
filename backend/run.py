@@ -39,7 +39,8 @@ env_vars = {
     'MAX_RESPONSE_LENGTH': '1000',
     'TEMPERATURE': '0.7',
     'TOP_P': '0.9',
-    'CACHE_TTL': '3600'
+    'CACHE_TTL': '3600',
+    'API_CALLS_ENABLED': 'False'  # Set to 'True' to enable real API calls, 'False' for placeholder responses
 }
 
 # Set environment variables if not already set
@@ -50,12 +51,19 @@ for key, default_value in env_vars.items():
 def check_requirements():
     """Check if required environment variables and dependencies are set"""
     
-    # Check critical environment variables
-    if os.environ.get('DEEPSEEK_API_KEY') == 'your_deepseek_api_key_here':
-        print("❌ ERROR: DEEPSEEK_API_KEY is not set!")
-        print("Please set your DeepSeek API key:")
-        print("export DEEPSEEK_API_KEY='your_actual_api_key'")
-        return False
+    # Check API calls configuration
+    api_enabled = os.environ.get('API_CALLS_ENABLED', 'True').lower() == 'true'
+    
+    if api_enabled:
+        # Check critical environment variables only if API calls are enabled
+        if os.environ.get('DEEPSEEK_API_KEY') == 'your_deepseek_api_key_here':
+            print("❌ ERROR: DEEPSEEK_API_KEY is not set!")
+            print("Please set your DeepSeek API key:")
+            print("export DEEPSEEK_API_KEY='your_actual_api_key'")
+            return False
+        print("✅ API calls are ENABLED - will use DeepSeek API")
+    else:
+        print("⚠️  API calls are DISABLED - will use placeholder responses")
     
     # Check if knowledge base exists
     knowledge_base_path = os.path.join(backend_dir, 'knowledge_base')
@@ -122,9 +130,11 @@ def main():
         vector_engine.initialize()
         
         print("  🔍 Testing DeepSeek API connection...")
-        if not deepseek_client.is_ready():
+        if config.API_CALLS_ENABLED and not deepseek_client.is_ready():
             print("❌ DeepSeek API connection failed")
             sys.exit(1)
+        elif not config.API_CALLS_ENABLED:
+            print("⚠️  Skipping API test - API calls disabled")
         
         print("  💾 Initializing cache...")
         if not cache_manager.is_ready():

@@ -48,6 +48,10 @@ def health_check():
         return jsonify({
             'status': 'healthy',
             'timestamp': datetime.now().isoformat(),
+            'api_mode': {
+                'api_calls_enabled': config.API_CALLS_ENABLED,
+                'mode': 'live_api' if config.API_CALLS_ENABLED else 'placeholder'
+            },
             'components': {
                 'vector_engine': vector_engine.is_ready(),
                 'deepseek_client': deepseek_client.is_ready(),

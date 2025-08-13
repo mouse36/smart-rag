@@ -18,6 +18,9 @@ class Config:
         self.PORT = int(os.getenv('PORT', 5000))
         self.DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
         
+        # API Control
+        self.API_CALLS_ENABLED = os.getenv('API_CALLS_ENABLED', 'True').lower() == 'true'
+        
         # DeepSeek API settings
         self.DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
         self.DEEPSEEK_BASE_URL = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
@@ -66,8 +69,8 @@ class Config:
     
     def validate(self) -> Optional[str]:
         """Validate configuration and return error message if invalid"""
-        if not self.DEEPSEEK_API_KEY:
-            return "DEEPSEEK_API_KEY environment variable is required"
+        if self.API_CALLS_ENABLED and not self.DEEPSEEK_API_KEY:
+            return "DEEPSEEK_API_KEY environment variable is required when API calls are enabled"
         
         if not os.path.exists(self.KNOWLEDGE_BASE_PATH):
             return f"Knowledge base path does not exist: {self.KNOWLEDGE_BASE_PATH}"

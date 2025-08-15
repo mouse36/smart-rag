@@ -59,6 +59,9 @@ class Config:
         self.TEMPERATURE = float(os.getenv('TEMPERATURE', 0.7))
         self.TOP_P = float(os.getenv('TOP_P', 0.9))
         
+        # Phone authentication settings
+        self.APPROVED_PHONE_NUMBERS = self._parse_phone_numbers(os.getenv('APPROVED_PHONE_NUMBERS', ''))
+        
         # Create cache directory if it doesn't exist
         self._ensure_cache_directory()
     
@@ -66,6 +69,12 @@ class Config:
         """Ensure the cache directory exists"""
         cache_dir = os.path.join(os.path.dirname(__file__), 'cache')
         os.makedirs(cache_dir, exist_ok=True)
+    
+    def _parse_phone_numbers(self, phone_numbers_str: str) -> list:
+        """Parse comma-separated phone numbers from environment variable"""
+        if not phone_numbers_str:
+            return []
+        return [phone.strip() for phone in phone_numbers_str.split(',') if phone.strip()]
     
     def validate(self) -> Optional[str]:
         """Validate configuration and return error message if invalid"""

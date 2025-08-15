@@ -167,6 +167,57 @@ def search_knowledge_base():
         logger.error(f"Error in search endpoint: {str(e)}")
         return jsonify({'error': 'Search failed'}), 500
 
+@app.route('/auth/validate-phone', methods=['POST'])
+def validate_phone():
+    """Validate if a phone number is approved for authentication"""
+    try:
+        data = request.get_json()
+        if not data or 'phone' not in data:
+            return jsonify({'error': 'Phone number is required'}), 400
+        
+        phone = data['phone'].strip()
+        if not phone:
+            return jsonify({'error': 'Phone number cannot be empty'}), 400
+        
+        # Normalize the phone number
+        normalized_phone = _normalize_phone_number(phone)
+        
+        # Check if the normalized phone number is in the approved list
+        approved_phones = [_normalize_phone_number(p) for p in config.APPROVED_PHONE_NUMBERS]
+        is_approved = normalized_phone in approved_phones
+        
+        logger.info(f"Phone validation request for: {phone} (normalized: {normalized_phone}) - {'Approved' if is_approved else 'Rejected'}")
+        
+        return jsonify({
+            'phone': phone,
+            'normalized_phone': normalized_phone,
+            'is_approved': is_approved,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in phone validation endpoint: {str(e)}")
+        return jsonify({'error': 'Phone validation failed'}), 500
+
+def _normalize_phone_number(phone: str) -> str:
+    """Normalize phone number for comparison"""
+    # Remove all non-digit characters
+    digits = ''.join(filter(str.isdigit, phone))
+    
+    # If it's a 10-digit number, assume US and add +1
+    if len(digits) == 10:
+        return '+1' + digits
+    
+    # If it's 11 digits and starts with 1, add +
+    if len(digits) == 11 and digits.startswith('1'):
+        return '+' + digits
+    
+    # For other cases, add + if not present
+    if not phone.startswith('+'):
+        return '+' + digits
+    
+    return phone
+
 def _generate_cache_key(message: str) -> str:
     """Generate a cache key for a message"""
     return hashlib.md5(message.lower().strip().encode()).hexdigest()

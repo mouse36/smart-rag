@@ -652,6 +652,16 @@
             display: flex;
         }
 
+        /* Login page specific backend error banner positioning */
+        #login-backend-error-banner {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            width: 100%;
+        }
+
         @keyframes slideDown {
             from {
                 transform: translateY(-100%);
@@ -1076,6 +1086,17 @@
             </div>
         </nav>
 
+        <!-- Backend Error Banner for Login -->
+        <div class="backend-error-banner" id="login-backend-error-banner">
+            <div class="banner-content">
+                <div class="banner-icon">⚠️</div>
+                <div class="banner-text">
+                    <strong>Backend Server Error:</strong> Unable to connect to the authentication server. Please ensure the server is running to complete login/signup.
+                </div>
+            </div>
+            <button class="banner-close" onclick="closeLoginBackendErrorBanner()" title="Close banner">&times;</button>
+        </div>
+
         <div class="login-page">
             <div class="login-form">
                 <h1 id="form-title">Welcome to SunnyMentor</h1>
@@ -1357,7 +1378,7 @@
             stopBackendHealthMonitoring();
         }
         
-        function showLogin() {
+        async function showLogin() {
             hideAllPages();
             document.getElementById('login-page').style.display = 'block';
             currentPage = 'login';
@@ -1374,6 +1395,15 @@
             // Clear all inputs and errors
             clearAllInputs();
             clearErrors();
+
+            // Check backend health for login page
+            await checkLoginBackendHealth();
+
+            // Start periodic health monitoring when entering login
+            startBackendHealthMonitoring();
+
+            // Adjust layout for any visible banners
+            setTimeout(() => adjustPageLayoutForBanner(), 100);
         }
         
         async function showChat() {
@@ -1495,15 +1525,8 @@
         let currentPhoneNumber = '';
         let generatedCode = '';
         
-        // List of approved phone numbers (in a real app, this would be server-side)
-        const approvedPhoneNumbers = [
-            '+1234567890',
-            '+1987654321',
-            '+15551234567',
-            '1234567890',
-            '9876543210',
-            '5551234567'
-        ];
+        // Backend API base URL
+        const API_BASE_URL = 'http://127.0.0.1:5000';
         
         function normalizePhoneNumber(phone) {
             // Remove all non-digit characters
@@ -1523,19 +1546,44 @@
             return digits.startsWith('+') ? phone : '+' + digits;
         }
         
-        function isPhoneNumberApproved(phone) {
-            const normalized = normalizePhoneNumber(phone);
-            const rawDigits = phone.replace(/\D/g, '');
-            
-            return approvedPhoneNumbers.some(approved => {
-                const approvedNormalized = normalizePhoneNumber(approved);
-                const approvedRaw = approved.replace(/\D/g, '');
-                
-                return normalized === approvedNormalized || 
-                       rawDigits === approvedRaw ||
-                       phone === approved;
-            });
-        }
+                 async function isPhoneNumberApproved(phone) {
+             try {
+                 const response = await fetch(`${API_BASE_URL}/auth/validate-phone`, {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                     },
+                     body: JSON.stringify({ phone: phone })
+                 });
+                 
+                 if (!response.ok) {
+                     console.error('Failed to validate phone number:', response.statusText);
+                     
+                     // Show login backend error banner if this is a connection issue
+                     if (shouldShowLoginBackendErrorBanner()) {
+                         showLoginBackendErrorBanner();
+                     }
+                     
+                     return { approved: false, error: 'backend_error' };
+                 }
+                 
+                 const result = await response.json();
+                 
+                 // Hide login backend error banner since we successfully connected
+                 hideLoginBackendErrorBanner();
+                 
+                 return { approved: result.is_approved, error: result.is_approved ? null : 'not_approved' };
+             } catch (error) {
+                 console.error('Error validating phone number:', error);
+                 
+                 // Show login backend error banner on connection failure
+                 if (shouldShowLoginBackendErrorBanner()) {
+                     showLoginBackendErrorBanner();
+                 }
+                 
+                 return { approved: false, error: 'backend_error' };
+             }
+         }
         
         function generateVerificationCode() {
             return Math.floor(100000 + Math.random() * 900000).toString();
@@ -1663,7 +1711,7 @@
             // Phone number form
             const phoneForm = document.getElementById('phone-form');
             if (phoneForm) {
-                phoneForm.addEventListener('submit', function(e) {
+                phoneForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     
                     const phoneInput = document.getElementById('phone');
@@ -1681,11 +1729,13 @@
                     // Show loading
                     showPhoneLoading(true);
                     
-                    // Simulate API call delay
-                    setTimeout(() => {
+                    try {
+                        // Check if phone number is approved via backend API
+                        const result = await isPhoneNumberApproved(phoneNumber);
+                        
                         showPhoneLoading(false);
                         
-                        if (isPhoneNumberApproved(phoneNumber)) {
+                        if (result.approved) {
                             // Phone number is approved
                             currentPhoneNumber = phoneNumber;
                             generatedCode = generateVerificationCode();
@@ -1693,10 +1743,23 @@
                             
                             showVerificationPhase();
                         } else {
-                            // Phone number not approved
-                            showError('phone-error', 'This phone number is not in our approved list. Please contact support for access.');
+                            // Phone number not approved or backend error
+                            if (result.error === 'backend_error') {
+                                showError('phone-error', 'Backend server is not running. Please ensure the server is started and try again.');
+                            } else {
+                                showError('phone-error', 'This phone number is not in our approved list. Please contact support for access.');
+                            }
                         }
-                    }, 1500);
+                     } catch (error) {
+                         showPhoneLoading(false);
+                         showError('phone-error', 'Unable to verify phone number - backend server is not running. Please ensure the server is started and try again.');
+                         console.error('Phone validation error:', error);
+                         
+                         // Show login backend error banner on connection failure
+                         if (shouldShowLoginBackendErrorBanner()) {
+                             showLoginBackendErrorBanner();
+                         }
+                     }
                 });
             }
             
@@ -2158,6 +2221,85 @@ Error: ${error.message}
             return sessionStorage.getItem('backend-error-banner-dismissed') !== 'true';
         }
 
+        // Login page backend error banner functions
+        function showLoginBackendErrorBanner() {
+            const banner = document.getElementById('login-backend-error-banner');
+            if (banner) {
+                banner.classList.add('show');
+                adjustPageLayoutForBanner();
+            }
+        }
+
+        function hideLoginBackendErrorBanner() {
+            const banner = document.getElementById('login-backend-error-banner');
+            if (banner) {
+                banner.classList.remove('show');
+                adjustPageLayoutForBanner();
+            }
+        }
+
+        function closeLoginBackendErrorBanner() {
+            hideLoginBackendErrorBanner();
+            // Store in sessionStorage to remember user preference for this session
+            sessionStorage.setItem('login-backend-error-banner-dismissed', 'true');
+        }
+
+        // Check if login backend error banner was previously dismissed in this session
+        function shouldShowLoginBackendErrorBanner() {
+            return sessionStorage.getItem('login-backend-error-banner-dismissed') !== 'true';
+        }
+
+        // Adjust page layout when banners are shown/hidden
+        function adjustPageLayoutForBanner() {
+            // Only adjust layout for login page since chat page banners are positioned normally
+            if (currentPage === 'login') {
+                const loginBanner = document.getElementById('login-backend-error-banner');
+                const bannerHeight = 46; // Standard banner height
+                let totalBannerHeight = 0;
+                
+                // Calculate total height of visible banners on login page
+                if (loginBanner && loginBanner.classList.contains('show')) {
+                    totalBannerHeight += bannerHeight;
+                }
+                
+                // Adjust login form positioning
+                const loginForm = document.querySelector('.login-page');
+                if (loginForm) {
+                    loginForm.style.paddingTop = totalBannerHeight + 'px';
+                }
+            }
+            
+            // Chat page banners don't need layout adjustment since they're positioned normally
+            // within the chat layout structure
+        }
+
+        // Health check specifically for login page
+        async function checkLoginBackendHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Login page backend health check:', data);
+                    
+                    // Hide backend error banner since server is responding
+                    hideLoginBackendErrorBanner();
+                } else {
+                    throw new Error('Health check failed');
+                }
+            } catch (error) {
+                console.warn('Login page backend health check failed:', error);
+                
+                // Show backend error banner if not dismissed
+                if (shouldShowLoginBackendErrorBanner()) {
+                    showLoginBackendErrorBanner();
+                }
+            }
+        }
+
         // Periodic backend health monitoring
         let healthCheckInterval;
 
@@ -2166,6 +2308,8 @@ Error: ${error.message}
             healthCheckInterval = setInterval(async () => {
                 if (currentPage === 'chat') {
                     await checkBackendHealth();
+                } else if (currentPage === 'login') {
+                    await checkLoginBackendHealth();
                 }
             }, 30000);
         }

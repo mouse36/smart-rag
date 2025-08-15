@@ -634,6 +634,35 @@
             display: flex;
         }
 
+        /* Backend Error Banner */
+        .backend-error-banner {
+            background: linear-gradient(135deg, #e53e3e 0%, #fc8181 100%);
+            color: white;
+            padding: 12px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .backend-error-banner.show {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
         .banner-content {
             display: flex;
             align-items: center;
@@ -1064,6 +1093,34 @@
                             <div id="phone-loading" class="loading" style="display: none;"></div>
                         </button>
                     </form>
+                    
+                    <p style="text-align: center; color: #718096; font-size: 14px; margin-top: 15px;">
+                        <a href="#" onclick="switchToUsernameSignup()" style="color: #667eea; text-decoration: none;">Use username and password instead</a>
+                    </p>
+                </div>
+                
+                <!-- Username/Password Input Phase -->
+                <div id="username-input-phase" style="display: none;">
+                    <form id="username-form">
+                        <div class="form-group">
+                            <input type="text" id="username" class="form-input" placeholder="Enter your username" required>
+                            <div id="username-error" class="error-message"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
+                            <div id="password-error" class="error-message"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
+                            <span id="username-submit-text">Sign Up</span>
+                            <div id="username-loading" class="loading" style="display: none;"></div>
+                        </button>
+                    </form>
+                    
+                    <p style="text-align: center; color: #718096; font-size: 14px; margin-top: 15px;">
+                        <a href="#" onclick="switchToPhoneSignup()" style="color: #667eea; text-decoration: none;">Use phone number instead</a>
+                    </p>
                 </div>
                 
                 <!-- Verification Code Phase -->
@@ -1139,6 +1196,17 @@
                     </div>
                 </div>
                 
+                <!-- Backend Error Banner -->
+                <div class="backend-error-banner" id="backend-error-banner">
+                    <div class="banner-content">
+                        <div class="banner-icon">⚠️</div>
+                        <div class="banner-text">
+                            <strong>Backend Server Error:</strong> Unable to connect to the backend server. Please ensure the server is running to access the knowledge base and AI features.
+                        </div>
+                    </div>
+                    <button class="banner-close" onclick="closeBackendErrorBanner()" title="Close banner">&times;</button>
+                </div>
+
                 <!-- API Mode Banner -->
                 <div class="api-mode-banner" id="api-mode-banner">
                     <div class="banner-content">
@@ -1284,6 +1352,9 @@
             hideAllPages();
             document.getElementById('landing-page').style.display = 'block';
             currentPage = 'landing';
+            
+            // Stop health monitoring when leaving chat
+            stopBackendHealthMonitoring();
         }
         
         function showLogin() {
@@ -1291,16 +1362,17 @@
             document.getElementById('login-page').style.display = 'block';
             currentPage = 'login';
             
+            // Stop health monitoring when leaving chat
+            stopBackendHealthMonitoring();
+            
             // Reset to phone input phase
             document.getElementById('phone-input-phase').style.display = 'block';
+            document.getElementById('username-input-phase').style.display = 'none';
             document.getElementById('verification-phase').style.display = 'none';
             document.getElementById('success-phase').style.display = 'none';
             
-            // Clear inputs and errors
-            const phoneInput = document.getElementById('phone');
-            const codeInput = document.getElementById('verification-code');
-            if (phoneInput) phoneInput.value = '';
-            if (codeInput) codeInput.value = '';
+            // Clear all inputs and errors
+            clearAllInputs();
             clearErrors();
         }
         
@@ -1317,6 +1389,9 @@
                 // Check backend health
                 await checkBackendHealth();
             }
+
+            // Start periodic health monitoring when entering chat
+            startBackendHealthMonitoring();
         }
         
         async function checkBackendHealth() {
@@ -1329,6 +1404,9 @@
                 if (response.ok) {
                     const data = await response.json();
                     console.log('Backend health check:', data);
+                    
+                    // Hide backend error banner since server is responding
+                    hideBackendErrorBanner();
                     
                     // Check API mode and show banner if in placeholder mode
                     if (data.api_mode && !data.api_mode.api_calls_enabled && shouldShowBanner()) {
@@ -1345,9 +1423,17 @@
                 }
             } catch (error) {
                 console.warn('Backend health check failed:', error);
-                showBackendWarning('Backend server is not available. Please ensure it is running to access the knowledge base.');
-                // Hide banner on error since we can't determine the mode
+                
+                // Show backend error banner if not dismissed
+                if (shouldShowBackendErrorBanner()) {
+                    showBackendErrorBanner();
+                }
+                
+                // Hide API banner on error since we can't determine the mode
                 hideApiBanner();
+                
+                // Also show in-chat warning for immediate visibility
+                showBackendWarning('Backend server is not available. Please ensure it is running to access the knowledge base.');
             }
         }
         
@@ -1383,12 +1469,18 @@
             hideAllPages();
             document.getElementById('settings-page').style.display = 'block';
             currentPage = 'settings';
+            
+            // Stop health monitoring when leaving chat
+            stopBackendHealthMonitoring();
         }
         
         function showAdmin() {
             hideAllPages();
             document.getElementById('admin-page').style.display = 'block';
             currentPage = 'admin';
+            
+            // Stop health monitoring when leaving chat
+            stopBackendHealthMonitoring();
         }
         
         function hideAllPages() {
@@ -1516,6 +1608,56 @@
             showChat();
         }
         
+        // Toggle between signup methods
+        function switchToUsernameSignup() {
+            document.getElementById('phone-input-phase').style.display = 'none';
+            document.getElementById('username-input-phase').style.display = 'block';
+            document.getElementById('verification-phase').style.display = 'none';
+            document.getElementById('success-phase').style.display = 'none';
+            
+            // Clear all inputs and errors
+            clearAllInputs();
+            clearErrors();
+        }
+        
+        function switchToPhoneSignup() {
+            document.getElementById('phone-input-phase').style.display = 'block';
+            document.getElementById('username-input-phase').style.display = 'none';
+            document.getElementById('verification-phase').style.display = 'none';
+            document.getElementById('success-phase').style.display = 'none';
+            
+            // Clear all inputs and errors
+            clearAllInputs();
+            clearErrors();
+        }
+        
+        function clearAllInputs() {
+            const phoneInput = document.getElementById('phone');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const codeInput = document.getElementById('verification-code');
+            
+            if (phoneInput) phoneInput.value = '';
+            if (usernameInput) usernameInput.value = '';
+            if (passwordInput) passwordInput.value = '';
+            if (codeInput) codeInput.value = '';
+        }
+        
+        function showUsernameLoading(show) {
+            const loadingEl = document.getElementById('username-loading');
+            const submitTextEl = document.getElementById('username-submit-text');
+            
+            if (loadingEl && submitTextEl) {
+                if (show) {
+                    loadingEl.style.display = 'inline-block';
+                    submitTextEl.style.display = 'none';
+                } else {
+                    loadingEl.style.display = 'none';
+                    submitTextEl.style.display = 'inline';
+                }
+            }
+        }
+        
         // Form submission handlers
         document.addEventListener('DOMContentLoaded', function() {
             // Phone number form
@@ -1596,6 +1738,49 @@
                             showError('verification-error', 'Invalid verification code. Please try again.');
                         }
                     }, 1000);
+                });
+            }
+            
+            // Username/password form
+            const usernameForm = document.getElementById('username-form');
+            if (usernameForm) {
+                usernameForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const usernameInput = document.getElementById('username');
+                    const passwordInput = document.getElementById('password');
+                    const username = usernameInput.value.trim();
+                    const password = passwordInput.value.trim();
+                    
+                    // Clear previous errors
+                    clearErrors();
+                    
+                    // Validate inputs
+                    if (!username) {
+                        showError('username-error', 'Username is required');
+                        return;
+                    }
+                    
+                    if (!password) {
+                        showError('password-error', 'Password is required');
+                        return;
+                    }
+                    
+                    if (password.length < 6) {
+                        showError('password-error', 'Password must be at least 6 characters');
+                        return;
+                    }
+                    
+                    // Show loading
+                    showUsernameLoading(true);
+                    
+                    // Simulate API call delay and directly proceed to success
+                    setTimeout(() => {
+                        showUsernameLoading(false);
+                        
+                        // For now, any username/password combination leads to success
+                        showSuccessPhase();
+                    }, 1500);
                 });
             }
         });
@@ -1690,6 +1875,11 @@
             } catch (error) {
                 console.error('Error sending message:', error);
                 hideTypingIndicator();
+                
+                // Show backend error banner if not dismissed
+                if (shouldShowBackendErrorBanner()) {
+                    showBackendErrorBanner();
+                }
                 
                 // Show error message with fallback content
                 const errorMessage = `I apologize, but I'm having trouble connecting to my knowledge base right now. Please make sure the backend server is running.
@@ -1940,6 +2130,51 @@ Error: ${error.message}
         // Check if banner was previously dismissed
         function shouldShowBanner() {
             return localStorage.getItem('api-banner-dismissed') !== 'true';
+        }
+
+        // Backend Error Banner Functions
+        function showBackendErrorBanner() {
+            const banner = document.getElementById('backend-error-banner');
+            if (banner) {
+                banner.classList.add('show');
+            }
+        }
+
+        function hideBackendErrorBanner() {
+            const banner = document.getElementById('backend-error-banner');
+            if (banner) {
+                banner.classList.remove('show');
+            }
+        }
+
+        function closeBackendErrorBanner() {
+            hideBackendErrorBanner();
+            // Optionally store in localStorage to remember user preference for this session
+            sessionStorage.setItem('backend-error-banner-dismissed', 'true');
+        }
+
+        // Check if backend error banner was previously dismissed in this session
+        function shouldShowBackendErrorBanner() {
+            return sessionStorage.getItem('backend-error-banner-dismissed') !== 'true';
+        }
+
+        // Periodic backend health monitoring
+        let healthCheckInterval;
+
+        function startBackendHealthMonitoring() {
+            // Check every 30 seconds
+            healthCheckInterval = setInterval(async () => {
+                if (currentPage === 'chat') {
+                    await checkBackendHealth();
+                }
+            }, 30000);
+        }
+
+        function stopBackendHealthMonitoring() {
+            if (healthCheckInterval) {
+                clearInterval(healthCheckInterval);
+                healthCheckInterval = null;
+            }
         }
         
         // Initialize page functionality when DOM is loaded

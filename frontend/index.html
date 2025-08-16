@@ -40,6 +40,10 @@
             display: none;
         }
 
+        #donate-page {
+            display: none;
+        }
+
         /* Navigation */
         .navbar {
             background: rgba(255, 255, 255, 0.95);
@@ -516,7 +520,7 @@
         }
 
         .message.assistant .message-avatar {
-            background: #48bb78;
+            background: #ffdf38;
         }
 
         .message-content {
@@ -977,6 +981,183 @@
         .notification.error {
             background: #e53e3e;
         }
+
+        /* Donate Page */
+        .donate-page {
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .donate-form {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .donate-form h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .donate-subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .amount-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .amount-button {
+            padding: 15px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            color: #4a5568;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .amount-button:hover {
+            border-color: #ff8900;
+            background: #fff8f0;
+            color: #ff8900;
+        }
+
+        .amount-button.selected {
+            border-color: #ff8900;
+            background: #ff8900;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 137, 0, 0.3);
+        }
+
+        .custom-amount {
+            margin-bottom: 25px;
+        }
+
+        .custom-amount label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+            text-align: left;
+        }
+
+        .custom-amount input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .custom-amount input:focus {
+            outline: none;
+            border-color: #ff8900;
+        }
+
+        .donate-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-donate {
+            flex: 1;
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(255, 105, 0, 0.3);
+        }
+
+        .btn-donate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 105, 0, 0.4);
+        }
+
+        .btn-donate:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-back {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-back:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .payment-processing {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .payment-processing.show {
+            display: block;
+        }
+
+        .processing-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff8900;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .stripe-element {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+        }
+
+        .stripe-element.focused {
+            border-color: #ff8900;
+        }
+
+        .stripe-element.invalid {
+            border-color: #e53e3e;
+        }
+
+        .payment-error {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -992,6 +1173,7 @@
                     <a href="#support">Support</a>
                 </div>
                 <div class="nav-auth">
+                    <button class="btn btn-ghost" onclick="showDonate()">Donate</button>
                     <button class="btn btn-ghost" onclick="showLogin()">Log In</button>
                     <button class="btn btn-primary" onclick="showLogin()">Sign Up</button>
                 </div>
@@ -1359,14 +1541,94 @@
         </div>
     </div>
 
+    <!-- Donate Page -->
+    <div id="donate-page">
+        <nav class="navbar">
+            <div class="nav-content">
+                <img src="logo.png" alt="SunnyMentor" class="logo">
+                <div class="nav-menu">
+                    <button class="btn btn-ghost" onclick="showLanding()">← Back to Home</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="donate-page">
+            <div class="donate-form">
+                <h1>Support Our Mission</h1>
+                <p class="donate-subtitle">Help us make selective mutism resources accessible to more families worldwide</p>
+                
+                <!-- Amount Selection -->
+                <div id="amount-selection">
+                    <div class="amount-options">
+                        <button class="amount-button" onclick="selectAmount(25)" data-amount="25">$25</button>
+                        <button class="amount-button" onclick="selectAmount(50)" data-amount="50">$50</button>
+                        <button class="amount-button" onclick="selectAmount(100)" data-amount="100">$100</button>
+                        <button class="amount-button" onclick="selectAmount(250)" data-amount="250">$250</button>
+                        <button class="amount-button" onclick="selectAmount(500)" data-amount="500">$500</button>
+                        <button class="amount-button" onclick="selectAmount(1000)" data-amount="1000">$1000</button>
+                    </div>
+                    
+                    <div class="custom-amount">
+                        <label for="custom-amount-input">Or enter a custom amount:</label>
+                        <input type="number" id="custom-amount-input" placeholder="Enter amount" min="1" step="1" oninput="selectCustomAmount()">
+                        <div id="amount-error" class="payment-error"></div>
+                    </div>
+                    
+                    <div class="donate-actions">
+                        <button class="btn btn-back" onclick="showLanding()">Cancel</button>
+                        <button class="btn btn-donate" id="continue-to-payment" onclick="continueToPayment()" disabled>Continue to Payment</button>
+                    </div>
+                </div>
+                
+                <!-- Payment Form -->
+                <div id="payment-form" style="display: none;">
+                    <h2 style="margin-bottom: 20px; color: #2d3748;">Complete Your Donation</h2>
+                    <div style="text-align: left; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>Amount: $<span id="selected-amount-display">0</span></strong>
+                    </div>
+                    
+                    <!-- Stripe Elements will be inserted here -->
+                    <div id="card-element" class="stripe-element">
+                        <!-- Stripe Elements will create form elements here -->
+                    </div>
+                    <div id="card-errors" class="payment-error"></div>
+                    
+                    <div class="donate-actions">
+                        <button class="btn btn-back" onclick="backToAmountSelection()">← Back</button>
+                        <button class="btn btn-donate" id="submit-payment" onclick="submitPayment()">
+                            <span id="payment-button-text">Complete Donation</span>
+                            <div id="payment-loading" class="loading" style="display: none; margin-left: 10px;"></div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Processing State -->
+                <div id="payment-processing" class="payment-processing">
+                    <div class="processing-spinner"></div>
+                    <h3>Processing your donation...</h3>
+                    <p>Please don't close this page or refresh your browser.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification -->
     <div id="notification" class="notification"></div>
+
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
 
     <script>
         // Global state
         let currentPage = 'landing';
         let isSignUpMode = false;
         let isAuthenticated = false;
+        
+        // Donation state
+        let selectedAmount = 0;
+        let stripe = null;
+        let elements = null;
+        let cardElement = null;
         
         // Page navigation functions
         function showLanding() {
@@ -1513,12 +1775,28 @@
             stopBackendHealthMonitoring();
         }
         
+        function showDonate() {
+            hideAllPages();
+            document.getElementById('donate-page').style.display = 'block';
+            currentPage = 'donate';
+            
+            // Stop health monitoring when leaving chat
+            stopBackendHealthMonitoring();
+            
+            // Reset donation form
+            resetDonationForm();
+            
+            // Initialize Stripe if not already done
+            initializeStripe();
+        }
+        
         function hideAllPages() {
             document.getElementById('landing-page').style.display = 'none';
             document.getElementById('login-page').style.display = 'none';
             document.getElementById('chat-page').style.display = 'none';
             document.getElementById('settings-page').style.display = 'none';
             document.getElementById('admin-page').style.display = 'none';
+            document.getElementById('donate-page').style.display = 'none';
         }
         
         // Phone authentication functions
@@ -1663,6 +1941,9 @@
             document.getElementById('verification-phase').style.display = 'none';
             document.getElementById('success-phase').style.display = 'none';
             
+            // Set to signup mode by default
+            setSignupMode();
+            
             // Clear all inputs and errors
             clearAllInputs();
             clearErrors();
@@ -1689,6 +1970,62 @@
             if (usernameInput) usernameInput.value = '';
             if (passwordInput) passwordInput.value = '';
             if (codeInput) codeInput.value = '';
+        }
+        
+        function setSignupMode() {
+            const submitButton = document.getElementById('username-submit-text');
+            const formTitle = document.getElementById('form-title');
+            
+            if (submitButton) submitButton.textContent = 'Sign Up';
+            if (formTitle) formTitle.textContent = 'Create Your Account';
+            
+            // Update the link text to switch to login
+            updateAuthModeLink(false); // false = currently in signup mode
+        }
+        
+        function setLoginMode() {
+            const submitButton = document.getElementById('username-submit-text');
+            const formTitle = document.getElementById('form-title');
+            
+            if (submitButton) submitButton.textContent = 'Log In';
+            if (formTitle) formTitle.textContent = 'Welcome Back';
+            
+            // Update the link text to switch to signup
+            updateAuthModeLink(true); // true = currently in login mode
+        }
+        
+        function updateAuthModeLink(isLoginMode) {
+            // Find the toggle link and update it
+            const linkContainer = document.querySelector('#username-input-phase p');
+            if (linkContainer) {
+                if (isLoginMode) {
+                    linkContainer.innerHTML = `
+                        <a href="#" onclick="setSignupMode(); clearErrors();" style="color: #667eea; text-decoration: none;">Don't have an account? Sign up</a>
+                        <br><br>
+                        <a href="#" onclick="switchToPhoneSignup()" style="color: #667eea; text-decoration: none;">Use phone number instead</a>
+                    `;
+                } else {
+                    linkContainer.innerHTML = `
+                        <a href="#" onclick="setLoginMode(); clearErrors();" style="color: #667eea; text-decoration: none;">Already have an account? Log in</a>
+                        <br><br>
+                        <a href="#" onclick="switchToPhoneSignup()" style="color: #667eea; text-decoration: none;">Use phone number instead</a>
+                    `;
+                }
+            }
+        }
+        
+        function toggleAuthMode() {
+            const submitButton = document.getElementById('username-submit-text');
+            if (submitButton) {
+                const isCurrentlySignup = submitButton.textContent.trim() === 'Sign Up';
+                if (isCurrentlySignup) {
+                    setLoginMode();
+                } else {
+                    setSignupMode();
+                }
+                clearErrors();
+                clearAllInputs();
+            }
         }
         
         function showUsernameLoading(show) {
@@ -1807,7 +2144,7 @@
             // Username/password form
             const usernameForm = document.getElementById('username-form');
             if (usernameForm) {
-                usernameForm.addEventListener('submit', function(e) {
+                usernameForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     
                     const usernameInput = document.getElementById('username');
@@ -1829,6 +2166,11 @@
                         return;
                     }
                     
+                    if (username.length < 3) {
+                        showError('username-error', 'Username must be at least 3 characters long');
+                        return;
+                    }
+                    
                     if (password.length < 6) {
                         showError('password-error', 'Password must be at least 6 characters');
                         return;
@@ -1837,13 +2179,117 @@
                     // Show loading
                     showUsernameLoading(true);
                     
-                    // Simulate API call delay and directly proceed to success
-                    setTimeout(() => {
+                    try {
+                        // Check if this is login or signup based on form state
+                        const isSignupMode = document.getElementById('username-submit-text').textContent.trim() === 'Sign Up';
+                        
+                        if (isSignupMode) {
+                            // Register new user
+                            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    username: username,
+                                    password: password
+                                })
+                            });
+                            
+                            const result = await response.json();
+                            
+                            showUsernameLoading(false);
+                            
+                            if (response.ok && result.success) {
+                                // Registration successful
+                                console.log('User registered successfully:', result);
+                                showSuccessPhase();
+                                hideLoginBackendErrorBanner();
+                            } else {
+                                // Registration failed
+                                const errorMessage = result.message || 'Registration failed';
+                                
+                                if (result.error === 'user_exists') {
+                                    showError('username-error', 'Username already exists. Please choose a different username.');
+                                } else if (result.error === 'validation_error') {
+                                    showError('username-error', errorMessage);
+                                } else {
+                                    showError('username-error', errorMessage);
+                                }
+                                
+                                // Show login backend error banner if this is a service error
+                                if (result.error === 'api_auth_failed' || result.error === 'bin_not_found' || result.error === 'rate_limit') {
+                                    if (shouldShowLoginBackendErrorBanner()) {
+                                        showLoginBackendErrorBanner();
+                                    }
+                                }
+                                
+                                // Handle rate limiting specifically
+                                if (result.error === 'rate_limit') {
+                                    showError('username-error', 'Service is temporarily busy. ' + errorMessage);
+                                }
+                            }
+                        } else {
+                            // Login existing user
+                            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    username: username,
+                                    password: password
+                                })
+                            });
+                            
+                            const result = await response.json();
+                            
+                            showUsernameLoading(false);
+                            
+                            if (response.ok && result.success) {
+                                // Login successful
+                                console.log('User logged in successfully:', result);
+                                showSuccessPhase();
+                                hideLoginBackendErrorBanner();
+                            } else {
+                                // Login failed
+                                const errorMessage = result.message || 'Login failed';
+                                
+                                if (result.error === 'user_not_found') {
+                                    showError('username-error', 'No account found with this username.');
+                                } else if (result.error === 'invalid_password') {
+                                    showError('password-error', 'Incorrect password.');
+                                } else if (result.error === 'account_disabled') {
+                                    showError('username-error', 'Account is disabled. Please contact support.');
+                                } else {
+                                    showError('username-error', errorMessage);
+                                }
+                                
+                                // Show login backend error banner if this is a service error
+                                if (result.error === 'api_auth_failed' || result.error === 'bin_not_found' || result.error === 'rate_limit') {
+                                    if (shouldShowLoginBackendErrorBanner()) {
+                                        showLoginBackendErrorBanner();
+                                    }
+                                }
+                                
+                                // Handle rate limiting specifically
+                                if (result.error === 'rate_limit') {
+                                    showError('username-error', 'Service is temporarily busy. ' + errorMessage);
+                                }
+                            }
+                        }
+                        
+                    } catch (error) {
+                        console.error('Authentication error:', error);
                         showUsernameLoading(false);
                         
-                        // For now, any username/password combination leads to success
-                        showSuccessPhase();
-                    }, 1500);
+                        showError('username-error', 'Unable to connect to authentication server. Please ensure the server is running and try again.');
+                        
+                        // Show login backend error banner on connection failure
+                        if (shouldShowLoginBackendErrorBanner()) {
+                            showLoginBackendErrorBanner();
+                        }
+                    }
                 });
             }
         });
@@ -1925,12 +2371,12 @@
                 
                 // Add cache indicator if response was cached
                 if (data.cached) {
-                    responseText += '<div style="font-size: 0.8em; color: rgba(255,255,255,0.7); margin-top: 8px; font-style: italic;">⚡ Retrieved from cache</div>';
+                    responseText += '<div style="font-size: 0.8em; color: rgba(100,100,100,0.7); margin-top: 8px; font-style: italic;">⚡ This is a cached response retrieved from a previous conversation.</div>';
                 }
                 
                 // Add context information if available
                 if (data.context_passages_count > 0) {
-                    responseText += `<div style="font-size: 0.8em; color: rgba(255,255,255,0.7); margin-top: 8px; font-style: italic;">📚 Based on ${data.context_passages_count} relevant sources from the knowledge base</div>`;
+                    responseText += `<div style="font-size: 0.8em; color: rgba(100,100,100,0.7); margin-top: 8px; font-style: italic;">📚 Based on ${data.context_passages_count} relevant sources from the knowledge base</div>`;
                 }
                 
                 addMessage(responseText, 'assistant');
@@ -2321,6 +2767,269 @@ Error: ${error.message}
             }
         }
         
+        // Donation Functions
+        async function initializeStripe() {
+            if (stripe) return; // Already initialized
+            
+            try {
+                // Get Stripe publishable key from backend
+                const response = await fetch('http://127.0.0.1:5000/donate/config');
+                if (!response.ok) {
+                    throw new Error('Failed to get Stripe configuration');
+                }
+                
+                const config = await response.json();
+                
+                if (!config.stripe_publishable_key) {
+                    throw new Error('Stripe is not configured on the server');
+                }
+                
+                stripe = Stripe(config.stripe_publishable_key);
+                console.log('Stripe initialized successfully');
+            } catch (error) {
+                console.error('Error initializing Stripe:', error);
+                showNotification('Payment system is currently unavailable. Please try again later.', 'error');
+            }
+        }
+        
+        function resetDonationForm() {
+            selectedAmount = 0;
+            
+            // Reset amount buttons
+            document.querySelectorAll('.amount-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Reset custom amount input
+            const customInput = document.getElementById('custom-amount-input');
+            if (customInput) {
+                customInput.value = '';
+            }
+            
+            // Reset continue button
+            const continueBtn = document.getElementById('continue-to-payment');
+            if (continueBtn) {
+                continueBtn.disabled = true;
+            }
+            
+            // Show amount selection, hide payment form
+            document.getElementById('amount-selection').style.display = 'block';
+            document.getElementById('payment-form').style.display = 'none';
+            document.getElementById('payment-processing').classList.remove('show');
+            
+            // Clear errors
+            clearDonationErrors();
+        }
+        
+        function selectAmount(amount) {
+            selectedAmount = amount;
+            
+            // Update UI
+            document.querySelectorAll('.amount-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            document.querySelector(`[data-amount="${amount}"]`).classList.add('selected');
+            
+            // Clear custom amount input
+            const customInput = document.getElementById('custom-amount-input');
+            if (customInput) {
+                customInput.value = '';
+            }
+            
+            // Enable continue button
+            document.getElementById('continue-to-payment').disabled = false;
+            
+            clearDonationErrors();
+        }
+        
+        function selectCustomAmount() {
+            const customInput = document.getElementById('custom-amount-input');
+            const amount = parseFloat(customInput.value);
+            
+            // Clear preset button selections
+            document.querySelectorAll('.amount-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            clearDonationErrors();
+            
+            if (amount && amount >= 1) {
+                selectedAmount = amount;
+                document.getElementById('continue-to-payment').disabled = false;
+            } else {
+                selectedAmount = 0;
+                document.getElementById('continue-to-payment').disabled = true;
+                
+                if (customInput.value && amount < 1) {
+                    showDonationError('amount-error', 'Minimum donation amount is $1');
+                }
+            }
+        }
+        
+        async function continueToPayment() {
+            if (selectedAmount < 1) {
+                showDonationError('amount-error', 'Please select a donation amount');
+                return;
+            }
+            
+            // Show payment form
+            document.getElementById('amount-selection').style.display = 'none';
+            document.getElementById('payment-form').style.display = 'block';
+            
+            // Update amount display
+            document.getElementById('selected-amount-display').textContent = selectedAmount.toFixed(2);
+            
+            // Initialize Stripe Elements if not already done
+            if (!cardElement) {
+                await setupStripeElements();
+            }
+        }
+        
+        async function setupStripeElements() {
+            if (!stripe) {
+                await initializeStripe();
+                if (!stripe) return;
+            }
+            
+            try {
+                elements = stripe.elements();
+                
+                cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            fontSize: '16px',
+                            color: '#424770',
+                            '::placeholder': {
+                                color: '#aab7c4',
+                            },
+                        },
+                        invalid: {
+                            color: '#9e2146',
+                        },
+                    },
+                });
+                
+                cardElement.mount('#card-element');
+                
+                // Handle real-time validation errors from the card Element
+                cardElement.on('change', function(event) {
+                    const cardErrors = document.getElementById('card-errors');
+                    if (event.error) {
+                        cardErrors.textContent = event.error.message;
+                    } else {
+                        cardErrors.textContent = '';
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error setting up Stripe Elements:', error);
+                showNotification('Payment form initialization failed. Please try again.', 'error');
+            }
+        }
+        
+        function backToAmountSelection() {
+            document.getElementById('amount-selection').style.display = 'block';
+            document.getElementById('payment-form').style.display = 'none';
+            clearDonationErrors();
+        }
+        
+        async function submitPayment() {
+            if (!stripe || !cardElement) {
+                showNotification('Payment system not ready. Please try again.', 'error');
+                return;
+            }
+            
+            if (selectedAmount < 1) {
+                showDonationError('card-errors', 'Invalid donation amount');
+                return;
+            }
+            
+            // Show processing state
+            setPaymentProcessing(true);
+            
+            try {
+                // Create payment intent on the server
+                const response = await fetch('http://127.0.0.1:5000/donate/create-payment-intent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: Math.round(selectedAmount * 100), // Convert to cents
+                        currency: 'usd'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to create payment intent');
+                }
+                
+                const { client_secret } = await response.json();
+                
+                // Confirm payment with Stripe
+                const { error, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
+                    payment_method: {
+                        card: cardElement,
+                    }
+                });
+                
+                if (error) {
+                    throw error;
+                } else if (paymentIntent.status === 'succeeded') {
+                    // Payment succeeded
+                    showNotification('Thank you for your donation! Your support means the world to us.', 'success');
+                    
+                    // Reset form and go back to landing page
+                    setTimeout(() => {
+                        showLanding();
+                    }, 3000);
+                }
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                showDonationError('card-errors', error.message || 'Payment failed. Please try again.');
+            } finally {
+                setPaymentProcessing(false);
+            }
+        }
+        
+        function setPaymentProcessing(processing) {
+            const submitBtn = document.getElementById('submit-payment');
+            const buttonText = document.getElementById('payment-button-text');
+            const loadingEl = document.getElementById('payment-loading');
+            const processingEl = document.getElementById('payment-processing');
+            
+            if (processing) {
+                submitBtn.disabled = true;
+                buttonText.textContent = 'Processing...';
+                loadingEl.style.display = 'inline-block';
+                processingEl.classList.add('show');
+            } else {
+                submitBtn.disabled = false;
+                buttonText.textContent = 'Complete Donation';
+                loadingEl.style.display = 'none';
+                processingEl.classList.remove('show');
+            }
+        }
+        
+        function clearDonationErrors() {
+            const errorElements = ['amount-error', 'card-errors'];
+            errorElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = '';
+                }
+            });
+        }
+        
+        function showDonationError(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+            }
+        }
+
         // Initialize page functionality when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             showLanding();

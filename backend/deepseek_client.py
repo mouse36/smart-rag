@@ -56,7 +56,8 @@ class DeepSeekClient:
     def generate_response(self, user_message: str, context_passages: List[Dict[str, Any]]) -> str:
         """Generate a response using DeepSeek API with context or return placeholder"""
         if not self.is_ready():
-            raise RuntimeError("DeepSeek client not ready")
+            logger.warning("DeepSeek client not ready, returning placeholder response")
+            return self._get_placeholder_response(user_message, context_passages)
         
         # If API calls are disabled, return placeholder response
         if not self.config.API_CALLS_ENABLED:
@@ -78,7 +79,7 @@ class DeepSeekClient:
                 }
             ]
             
-            # Make the API request
+            # Make the API request with retries
             response_data = self._make_request(messages)
             
             # Extract the response text
@@ -87,9 +88,19 @@ class DeepSeekClient:
             logger.info(f"Generated response for user message: {user_message[:50]}...")
             return response_text.strip()
             
+        except requests.exceptions.Timeout as e:
+            logger.error(f"API request timed out after retries: {str(e)}")
+            logger.info("Falling back to enhanced fallback response due to timeout")
+            return self._get_enhanced_fallback_response(user_message, context_passages, "connection timeout")
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"API request failed after retries: {str(e)}")
+            logger.info("Falling back to enhanced fallback response due to request error")
+            return self._get_enhanced_fallback_response(user_message, context_passages, "API request failed")
+            
         except Exception as e:
-            logger.error(f"Error generating response: {str(e)}")
-            return self._get_fallback_response()
+            logger.error(f"Unexpected error generating response: {str(e)}")
+            return self._get_enhanced_fallback_response(user_message, context_passages, "unexpected error")
     
     def _prepare_context(self, passages: List[Dict[str, Any]]) -> str:
         """Prepare context from relevant passages"""
@@ -132,8 +143,8 @@ Please provide a helpful, accurate response based on the context provided. If th
         
         return formatted_message
     
-    def _make_request(self, messages: List[Dict[str, str]], max_tokens: Optional[int] = None) -> Dict[str, Any]:
-        """Make a request to the DeepSeek API"""
+    def _make_request(self, messages: List[Dict[str, str]], max_tokens: Optional[int] = None, retries: int = 3) -> Dict[str, Any]:
+        """Make a request to the DeepSeek API with retry logic"""
         url = f"{self.base_url}/chat/completions"
         
         payload = {
@@ -145,27 +156,58 @@ Please provide a helpful, accurate response based on the context provided. If th
             "stream": False
         }
         
-        try:
-            response = requests.post(
-                url, 
-                headers=self.headers, 
-                json=payload,
-                timeout=30  # 30 second timeout
-            )
-            response.raise_for_status()
-            
-            return response.json()
-            
-        except requests.exceptions.RequestException as e:
-            logger.error(f"HTTP request failed: {str(e)}")
-            if hasattr(e, 'response') and e.response is not None:
-                logger.error(f"Response status: {e.response.status_code}")
-                logger.error(f"Response text: {e.response.text}")
-            raise
+        last_exception = None
         
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to decode JSON response: {str(e)}")
-            raise
+        for attempt in range(retries):
+            try:
+                # Increase timeout progressively with each retry
+                timeout = 30 + (attempt * 15)  # 30s, 45s, 60s
+                
+                logger.info(f"Making API request (attempt {attempt + 1}/{retries}) with {timeout}s timeout")
+                
+                response = requests.post(
+                    url, 
+                    headers=self.headers, 
+                    json=payload,
+                    timeout=timeout
+                )
+                response.raise_for_status()
+                
+                return response.json()
+                
+            except requests.exceptions.Timeout as e:
+                last_exception = e
+                logger.warning(f"Request timeout on attempt {attempt + 1}/{retries}: {str(e)}")
+                if attempt < retries - 1:
+                    import time
+                    time.sleep(2 ** attempt)  # Exponential backoff: 1s, 2s, 4s
+                    continue
+                
+            except requests.exceptions.RequestException as e:
+                last_exception = e
+                logger.error(f"HTTP request failed on attempt {attempt + 1}/{retries}: {str(e)}")
+                if hasattr(e, 'response') and e.response is not None:
+                    logger.error(f"Response status: {e.response.status_code}")
+                    logger.error(f"Response text: {e.response.text}")
+                    # Don't retry on client errors (4xx)
+                    if 400 <= e.response.status_code < 500:
+                        raise
+                if attempt < retries - 1:
+                    import time
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                    continue
+                
+            except json.JSONDecodeError as e:
+                last_exception = e
+                logger.error(f"Failed to decode JSON response on attempt {attempt + 1}/{retries}: {str(e)}")
+                if attempt < retries - 1:
+                    import time
+                    time.sleep(2 ** attempt)
+                    continue
+        
+        # If we get here, all retries failed
+        logger.error(f"All {retries} attempts failed. Last error: {str(last_exception)}")
+        raise last_exception
     
     def _get_placeholder_response(self, user_message: str, context_passages: List[Dict[str, Any]]) -> str:
         """Get a placeholder response when API calls are disabled"""
@@ -202,6 +244,44 @@ Here are some general suggestions for selective mutism:
 5. **Use gradual exposure** - Slowly introduce speaking situations in a supportive way
 
 For specific guidance tailored to your situation, please consult with a qualified professional who specializes in selective mutism."""
+    
+    def _get_enhanced_fallback_response(self, user_message: str, context_passages: List[Dict[str, Any]], error_type: str) -> str:
+        """Get an enhanced fallback response when API fails, including context if available"""
+        # Start with an apology and explanation
+        response = f"I apologize, but I'm experiencing technical difficulties ({error_type}) at the moment.\n\n"
+        
+        # If we have context, try to provide some relevant information
+        if context_passages:
+            response += "However, I found some relevant information in our knowledge base:\n\n"
+            
+            # Include snippets from the most relevant passages
+            for i, passage in enumerate(context_passages[:2]):  # Limit to first 2 passages
+                source = passage.get('source_file', 'Unknown source')
+                text = passage.get('text', '')
+                
+                # Extract a relevant snippet (first 200 characters)
+                snippet = text[:200].strip()
+                if len(text) > 200:
+                    snippet += "..."
+                
+                response += f"**From {source}:**\n{snippet}\n\n"
+            
+            response += "This information may be helpful, but for the most accurate and personalized guidance, please try again in a few moments or consult with a qualified professional.\n\n"
+        else:
+            response += "While I couldn't retrieve specific information for your question, here are some general guidelines for selective mutism:\n\n"
+        
+        # Add general suggestions
+        response += """**General Selective Mutism Guidelines:**
+
+1. **Be patient and understanding** - Children with selective mutism need time and support
+2. **Avoid pressure** - Don't force speech or put the child in uncomfortable situations  
+3. **Consult professionals** - Work with psychologists or speech therapists experienced with SM
+4. **Create comfortable environments** - Reduce anxiety triggers when possible
+5. **Use gradual exposure** - Slowly introduce speaking situations in a supportive way
+
+Please try your question again in a few moments, or consult with a qualified professional who specializes in selective mutism for personalized guidance."""
+        
+        return response
     
     def get_stats(self) -> Dict[str, Any]:
         """Get client statistics"""

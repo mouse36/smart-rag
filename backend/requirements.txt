@@ -11,6 +11,9 @@ torch==2.8.0
 # HTTP Requests
 requests==2.32.4
 
+# Payment Processing
+stripe==12.5.0
+
 # Caching
 redis==6.4.0
 

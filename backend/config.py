@@ -59,8 +59,21 @@ class Config:
         self.TEMPERATURE = float(os.getenv('TEMPERATURE', 0.7))
         self.TOP_P = float(os.getenv('TOP_P', 0.9))
         
-        # Phone authentication settings
+        # Phone authentication settings (legacy)
         self.APPROVED_PHONE_NUMBERS = self._parse_phone_numbers(os.getenv('APPROVED_PHONE_NUMBERS', ''))
+        
+        # JSONBin API settings
+        self.JSONBIN_API_KEY = os.getenv('JSONBIN_API_KEY')
+        self.JSONBIN_BASE_URL = os.getenv('JSONBIN_BASE_URL')
+        self.JSONBIN_BIN_ID = os.getenv('JSONBIN_BIN_ID')
+        
+        # Stripe payment settings
+        self.STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+        self.STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+        self.STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+        self.STRIPE_CURRENCY = os.getenv('STRIPE_CURRENCY', 'usd')
+        self.DONATION_SUCCESS_URL = os.getenv('DONATION_SUCCESS_URL', 'http://127.0.0.1:5000/static/donation-success.html')
+        self.DONATION_CANCEL_URL = os.getenv('DONATION_CANCEL_URL', 'http://127.0.0.1:5000/static/donation-cancel.html')
         
         # Create cache directory if it doesn't exist
         self._ensure_cache_directory()
@@ -81,10 +94,20 @@ class Config:
         if self.API_CALLS_ENABLED and not self.DEEPSEEK_API_KEY:
             return "DEEPSEEK_API_KEY environment variable is required when API calls are enabled"
         
+        if not self.JSONBIN_API_KEY:
+            return "JSONBIN_API_KEY environment variable is required for user authentication"
+        
+        if not self.JSONBIN_BIN_ID:
+            return "JSONBIN_BIN_ID environment variable is required for user authentication"
+        
         if not os.path.exists(self.KNOWLEDGE_BASE_PATH):
             return f"Knowledge base path does not exist: {self.KNOWLEDGE_BASE_PATH}"
         
         return None  # Configuration is valid
+    
+    def is_stripe_configured(self) -> bool:
+        """Check if Stripe payment processing is properly configured"""
+        return bool(self.STRIPE_SECRET_KEY and self.STRIPE_PUBLISHABLE_KEY)
     
     def get_system_prompt(self) -> str:
         """Get the system prompt for the AI assistant"""

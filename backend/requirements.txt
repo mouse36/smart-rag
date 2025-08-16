@@ -14,8 +14,7 @@ requests==2.32.4
 # Payment Processing
 stripe==12.5.0
 
-# Caching
-redis==6.4.0
+
 
 # Data Processing
 pandas==2.3.1

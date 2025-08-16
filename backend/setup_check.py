@@ -41,7 +41,6 @@ def check_pip_packages():
     }
     
     optional_packages = {
-        'redis': 'Redis for caching (optional - will use memory cache if missing)',
     }
     
     missing_packages = []
@@ -77,8 +76,7 @@ def check_environment_variables():
     }
     
     optional_vars = {
-        'REDIS_HOST': 'Redis host (optional)',
-        'REDIS_PORT': 'Redis port (optional)',
+
         'DEBUG': 'Debug mode (optional)',
     }
     
@@ -150,27 +148,7 @@ def check_cache_directory():
     
     return True
 
-def check_redis_connection():
-    """Check Redis connection if available"""
-    print("\n🔴 Checking Redis connection...")
-    
-    try:
-        import redis
-        
-        redis_host = os.getenv('REDIS_HOST', 'localhost')
-        redis_port = int(os.getenv('REDIS_PORT', 6379))
-        
-        client = redis.Redis(host=redis_host, port=redis_port, socket_timeout=2)
-        client.ping()
-        print(f"✅ Redis connection successful ({redis_host}:{redis_port})")
-        return True
-        
-    except ImportError:
-        print("⚠️  Redis package not installed - will use memory cache")
-        return True
-    except Exception as e:
-        print(f"⚠️  Redis connection failed: {e} - will use memory cache")
-        return True
+
 
 def check_deepseek_api():
     """Test DeepSeek API connection"""
@@ -224,7 +202,7 @@ def main():
         check_environment_variables,
         check_knowledge_base,
         check_cache_directory,
-        check_redis_connection,
+
         check_deepseek_api,
     ]
     

@@ -32,12 +32,7 @@ class Config:
         self.CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', 500))
         self.CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', 50))
         
-        # Cache settings (Redis)
-        self.REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-        self.REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-        self.REDIS_DB = int(os.getenv('REDIS_DB', 0))
-        self.REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
-        self.CACHE_TTL = int(os.getenv('CACHE_TTL', 3600))  # 1 hour default
+
         
         # Knowledge base settings
         self.KNOWLEDGE_BASE_PATH = os.getenv(
@@ -139,7 +134,6 @@ selective mutism often feel frustrated and need support."""
             EMBEDDINGS_MODEL={self.EMBEDDINGS_MODEL}
             VECTOR_DIMENSION={self.VECTOR_DIMENSION}
             CHUNK_SIZE={self.CHUNK_SIZE}
-            REDIS_HOST={self.REDIS_HOST}
-            REDIS_PORT={self.REDIS_PORT}
+
             KNOWLEDGE_BASE_PATH={self.KNOWLEDGE_BASE_PATH}
         )"""

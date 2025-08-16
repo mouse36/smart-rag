@@ -10,6 +10,12 @@
 *.pem
 *.key
 
+# Cache
+backend/cache/
+
+# Test Scripts
+backend/test_scripts/
+
 # Python
 __pycache__/
 *.py[cod]

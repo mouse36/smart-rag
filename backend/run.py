@@ -32,14 +32,12 @@ env_vars = {
     'VECTOR_DIMENSION': '384',
     'CHUNK_SIZE': '500',
     'CHUNK_OVERLAP': '50',
-    'REDIS_HOST': 'localhost',
-    'REDIS_PORT': '6379',
-    'REDIS_DB': '0',
+
     'MAX_CONTEXT_LENGTH': '4000',
     'MAX_RESPONSE_LENGTH': '1000',
     'TEMPERATURE': '0.7',
     'TOP_P': '0.9',
-    'CACHE_TTL': '3600',
+
     'API_CALLS_ENABLED': 'False'  # Set to 'True' to enable real API calls, 'False' for placeholder responses
 }
 

@@ -14,7 +14,7 @@ A virtual assistant chatbot powered by the DeepSeek API that provides expert gui
 ## Architecture
 
 ```
-Frontend (HTML/JS) → Backend (Flask) → [DeepSeek API + Vector Search + Cache]
+Frontend (HTML/JS) → Backend (Flask) → [DeepSeek API + Vector Search]
                                            ↓
                                     Knowledge Base (Text Files)
 ```
@@ -25,122 +25,9 @@ Frontend (HTML/JS) → Backend (Flask) → [DeepSeek API + Vector Search + Cache
 
 1. **Python 3.8+**
 2. **DeepSeek API Key** - Get one from [DeepSeek](https://platform.deepseek.com/)
-3. **Redis** (optional, for caching - falls back to memory cache if not available)
 
-#### Redis Installation (Optional but Recommended)
 
-Redis provides better caching performance than the fallback memory cache. Here's how to install it:
 
-**macOS:**
-```bash
-# Using Homebrew (recommended)
-brew install redis
-brew services start redis
-
-# Using MacPorts
-sudo port install redis
-sudo port load redis
-
-# Manual installation
-wget http://download.redis.io/redis-stable.tar.gz
-tar xvzf redis-stable.tar.gz
-cd redis-stable
-make
-sudo make install
-redis-server
-```
-
-**Ubuntu/Debian:**
-```bash
-# Using apt (recommended)
-sudo apt update
-sudo apt install redis-server
-sudo systemctl start redis-server
-sudo systemctl enable redis-server
-
-# Using snap
-sudo snap install redis
-
-# Manual installation
-wget http://download.redis.io/redis-stable.tar.gz
-tar xvzf redis-stable.tar.gz
-cd redis-stable
-make
-sudo make install
-redis-server
-```
-
-**CentOS/RHEL/Fedora:**
-```bash
-# Using dnf/yum
-sudo dnf install redis  # or: sudo yum install redis
-sudo systemctl start redis
-sudo systemctl enable redis
-
-# Using EPEL repository (CentOS/RHEL)
-sudo yum install epel-release
-sudo yum install redis
-
-# Manual installation
-wget http://download.redis.io/redis-stable.tar.gz
-tar xvzf redis-stable.tar.gz
-cd redis-stable
-make
-sudo make install
-redis-server
-```
-
-**Windows:**
-```bash
-# Using Windows Subsystem for Linux (WSL) - recommended
-wsl --install
-# Then follow Ubuntu instructions above
-
-# Using Chocolatey
-choco install redis-64
-
-# Using Docker (cross-platform)
-docker run -d -p 6379:6379 --name redis redis:alpine
-
-# Manual: Download from https://github.com/microsoftarchive/redis/releases
-```
-
-**Docker (Cross-platform):**
-```bash
-# Start Redis in a container
-docker run -d -p 6379:6379 --name redis redis:alpine
-
-# Or using docker-compose (create docker-compose.yml):
-version: '3'
-services:
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-volumes:
-  redis_data:
-```
-
-**Alternative: Cloud Redis Services**
-- Redis Cloud (redis.com)
-- AWS ElastiCache
-- Google Cloud Memorystore
-- Azure Cache for Redis
-
-**Verify Redis Installation:**
-```bash
-# Test Redis connection
-redis-cli ping
-# Should return: PONG
-
-# Or check if Redis is listening
-netstat -an | grep 6379
-# Or: lsof -i :6379
-```
-
-**Note:** If Redis installation fails or you prefer not to install it, the application will automatically use an in-memory cache as fallback.
 
 ### Installation
 
@@ -241,8 +128,7 @@ To add new knowledge to the system:
 
 - **GET** `/health` - Health check endpoint
 - **POST** `/search` - Direct knowledge base search
-- **GET** `/cache/stats` - Cache statistics
-- **POST** `/cache/clear` - Clear cache
+
 
 ### Example Chat Request
 
@@ -258,13 +144,12 @@ curl -X POST http://localhost:5000/chat \
 2. **Vector Search**: The system searches the knowledge base using semantic similarity
 3. **Context Retrieval**: Top 5-7 most relevant passages are retrieved
 4. **AI Generation**: DeepSeek API generates a response using the retrieved context
-5. **Caching**: Response is cached for faster future retrieval
-6. **Display**: Response is displayed to the user
+5. **Display**: Response is displayed to the user
 
 ## Performance Optimization
 
 - **Embeddings Caching**: Vector embeddings are cached to disk after first generation
-- **Response Caching**: Common queries are cached using Redis
+
 - **Efficient Search**: FAISS vector index for fast similarity search
 - **Chunking Strategy**: Text is intelligently chunked with overlap for better context
 
@@ -285,13 +170,13 @@ curl -X POST http://localhost:5000/chat \
 ### Slow Responses
 
 1. **First Run**: Initial setup generates embeddings (this is slow but only happens once)
-2. **Cache**: Enable Redis for better caching performance
+
 3. **Hardware**: Consider using GPU support for faster embeddings
 
 ### Memory Issues
 
 1. **Large Knowledge Base**: Consider reducing chunk size or using GPU acceleration
-2. **Cache Size**: Monitor Redis memory usage or in-memory cache size
+2. **Performance**: Monitor system resources and response times
 
 ### Redis Connection Issues
 
@@ -346,7 +231,7 @@ smart-rag/
 │   ├── app.py              # Main Flask application
 │   ├── vector_search.py    # Vector search engine
 │   ├── deepseek_client.py  # DeepSeek API client
-│   ├── cache_manager.py    # Cache management
+
 │   ├── config.py          # Configuration
 │   ├── run.py             # Startup script
 │   ├── requirements.txt   # Python dependencies

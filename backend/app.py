@@ -6,7 +6,7 @@ Features:
 - RESTful API endpoints for frontend integration
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 import os
 import json
@@ -680,6 +680,21 @@ def internal_error(error):
     """Handle 500 errors"""
     logger.error(f"Internal server error: {str(error)}")
     return jsonify({'error': 'Internal server error'}), 500
+
+
+# Static file serving routes
+@app.route('/')
+def serve_index():
+    """Serve the main HTML page"""
+    frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
+    return send_file(os.path.join(frontend_dir, 'index.html'))
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    """Serve static files from frontend directory"""
+    frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
+    return send_from_directory(frontend_dir, filename)
+
 
 if __name__ == '__main__':
     try:

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SunnyMentor</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="logo.png">
+    <link rel="shortcut icon" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -225,6 +228,11 @@
             font-weight: 700;
             margin-bottom: 20px;
             line-height: 1.2;
+        }
+
+        .hero-title-line1,
+        .hero-title-line2 {
+            display: block;
         }
 
         .hero-subtitle {
@@ -593,7 +601,7 @@
         }
 
         .chat-header {
-            padding: 20px 30px;
+            padding: 10px 30px;
             background: white;
             border-bottom: 1px solid #e9ecef;
             display: flex;
@@ -1317,7 +1325,10 @@
         <div class="landing-main">
             <section class="hero">
                 <div class="hero-content">
-                    <h1 data-en="Your 24/7 Virtual Coach for Selective Mutism Support" data-zh="您的24/7选择性缄默症虚拟教练">Your 24/7 Virtual Coach for Selective Mutism Support</h1>
+                    <h1 data-en="Your 24/7 Virtual Coach for Selective Mutism Support" data-zh="您的24/7选择性缄默症虚拟教练">
+                        <span class="hero-title-line1">Your 24/7 Virtual Coach</span>
+                        <span class="hero-title-line2">for Selective Mutism Support</span>
+                    </h1>
                     <p class="hero-subtitle" data-en="Evidence-based, compassionate answers for parents — anytime you need them." data-zh="基于科学证据的温暖解答，为家长提供随时随地的支持。">
                         Evidence-based, compassionate answers for parents — anytime you need them.
                     </p>
@@ -1512,12 +1523,12 @@
             
             <div class="chat-main">
                 <div class="chat-header">
-                    <div class="logo-container">
-                        <img src="logo.png" alt="SunnyMentor" class="logo" style="height: 40px;">
-                        <span class="logo-text">
-                            <span class="logo-sunny">Sunny</span><span class="logo-mentor">Mentor</span>
-                        </span>
+                    <!-- Logo (The chat page only shows the text logo, not the image) -->
+                    <div class="logo-container clickable-logo" style="margin: 5px 0;">
+                        <span class="logo-text" style="font-size: 24px;">SunnyMentor</span>
                     </div>
+                    
+                    <!-- User account menu on the right -->
                     <div class="user-profile" onclick="toggleProfileMenu()">
                         <div class="profile-pic">U</div>
                         <span>User</span>
@@ -1583,12 +1594,6 @@
             <div class="settings-main">
                 <div class="settings-header">
                     <div class="settings-title-group">
-                        <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
-                            <img src="logo.png" alt="SunnyMentor" class="logo" style="height: 32px;">
-                            <span class="logo-text">
-                                <span class="logo-sunny">Sunny</span><span class="logo-mentor">Mentor</span>
-                            </span>
-                        </div>
                         <h1 class="settings-title">Settings</h1>
                     </div>
                     <button class="btn back-button" onclick="showChat()">← Back to Chat</button>
@@ -1629,13 +1634,6 @@
     <div id="admin-page">
         <div class="admin-layout">
             <div class="sidebar">
-                <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
-                    <img src="logo.png" alt="SunnyMentor" class="sidebar-logo">
-                    <span class="logo-text">
-                        <span class="logo-sunny">Sunny</span><span class="logo-mentor">Mentor</span>
-                    </span>
-                </div>
-                
                 <div class="sidebar-menu">
                     <div class="menu-item active">Dashboard</div>
                     <div class="menu-item">Users</div>
@@ -1764,17 +1762,35 @@
         let elements = null;
         let cardElement = null;
         
+        // Central logo component function
+        function generateStandardLogo(options = {}) {
+            const {
+                fontSize = '48px',
+                logoClass = 'logo',
+                clickable = true,
+                showLanguageData = true
+            } = options;
+            
+            const clickableClass = clickable ? 'clickable-logo' : '';
+            const onClickHandler = clickable ? 'onclick="handleLogoClick()" style="cursor: pointer;"' : '';
+            const languageAttrs = showLanguageData ? 'data-en="Sunny" data-zh="阳光"' : '';
+            const languageAttrsMentor = showLanguageData ? 'data-en="Mentor" data-zh="教练"' : '';
+            
+            return `
+                <div class="logo-container ${clickableClass}" ${onClickHandler}>
+                    <img src="logo.svg" alt="SunnyMentor" class="${logoClass}">
+                    <span class="logo-text" style="font-size: ${fontSize};">
+                        <span class="logo-sunny" ${languageAttrs}>Sunny</span><span class="logo-mentor" ${languageAttrsMentor}>Mentor</span>
+                    </span>
+                </div>`;
+        }
+        
         // Navbar generation function
         function generateNavbar() {
             return `
                 <nav class="navbar">
                     <div class="nav-content">
-                        <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
-                            <img src="logo.svg" alt="SunnyMentor" class="logo">
-                            <span class="logo-text" style="font-size: 48px;">
-                                <span class="logo-sunny">Sunny</span><span class="logo-mentor">Mentor</span>
-                            </span>
-                        </div>
+                        ${generateStandardLogo({ showLanguageData: true })}
                         <div class="nav-menu">
                             <a href="#features" data-en="Features" data-zh="功能">Features</a>
                             <a href="#demo" data-en="Demo" data-zh="演示">Demo</a>
@@ -1824,10 +1840,21 @@
         function updateAllText() {
             const elementsWithLanguage = document.querySelectorAll('[data-en][data-zh]');
             elementsWithLanguage.forEach(element => {
-                if (currentLanguage === 'EN') {
-                    element.textContent = element.getAttribute('data-en');
+                // Special handling for hero title with spans
+                if (element.querySelector('.hero-title-line1, .hero-title-line2')) {
+                    const text = currentLanguage === 'EN' ? element.getAttribute('data-en') : element.getAttribute('data-zh');
+                    if (text === 'Your 24/7 Virtual Coach for Selective Mutism Support') {
+                        element.innerHTML = '<span class="hero-title-line1">Your 24/7 Virtual Coach</span><span class="hero-title-line2">for Selective Mutism Support</span>';
+                    } else {
+                        // For Chinese, keep it on one line
+                        element.innerHTML = '<span class="hero-title-line1">' + text + '</span>';
+                    }
                 } else {
-                    element.textContent = element.getAttribute('data-zh');
+                    if (currentLanguage === 'EN') {
+                        element.textContent = element.getAttribute('data-en');
+                    } else {
+                        element.textContent = element.getAttribute('data-zh');
+                    }
                 }
             });
             
@@ -1860,6 +1887,9 @@
             hideAllPages();
             document.getElementById('landing-page').style.display = 'block';
             currentPage = 'landing';
+
+            // Check backend health immediately on user interaction
+            await checkBackendHealthOnInteraction();
             
             // Initialize navbar
             initializeNavbar('landing-page');
@@ -1878,6 +1908,9 @@
             hideAllPages();
             document.getElementById('login-page').style.display = 'block';
             currentPage = 'login';
+
+            // Check backend health immediately on user interaction
+            await checkBackendHealthOnInteraction();
             
             // Initialize navbar
             initializeNavbar('login-page');
@@ -1885,20 +1918,11 @@
             // Stop any existing health monitoring
             stopBackendHealthMonitoring();
             
-            // Clear any previous banner dismissal for testing
-            sessionStorage.removeItem('login-backend-error-banner-dismissed');
-            
             // Check backend health for login page
             await checkLoginBackendHealth();
             
             // Start periodic health monitoring when entering login
             startBackendHealthMonitoring();
-            
-            // Force show banner for testing (temporary)
-            console.log('Testing: Force showing login banner');
-            setTimeout(() => {
-                showLoginBackendErrorBanner();
-            }, 1000);
             
             // Reset to phone input phase
             document.getElementById('phone-input-phase').style.display = 'block';
@@ -1924,6 +1948,15 @@
             hideAllPages();
             document.getElementById('chat-page').style.display = 'block';
             currentPage = 'chat';
+
+            // Check backend health immediately on user interaction
+            await checkBackendHealthOnInteraction();
+            
+            // Initialize logo
+            const chatLogoContainer = document.getElementById('chat-logo-container');
+            if (chatLogoContainer) {
+                chatLogoContainer.innerHTML = generateStandardLogo({ showLanguageData: false });
+            }
             
             // Initialize with welcome message if no messages exist
             const messagesArea = document.getElementById('messages');
@@ -2028,19 +2061,40 @@
             warnings.forEach(warning => warning.remove());
         }
         
-        function showSettings() {
+        async function showSettings() {
+            // Check backend health immediately on user interaction
+            await checkBackendHealthOnInteraction();
+            
             hideAllPages();
             document.getElementById('settings-page').style.display = 'block';
             currentPage = 'settings';
+            
+            // Initialize logo
+            const settingsLogoContainer = document.getElementById('settings-logo-container');
+            if (settingsLogoContainer) {
+                settingsLogoContainer.innerHTML = generateStandardLogo({ showLanguageData: false });
+            }
             
             // Stop health monitoring when leaving chat
             stopBackendHealthMonitoring();
         }
         
-        function showAdmin() {
+        async function showAdmin() {
+            // Check backend health immediately on user interaction
+            await checkBackendHealthOnInteraction();
+            
             hideAllPages();
             document.getElementById('admin-page').style.display = 'block';
             currentPage = 'admin';
+            
+            // Initialize logo
+            const adminLogoContainer = document.getElementById('admin-logo-container');
+            if (adminLogoContainer) {
+                adminLogoContainer.innerHTML = generateStandardLogo({ 
+                    logoClass: 'sidebar-logo',
+                    showLanguageData: false 
+                });
+            }
             
             // Stop health monitoring when leaving chat
             stopBackendHealthMonitoring();
@@ -2176,8 +2230,13 @@
             document.getElementById('verification-phase').style.display = 'block';
             document.getElementById('success-phase').style.display = 'none';
             
-            // Display the phone number in the message
-            document.getElementById('sent-phone-number').textContent = currentPhoneNumber;
+            // Display the phone number in the message (with null check)
+            const sentPhoneElement = document.getElementById('sent-phone-number');
+            if (sentPhoneElement) {
+                sentPhoneElement.textContent = currentPhoneNumber;
+            } else {
+                console.warn('sent-phone-number element not found');
+            }
         }
         
         function showSuccessPhase() {
@@ -2202,7 +2261,10 @@
             showNotification('Verification code resent!', 'success');
         }
         
-        function startUsingCoach() {
+        async function startUsingCoach() {
+            // Check backend health immediately on user interaction
+            await checkBackendHealthOnInteraction();
+            
             isAuthenticated = true;
             showChat();
         }
@@ -2339,6 +2401,9 @@
             if (phoneForm) {
                 phoneForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
+
+                    // Check backend health immediately on user interaction
+                    await checkBackendHealthOnInteraction();
                     
                     const phoneInput = document.getElementById('phone');
                     const phoneNumber = phoneInput.value.trim();
@@ -2392,8 +2457,11 @@
             // Verification code form
             const verificationForm = document.getElementById('verification-form');
             if (verificationForm) {
-                verificationForm.addEventListener('submit', function(e) {
+                verificationForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
+
+                    // Check backend health immediately on user interaction
+                    await checkBackendHealthOnInteraction();
                     
                     const codeInput = document.getElementById('verification-code');
                     const enteredCode = codeInput.value.trim();
@@ -2435,6 +2503,9 @@
             if (usernameForm) {
                 usernameForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
+
+                    // Check backend health immediately on user interaction
+                    await checkBackendHealthOnInteraction();
                     
                     const usernameInput = document.getElementById('username');
                     const passwordInput = document.getElementById('password');
@@ -2618,6 +2689,9 @@
             const message = input.value.trim();
             
             if (!message) return;
+
+            // Check backend health immediately on user interaction
+            await checkBackendHealthOnInteraction();
             
             // Add user message
             addMessage(message, 'user');
@@ -3063,6 +3137,15 @@ Error: ${error.message}
             if (healthCheckInterval) {
                 clearInterval(healthCheckInterval);
                 healthCheckInterval = null;
+            }
+        }
+
+        // Immediate backend health check for user interactions
+        async function checkBackendHealthOnInteraction() {
+            if (currentPage === 'chat' || currentPage === 'landing') {
+                await checkBackendHealth();
+            } else if (currentPage === 'login') {
+                await checkLoginBackendHealth();
             }
         }
         

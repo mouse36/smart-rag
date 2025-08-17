@@ -6,6 +6,8 @@ Handles communication with DeepSeek API for generating responses
 import logging
 import requests
 import json
+import os
+import re
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
@@ -129,15 +131,72 @@ class DeepSeekClient:
         
         return context
     
+    def _detect_is_mainly_chinese(self, text: str) -> bool:
+        """Detect if the text is mainly in Chinese"""
+        if not text:
+            return False
+        
+        # Count Chinese characters (CJK Unified Ideographs, CJK Extension A, etc.)
+        chinese_pattern = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]')
+        chinese_chars = len(chinese_pattern.findall(text))
+        
+        # Count English/Latin characters
+        english_pattern = re.compile(r'[a-zA-Z]')
+        english_chars = len(english_pattern.findall(text))
+        
+        # Count total meaningful characters (Chinese + English + numbers)
+        meaningful_chars = chinese_chars + english_chars + len(re.findall(r'[0-9]', text))
+        
+        if meaningful_chars == 0:
+            return False
+        
+        # Consider text mainly Chinese if Chinese characters make up more than 50% of meaningful characters
+        chinese_ratio = chinese_chars / meaningful_chars
+        return chinese_ratio > 0.5
+    
+    def _load_tone_context(self, user_message: str) -> str:
+        """Load appropriate tone context file based on user message language"""
+        try:
+            is_mainly_chinese = self._detect_is_mainly_chinese(user_message)
+            
+            # Determine the path to the tone context file
+            backend_dir = os.path.dirname(os.path.abspath(__file__))
+            if is_mainly_chinese:
+                tone_file_path = os.path.join(backend_dir, 'tone-context-zh.txt')
+            else:
+                tone_file_path = os.path.join(backend_dir, 'tone-context-en.txt')
+            
+            # Read the tone context file
+            if os.path.exists(tone_file_path):
+                with open(tone_file_path, 'r', encoding='utf-8') as f:
+                    tone_context = f.read().strip()
+                logger.debug(f"Loaded tone context from {tone_file_path} for {'Chinese' if is_mainly_chinese else 'English'} message")
+                return tone_context
+            else:
+                logger.warning(f"Tone context file not found: {tone_file_path}")
+                return ""
+        except Exception as e:
+            logger.error(f"Error loading tone context: {str(e)}")
+            return ""
+    
     def _format_user_message(self, user_message: str, context: str) -> str:
         """Format the user message with context for the API"""
+        # Load appropriate tone context
+        tone_context = self._load_tone_context(user_message)
+        
+        # Prepend tone context to the original user message
+        if tone_context:
+            modified_user_message = f"{tone_context}\n\n{user_message}"
+        else:
+            modified_user_message = user_message
+        
         formatted_message = f"""Based on the following context from our knowledge base about selective mutism, please answer the user's question:
 
 CONTEXT:
 {context}
 
 USER QUESTION:
-{user_message}
+{modified_user_message}
 
 Please provide a helpful, accurate response based on the context provided. If the context doesn't contain enough information to fully answer the question, acknowledge this and provide what information you can, while suggesting they consult with a qualified professional for more specific guidance."""
         

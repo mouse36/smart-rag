@@ -99,7 +99,7 @@
         }
 
         .btn-ghost {
-            background: transparent;
+            background: #ffffff;
             color: #4a5568;
             border: 2px solid #e2e8f0;
         }
@@ -672,7 +672,7 @@
             top: 100px; /* Position right below the navbar */
             left: 0;
             right: 0;
-            z-index: 999;
+            z-index: 1001; /* Higher than navbar to ensure visibility */
             width: 100%;
         }
 
@@ -1382,7 +1382,7 @@
     <div id="chat-page">
         <div class="chat-layout">
             <div class="sidebar">
-                <img src="logo.png" alt="SunnyMentor" class="sidebar-logo" onclick="handleLogoClick()" style="cursor: pointer;">
+                <h3 style="margin: 0 0 20px 0; padding: 15px; font-size: 18px; font-weight: 600; color: #333; border-bottom: 1px solid #e9ecef;">Chat History</h3>
                 
                 <div class="sidebar-menu">
                     <div class="menu-item active" onclick="startNewChat()">New Chat</div>
@@ -1390,14 +1390,12 @@
                     <div class="menu-item" onclick="showChat('chat2')">Previous Chat 2</div>
                 </div>
                 
-                <div class="sidebar-footer" onclick="showSettings()">
-                    Settings
-                </div>
+
             </div>
             
             <div class="chat-main">
                 <div class="chat-header">
-                    <h2 class="chat-title">SunnyMentor Assistant</h2>
+                    <img src="logo-text.png" alt="SunnyMentor" class="logo" onclick="handleLogoClick()" style="cursor: pointer; height: 40px;">
                     <div class="user-profile" onclick="toggleProfileMenu()">
                         <div class="profile-pic">U</div>
                         <span>User</span>
@@ -1511,18 +1509,13 @@
                     <div class="menu-item">Settings</div>
                 </div>
                 
-                <div class="sidebar-footer" onclick="showChat()">
-                    Back to Chat
-                </div>
+
             </div>
             
             <div class="admin-main">
                 <div class="admin-header">
                     <h1 class="admin-title">Admin Dashboard</h1>
-                    <div class="admin-actions">
-                        <button class="btn btn-ghost">Export Data</button>
-                        <button class="btn btn-primary">Add User</button>
-                    </div>
+                    <button class="btn back-button" onclick="showChat()">← Back to Chat</button>
                 </div>
                 
                 <div class="stats-grid">
@@ -1669,8 +1662,23 @@
             document.getElementById('login-page').style.display = 'block';
             currentPage = 'login';
             
-            // Stop health monitoring when leaving chat
+            // Stop any existing health monitoring
             stopBackendHealthMonitoring();
+            
+            // Clear any previous banner dismissal for testing
+            sessionStorage.removeItem('login-backend-error-banner-dismissed');
+            
+            // Check backend health for login page
+            await checkLoginBackendHealth();
+            
+            // Start periodic health monitoring when entering login
+            startBackendHealthMonitoring();
+            
+            // Force show banner for testing (temporary)
+            console.log('Testing: Force showing login banner');
+            setTimeout(() => {
+                showLoginBackendErrorBanner();
+            }, 1000);
             
             // Reset to phone input phase
             document.getElementById('phone-input-phase').style.display = 'block';
@@ -1724,6 +1732,9 @@
                     // Hide backend error banner since server is responding
                     hideBackendErrorBanner();
                     
+                    // Clear any existing backend warnings in chat
+                    clearBackendWarnings();
+                    
                     // Check API mode and show banner if in placeholder mode
                     if (data.api_mode && !data.api_mode.api_calls_enabled && shouldShowBanner()) {
                         showApiBanner();
@@ -1757,7 +1768,14 @@
             const messagesArea = document.getElementById('messages');
             if (!messagesArea) return;
             
+            // Check if a backend warning already exists and remove it to prevent stacking
+            const existingWarning = messagesArea.querySelector('.backend-warning');
+            if (existingWarning) {
+                existingWarning.remove();
+            }
+            
             const warningDiv = document.createElement('div');
+            warningDiv.className = 'backend-warning'; // Add class for identification
             warningDiv.style.cssText = `
                 background: rgba(255, 193, 7, 0.2);
                 border: 1px solid rgba(255, 193, 7, 0.5);
@@ -1779,6 +1797,15 @@
                     warningDiv.remove();
                 }
             }, 10000);
+        }
+        
+        function clearBackendWarnings() {
+            const messagesArea = document.getElementById('messages');
+            if (!messagesArea) return;
+            
+            // Remove all existing backend warnings
+            const warnings = messagesArea.querySelectorAll('.backend-warning');
+            warnings.forEach(warning => warning.remove());
         }
         
         function showSettings() {
@@ -1954,7 +1981,6 @@
         
         function startUsingCoach() {
             isAuthenticated = true;
-            showNotification('Welcome to SunnyMentor! 🎉', 'success');
             showChat();
         }
         
@@ -2693,10 +2719,15 @@ Error: ${error.message}
 
         // Login page backend error banner functions
         function showLoginBackendErrorBanner() {
+            console.log('showLoginBackendErrorBanner called');
             const banner = document.getElementById('login-backend-error-banner');
+            console.log('Login banner element:', banner);
             if (banner) {
+                console.log('Adding show class to login banner');
                 banner.classList.add('show');
                 adjustPageLayoutForBanner();
+            } else {
+                console.log('Login banner element not found!');
             }
         }
 
@@ -2745,6 +2776,7 @@ Error: ${error.message}
 
         // Health check specifically for login page
         async function checkLoginBackendHealth() {
+            console.log('checkLoginBackendHealth called');
             try {
                 const response = await fetch(`${API_BASE_URL}/health`, {
                     method: 'GET',
@@ -2762,10 +2794,14 @@ Error: ${error.message}
                 }
             } catch (error) {
                 console.warn('Login page backend health check failed:', error);
+                console.log('Should show login banner?', shouldShowLoginBackendErrorBanner());
                 
                 // Show backend error banner if not dismissed
                 if (shouldShowLoginBackendErrorBanner()) {
+                    console.log('Calling showLoginBackendErrorBanner');
                     showLoginBackendErrorBanner();
+                } else {
+                    console.log('Login banner was dismissed, not showing');
                 }
             }
         }

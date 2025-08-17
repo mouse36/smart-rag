@@ -107,7 +107,7 @@ def main():
     
     try:
         # Import and run the Flask app
-        from app import app, config, vector_engine, deepseek_client, cache_manager
+        from app import app, config, vector_engine, deepseek_client
         
         # Validate configuration
         config_error = config.validate()
@@ -134,9 +134,7 @@ def main():
         elif not config.API_CALLS_ENABLED:
             print("⚠️  Skipping API test - API calls disabled")
         
-        print("  💾 Initializing cache...")
-        if not cache_manager.is_ready():
-            print("⚠️  Cache initialization had issues, continuing with fallback")
+
         
         print("\n🎉 All components ready!")
         print(f"🌐 Server starting at http://{config.HOST}:{config.PORT}")
@@ -144,7 +142,7 @@ def main():
         print("  POST /chat - Main chat endpoint")
         print("  GET  /health - Health check")
         print("  POST /search - Direct knowledge base search")
-        print("  GET  /cache/stats - Cache statistics")
+
         print("\n" + "=" * 50)
         
         # Start the Flask server

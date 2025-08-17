@@ -463,6 +463,97 @@
             margin-bottom: 30px;
         }
 
+        /* Logo Container and Text Styling */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+        }
+
+        .logo-sunny {
+            background: linear-gradient(135deg, #fdb932 0%, #ffdf38 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+        }
+
+        .logo-mentor {
+            background: linear-gradient(135deg, #ff8900 0%, #ffbf00 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+        }
+
+        /* Hover animations for clickable logos */
+        .clickable-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .clickable-logo:hover .logo-sunny {
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 50%, #ff8900 100%);
+            background-size: 200% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+            animation: gradient-flow 2s ease-in-out infinite;
+        }
+
+        .clickable-logo:hover .logo-mentor {
+            background: linear-gradient(135deg, #ffdf38 0%, #ff8900 50%, #ffdf38 100%);
+            background-size: 200% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+            animation: gradient-flow 2s ease-in-out infinite;
+        }
+
+        @keyframes gradient-flow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Specific sizing adjustments for different contexts */
+        .navbar .logo-text {
+            font-size: 18px;
+        }
+
+        .sidebar .logo-text {
+            font-size: 16px;
+        }
+
+        .chat-header .logo-text {
+            font-size: 16px;
+        }
+
+        .settings-title-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .settings-title-group .logo-text {
+            font-size: 14px;
+        }
+
         .sidebar-menu {
             flex: 1;
             display: flex;
@@ -1421,7 +1512,12 @@
             
             <div class="chat-main">
                 <div class="chat-header">
-                    <img src="logo-text.png" alt="SunnyMentor" class="logo" onclick="handleLogoClick()" style="cursor: pointer; height: 40px;">
+                    <div class="logo-container">
+                        <img src="logo.png" alt="SunnyMentor" class="logo" style="height: 40px;">
+                        <span class="logo-text">
+                            <span class="logo-sunny">Sunny</span><span class="logo-mentor">Mentor</span>
+                        </span>
+                    </div>
                     <div class="user-profile" onclick="toggleProfileMenu()">
                         <div class="profile-pic">U</div>
                         <span>User</span>
@@ -1486,7 +1582,15 @@
             
             <div class="settings-main">
                 <div class="settings-header">
-                    <h1 class="settings-title">Settings</h1>
+                    <div class="settings-title-group">
+                        <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
+                            <img src="logo.png" alt="SunnyMentor" class="logo" style="height: 32px;">
+                            <span class="logo-text">
+                                <span class="logo-sunny">Sunny</span><span class="logo-mentor">Mentor</span>
+                            </span>
+                        </div>
+                        <h1 class="settings-title">Settings</h1>
+                    </div>
                     <button class="btn back-button" onclick="showChat()">← Back to Chat</button>
                 </div>
                 
@@ -1525,7 +1629,12 @@
     <div id="admin-page">
         <div class="admin-layout">
             <div class="sidebar">
-                <img src="logo.png" alt="SunnyMentor" class="sidebar-logo" onclick="handleLogoClick()" style="cursor: pointer;">
+                <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
+                    <img src="logo.png" alt="SunnyMentor" class="sidebar-logo">
+                    <span class="logo-text">
+                        <span class="logo-sunny">Sunny</span><span class="logo-mentor">Mentor</span>
+                    </span>
+                </div>
                 
                 <div class="sidebar-menu">
                     <div class="menu-item active">Dashboard</div>
@@ -1660,7 +1769,12 @@
             return `
                 <nav class="navbar">
                     <div class="nav-content">
-                        <img src="logo-text.png" alt="SunnyMentor" class="logo" onclick="handleLogoClick()" style="cursor: pointer;">
+                        <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
+                            <img src="logo.svg" alt="SunnyMentor" class="logo">
+                            <span class="logo-text" style="font-size: 48px;">
+                                <span class="logo-sunny">Sunny</span><span class="logo-mentor">Mentor</span>
+                            </span>
+                        </div>
                         <div class="nav-menu">
                             <a href="#features" data-en="Features" data-zh="功能">Features</a>
                             <a href="#demo" data-en="Demo" data-zh="演示">Demo</a>

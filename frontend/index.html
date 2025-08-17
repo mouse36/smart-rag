@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SunnyMentor - Your Domain Expert Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --main-font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,7 +17,7 @@
         }
 
         body {
-            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: var(--main-font-family);
             line-height: 1.6;
             color: #333;
             background: #f8f9fa;
@@ -26,6 +31,8 @@
 
         #login-page {
             display: none;
+            height: 100vh;
+            overflow: hidden; /* Prevent scrolling on the login page */
         }
 
         #chat-page {
@@ -49,7 +56,7 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 15px 0;
+            padding: 10px 0;
             position: fixed;
             top: 0;
             width: 100%;
@@ -66,7 +73,7 @@
         }
 
         .logo {
-            height: 40px;
+            height: 80px;
         }
 
         .nav-menu {
@@ -135,6 +142,7 @@
         .landing-main {
             background: white;
             min-height: 100vh;
+            margin-top: 100px; /* Push content below the fixed navbar */
         }
 
         .hero {
@@ -296,11 +304,13 @@
         /* Login Page */
         .login-page {
             background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
-            min-height: 100vh;
+            height: calc(100vh - 100px); /* Use height instead of min-height to prevent over-scrolling */
+            margin-top: 100px; /* Push content below the fixed navbar */
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            overflow: hidden; /* Prevent scrolling past the background */
         }
 
         .login-form {
@@ -659,7 +669,7 @@
         /* Login page specific backend error banner positioning */
         #login-backend-error-banner {
             position: fixed;
-            top: 70px;
+            top: 100px; /* Position right below the navbar */
             left: 0;
             right: 0;
             z-index: 999;
@@ -1165,7 +1175,7 @@
     <div id="landing-page">
         <nav class="navbar">
             <div class="nav-content">
-                <img src="logo.png" alt="SunnyMentor" class="logo">
+                <img src="logo-text.png" alt="SunnyMentor" class="logo">
                 <div class="nav-menu">
                     <a href="#features">Features</a>
                     <a href="#demo">Demo</a>
@@ -1261,7 +1271,7 @@
     <div id="login-page">
         <nav class="navbar">
             <div class="nav-content">
-                <img src="logo.png" alt="SunnyMentor" class="logo">
+                <img src="logo-text.png" alt="SunnyMentor" class="logo">
                 <div class="nav-menu">
                     <button class="btn btn-ghost" onclick="showLanding()">← Back to Home</button>
                 </div>
@@ -1545,7 +1555,7 @@
     <div id="donate-page">
         <nav class="navbar">
             <div class="nav-content">
-                <img src="logo.png" alt="SunnyMentor" class="logo">
+                <img src="logo-text.png" alt="SunnyMentor" class="logo">
                 <div class="nav-menu">
                     <button class="btn btn-ghost" onclick="showLanding()">← Back to Home</button>
                 </div>

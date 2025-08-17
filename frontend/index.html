@@ -53,7 +53,7 @@
 
         /* Navigation */
         .navbar {
-            background: rgba(255, 255, 255, 0.0);
+            background: rgba(255, 255, 255, 90.0);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             padding: 10px 0;
@@ -83,6 +83,35 @@
         .nav-auth {
             display: flex;
             gap: 15px;
+            align-items: center;
+        }
+
+        .language-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            color: #4a5568;
+        }
+
+        .language-switcher:hover {
+            background: rgba(255, 137, 0, 0.1);
+            color: #ff8900;
+        }
+
+        .globe-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .language-code {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         .label {
@@ -1196,18 +1225,22 @@
             <div class="nav-content">
                 <img src="logo-text.png" alt="SunnyMentor" class="logo" onclick="handleLogoClick()" style="cursor: pointer;">
                 <div class="nav-menu">
-                    <a href="#features">Features</a>
-                    <a href="#demo">Demo</a>
-                    <a href="#pricing">Pricing</a>
-                    <a href="#support">Support</a>
+                    <a href="#features" data-en="Features" data-zh="功能">Features</a>
+                    <a href="#demo" data-en="Demo" data-zh="演示">Demo</a>
+                    <a href="#pricing" data-en="Pricing" data-zh="价格">Pricing</a>
+                    <a href="#support" data-en="Support" data-zh="支持">Support</a>
                 </div>
                 <div class="nav-auth">
                     <!-- <button class="btn btn-ghost" onclick="showDonate()">Donate</button> -->
-                    <button class="label">About</button>
-                    <button class="label">FAQ</button>
-                    <button class="label">Contact</button>
-                    <button class="btn btn-white" onclick="showLogin()">Log In</button>
-                    <button class="btn btn-primary" onclick="showLogin()">Get Full Access</button>
+                    <button class="label" data-en="About" data-zh="关于">About</button>
+                    <button class="label" data-en="FAQ" data-zh="常见问题">FAQ</button>
+                    <button class="label" data-en="Contact" data-zh="联系我们">Contact</button>
+                    <button class="btn btn-white" onclick="showLogin()" data-en="Log In" data-zh="登录">Log In</button>
+                    <button class="btn btn-primary" onclick="showLogin()" data-en="Get Full Access" data-zh="获取完整功能">Get Full Access</button>
+                    <div class="language-switcher" onclick="toggleLanguage()" title="Switch Language">
+                        <img src="language-switcher.svg" alt="Language Switcher" class="globe-icon" />
+                        <span class="language-code" id="current-language">EN</span>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -1215,13 +1248,13 @@
         <div class="landing-main">
             <section class="hero">
                 <div class="hero-content">
-                    <h1>Your 24/7 Virtual Coach for Selective Mutism Support</h1>
-                    <p class="hero-subtitle">
+                    <h1 data-en="Your 24/7 Virtual Coach for Selective Mutism Support" data-zh="您的24/7选择性缄默症虚拟教练">Your 24/7 Virtual Coach for Selective Mutism Support</h1>
+                    <p class="hero-subtitle" data-en="Evidence-based, compassionate answers for parents — anytime you need them." data-zh="基于科学证据的温暖解答，为家长提供随时随地的支持。">
                         Evidence-based, compassionate answers for parents — anytime you need them.
                     </p>
                     <div class="hero-cta">
-                        <button class="btn btn-hero btn-large" onclick="showLogin()">Start Free Trial</button>
-                        <button class="btn btn-secondary btn-large">Watch Demo</button>
+                        <button class="btn btn-hero btn-large" onclick="showLogin()" data-en="Start Free Trial" data-zh="开始免费试用">Start Free Trial</button>
+                        <button class="btn btn-secondary btn-large" data-en="Watch Demo" data-zh="观看演示">Watch Demo</button>
                     </div>
                 </div>
             </section>
@@ -1295,7 +1328,13 @@
             <div class="nav-content">
                 <img src="logo-text.png" alt="SunnyMentor" class="logo" onclick="handleLogoClick()" style="cursor: pointer;">
                 <div class="nav-menu">
-                    <button class="btn btn-ghost" onclick="showLanding()">← Back to Home</button>
+                    <button class="btn btn-ghost" onclick="showLanding()" data-en="← Back to Home" data-zh="← 返回主页">← Back to Home</button>
+                </div>
+                <div class="nav-auth">
+                    <div class="language-switcher" onclick="toggleLanguage()" title="Switch Language">
+                        <img src="language-switcher.svg" alt="Language Switcher" class="globe-icon" />
+                        <span class="language-code" id="current-language-login">EN</span>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -1304,7 +1343,7 @@
         <div class="backend-error-banner" id="login-backend-error-banner">
             <div class="banner-content">
                 <div class="banner-icon">⚠️</div>
-                <div class="banner-text">
+                <div class="banner-text" data-en="Backend Server Error: Unable to connect to the authentication server. Please ensure the server is running to complete login/signup." data-zh="后端服务器错误：无法连接到认证服务器。请确保服务器正在运行以完成登录/注册。">
                     <strong>Backend Server Error:</strong> Unable to connect to the authentication server. Please ensure the server is running to complete login/signup.
                 </div>
             </div>
@@ -1313,24 +1352,24 @@
 
         <div class="login-page">
             <div class="login-form">
-                <h1 id="form-title">Welcome to SunnyMentor</h1>
+                <h1 id="form-title" data-en="Welcome to SunnyMentor" data-zh="欢迎来到SunnyMentor">Welcome to SunnyMentor</h1>
                 
                 <!-- Phone Number Input Phase -->
                 <div id="phone-input-phase">
                     <form id="phone-form">
                         <div class="form-group">
-                            <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" required>
+                            <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" data-placeholder-en="Enter your phone number" data-placeholder-zh="请输入您的手机号码" required>
                             <div id="phone-error" class="error-message"></div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
-                            <span id="phone-submit-text">Next</span>
+                            <span id="phone-submit-text" data-en="Next" data-zh="下一步">Next</span>
                             <div id="phone-loading" class="loading" style="display: none;"></div>
                         </button>
                     </form>
                     
                     <p style="text-align: center; color: #718096; font-size: 14px; margin-top: 15px;">
-                        <a href="#" onclick="switchToUsernameSignup()" style="color: #667eea; text-decoration: none;">Use username and password instead</a>
+                        <a href="#" onclick="switchToUsernameSignup()" style="color: #667eea; text-decoration: none;" data-en="Use username and password instead" data-zh="改用用户名和密码登录">Use username and password instead</a>
                     </p>
                 </div>
                 
@@ -1338,17 +1377,17 @@
                 <div id="username-input-phase" style="display: none;">
                     <form id="username-form">
                         <div class="form-group">
-                            <input type="text" id="username" class="form-input" placeholder="Enter your username" required>
+                            <input type="text" id="username" class="form-input" placeholder="Enter your username" data-placeholder-en="Enter your username" data-placeholder-zh="请输入您的用户名" required>
                             <div id="username-error" class="error-message"></div>
                         </div>
                         
                         <div class="form-group">
-                            <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
+                            <input type="password" id="password" class="form-input" placeholder="Enter your password" data-placeholder-en="Enter your password" data-placeholder-zh="请输入您的密码" required>
                             <div id="password-error" class="error-message"></div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
-                            <span id="username-submit-text">Sign Up</span>
+                            <span id="username-submit-text" data-en="Sign Up" data-zh="注册">Sign Up</span>
                             <div id="username-loading" class="loading" style="display: none;"></div>
                         </button>
                     </form>
@@ -1361,19 +1400,19 @@
                 <!-- Verification Code Phase -->
                 <div id="verification-phase" style="display: none;">
                     <div class="verification-message">
-                        <h3>Verification Code Sent</h3>
-                        <p>We've sent you a verification code to <span id="sent-phone-number"></span></p>
-                        <p style="font-size: 14px; margin-top: 10px;">Enter the six-digit number sent to your phone to confirm login for your account</p>
+                        <h3 data-en="Verification Code Sent" data-zh="验证码已发送">Verification Code Sent</h3>
+                        <p data-en="We've sent you a verification code to " data-zh="我们已向您发送验证码至 ">We've sent you a verification code to <span id="sent-phone-number"></span></p>
+                        <p style="font-size: 14px; margin-top: 10px;" data-en="Enter the six-digit number sent to your phone to confirm login for your account" data-zh="请输入发送到您手机的六位数字来确认您的账户登录">Enter the six-digit number sent to your phone to confirm login for your account</p>
                     </div>
                     
                     <form id="verification-form">
                         <div class="form-group">
-                            <input type="text" id="verification-code" class="form-input" placeholder="Enter 6-digit code" maxlength="6" pattern="[0-9]{6}" required>
+                            <input type="text" id="verification-code" class="form-input" placeholder="Enter 6-digit code" data-placeholder-en="Enter 6-digit code" data-placeholder-zh="请输入6位验证码" maxlength="6" pattern="[0-9]{6}" required>
                             <div id="verification-error" class="error-message"></div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
-                            <span id="verification-submit-text">Verify</span>
+                            <span id="verification-submit-text" data-en="Verify" data-zh="验证">Verify</span>
                             <div id="verification-loading" class="loading" style="display: none;"></div>
                         </button>
                     </form>
@@ -1458,7 +1497,7 @@
                 
                 <div class="input-area">
                     <div class="input-container">
-                        <textarea class="input-field" id="message-input" placeholder="Ask me anything about your content..." rows="1"></textarea>
+                        <textarea class="input-field" id="message-input" placeholder="Ask me anything about your content..." data-placeholder-en="Ask me anything about your content..." data-placeholder-zh="询问我任何关于内容的问题..." rows="1"></textarea>
                         <button class="send-button" id="send-button" onclick="sendMessage()">
                             ➤
                         </button>
@@ -1572,15 +1611,21 @@
             <div class="nav-content">
                 <img src="logo-text.png" alt="SunnyMentor" class="logo" onclick="handleLogoClick()" style="cursor: pointer;">
                 <div class="nav-menu">
-                    <button class="btn btn-ghost" onclick="showLanding()">← Back to Home</button>
+                    <button class="btn btn-ghost" onclick="showLanding()" data-en="← Back to Home" data-zh="← 返回主页">← Back to Home</button>
+                </div>
+                <div class="nav-auth">
+                    <div class="language-switcher" onclick="toggleLanguage()" title="Switch Language">
+                        <img src="language-switcher.svg" alt="Language Switcher" class="globe-icon" />
+                        <span class="language-code" id="current-language-donate">EN</span>
+                    </div>
                 </div>
             </div>
         </nav>
 
         <div class="donate-page">
             <div class="donate-form">
-                <h1>Support Our Mission</h1>
-                <p class="donate-subtitle">Help us make selective mutism resources accessible to more families worldwide</p>
+                <h1 data-en="Support Our Mission" data-zh="支持我们的使命">Support Our Mission</h1>
+                <p class="donate-subtitle" data-en="Help us make selective mutism resources accessible to more families worldwide" data-zh="帮助我们让选择性缄默症资源惠及全球更多家庭">Help us make selective mutism resources accessible to more families worldwide</p>
                 
                 <!-- Amount Selection -->
                 <div id="amount-selection">
@@ -1649,11 +1694,54 @@
         let isSignUpMode = false;
         let isAuthenticated = false;
         
+        // Language system
+        let currentLanguage = 'EN';
+        
         // Donation state
         let selectedAmount = 0;
         let stripe = null;
         let elements = null;
         let cardElement = null;
+        
+        // Language system functions
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'EN' ? 'ZH' : 'EN';
+            updateLanguageDisplay();
+            updateAllText();
+        }
+        
+        function updateLanguageDisplay() {
+            const languageCodes = document.querySelectorAll('.language-code');
+            languageCodes.forEach(code => {
+                code.textContent = currentLanguage;
+            });
+        }
+        
+        function updateAllText() {
+            const elementsWithLanguage = document.querySelectorAll('[data-en][data-zh]');
+            elementsWithLanguage.forEach(element => {
+                if (currentLanguage === 'EN') {
+                    element.textContent = element.getAttribute('data-en');
+                } else {
+                    element.textContent = element.getAttribute('data-zh');
+                }
+            });
+            
+            // Update placeholder attributes for input fields
+            const inputsWithPlaceholder = document.querySelectorAll('[data-placeholder-en][data-placeholder-zh]');
+            inputsWithPlaceholder.forEach(input => {
+                if (currentLanguage === 'EN') {
+                    input.placeholder = input.getAttribute('data-placeholder-en');
+                } else {
+                    input.placeholder = input.getAttribute('data-placeholder-zh');
+                }
+            });
+        }
+        
+        function initializeLanguage() {
+            updateLanguageDisplay();
+            updateAllText();
+        }
         
         // Page navigation functions
         function handleLogoClick() {
@@ -2048,8 +2136,16 @@
             const submitButton = document.getElementById('username-submit-text');
             const formTitle = document.getElementById('form-title');
             
-            if (submitButton) submitButton.textContent = 'Sign Up';
-            if (formTitle) formTitle.textContent = 'Create Your Account';
+            if (submitButton) {
+                submitButton.setAttribute('data-en', 'Sign Up');
+                submitButton.setAttribute('data-zh', '注册');
+                submitButton.textContent = currentLanguage === 'EN' ? 'Sign Up' : '注册';
+            }
+            if (formTitle) {
+                formTitle.setAttribute('data-en', 'Create Your Account');
+                formTitle.setAttribute('data-zh', '创建您的账户');
+                formTitle.textContent = currentLanguage === 'EN' ? 'Create Your Account' : '创建您的账户';
+            }
             
             // Update the link text to switch to login
             updateAuthModeLink(false); // false = currently in signup mode
@@ -2059,8 +2155,16 @@
             const submitButton = document.getElementById('username-submit-text');
             const formTitle = document.getElementById('form-title');
             
-            if (submitButton) submitButton.textContent = 'Log In';
-            if (formTitle) formTitle.textContent = 'Welcome Back';
+            if (submitButton) {
+                submitButton.setAttribute('data-en', 'Log In');
+                submitButton.setAttribute('data-zh', '登录');
+                submitButton.textContent = currentLanguage === 'EN' ? 'Log In' : '登录';
+            }
+            if (formTitle) {
+                formTitle.setAttribute('data-en', 'Welcome Back');
+                formTitle.setAttribute('data-zh', '欢迎回来');
+                formTitle.textContent = currentLanguage === 'EN' ? 'Welcome Back' : '欢迎回来';
+            }
             
             // Update the link text to switch to signup
             updateAuthModeLink(true); // true = currently in login mode
@@ -3115,6 +3219,7 @@ Error: ${error.message}
         // Initialize page functionality when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             showLanding();
+            initializeLanguage();
             
             // Auto-resize textarea
             const messageInput = document.getElementById('message-input');

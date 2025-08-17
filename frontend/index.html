@@ -53,7 +53,7 @@
 
         /* Navigation */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.0);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             padding: 10px 0;
@@ -1175,7 +1175,7 @@
     <div id="landing-page">
         <nav class="navbar">
             <div class="nav-content">
-                <img src="logo-text.png" alt="SunnyMentor" class="logo">
+                <img src="logo-text.png" alt="SunnyMentor" class="logo" onclick="handleLogoClick()" style="cursor: pointer;">
                 <div class="nav-menu">
                     <a href="#features">Features</a>
                     <a href="#demo">Demo</a>
@@ -1271,7 +1271,7 @@
     <div id="login-page">
         <nav class="navbar">
             <div class="nav-content">
-                <img src="logo-text.png" alt="SunnyMentor" class="logo">
+                <img src="logo-text.png" alt="SunnyMentor" class="logo" onclick="handleLogoClick()" style="cursor: pointer;">
                 <div class="nav-menu">
                     <button class="btn btn-ghost" onclick="showLanding()">← Back to Home</button>
                 </div>
@@ -1382,7 +1382,7 @@
     <div id="chat-page">
         <div class="chat-layout">
             <div class="sidebar">
-                <img src="logo.png" alt="SunnyMentor" class="sidebar-logo">
+                <img src="logo.png" alt="SunnyMentor" class="sidebar-logo" onclick="handleLogoClick()" style="cursor: pointer;">
                 
                 <div class="sidebar-menu">
                     <div class="menu-item active" onclick="startNewChat()">New Chat</div>
@@ -1501,7 +1501,7 @@
     <div id="admin-page">
         <div class="admin-layout">
             <div class="sidebar">
-                <img src="logo.png" alt="SunnyMentor" class="sidebar-logo">
+                <img src="logo.png" alt="SunnyMentor" class="sidebar-logo" onclick="handleLogoClick()" style="cursor: pointer;">
                 
                 <div class="sidebar-menu">
                     <div class="menu-item active">Dashboard</div>
@@ -1555,7 +1555,7 @@
     <div id="donate-page">
         <nav class="navbar">
             <div class="nav-content">
-                <img src="logo-text.png" alt="SunnyMentor" class="logo">
+                <img src="logo-text.png" alt="SunnyMentor" class="logo" onclick="handleLogoClick()" style="cursor: pointer;">
                 <div class="nav-menu">
                     <button class="btn btn-ghost" onclick="showLanding()">← Back to Home</button>
                 </div>
@@ -1641,13 +1641,27 @@
         let cardElement = null;
         
         // Page navigation functions
-        function showLanding() {
+        function handleLogoClick() {
+            if (isAuthenticated) {
+                showChat();
+            } else {
+                showLanding();
+            }
+        }
+        
+        async function showLanding() {
             hideAllPages();
             document.getElementById('landing-page').style.display = 'block';
             currentPage = 'landing';
             
-            // Stop health monitoring when leaving chat
+            // Stop any existing health monitoring
             stopBackendHealthMonitoring();
+            
+            // Check backend health for landing page
+            await checkBackendHealth();
+            
+            // Start periodic health monitoring for landing page
+            startBackendHealthMonitoring();
         }
         
         async function showLogin() {
@@ -2762,7 +2776,7 @@ Error: ${error.message}
         function startBackendHealthMonitoring() {
             // Check every 30 seconds
             healthCheckInterval = setInterval(async () => {
-                if (currentPage === 'chat') {
+                if (currentPage === 'chat' || currentPage === 'landing') {
                     await checkBackendHealth();
                 } else if (currentPage === 'login') {
                     await checkLoginBackendHealth();

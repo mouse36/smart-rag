@@ -162,6 +162,7 @@ def validate_phone():
             'phone': phone,
             'normalized_phone': normalized_phone,
             'is_approved': is_approved,
+            'success': is_approved,  # Add success field for frontend compatibility
             'timestamp': datetime.now().isoformat()
         })
         

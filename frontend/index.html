@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SunnyMentor</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="logo.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="logo.png">
-    <link rel="shortcut icon" href="logo.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="graphics/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="graphics/logo.png">
+    <link rel="shortcut icon" href="graphics/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/components.css">
     <style>
         :root {
             --main-font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -1333,7 +1334,7 @@
                         Evidence-based, compassionate answers for parents — anytime you need them.
                     </p>
                     <div class="hero-cta">
-                        <button class="btn btn-hero btn-large" onclick="showLogin()" data-en="Start Free Trial" data-zh="开始免费试用">Start Free Trial</button>
+                        <button class="btn btn-hero btn-large" onclick="goToSignup()" data-en="Start Free Trial" data-zh="开始免费试用">Start Free Trial</button>
                         <button class="btn btn-secondary btn-large" data-en="Watch Demo" data-zh="观看演示">Watch Demo</button>
                     </div>
                 </div>
@@ -1746,6 +1747,9 @@
 
     <!-- Stripe.js -->
     <script src="https://js.stripe.com/v3/"></script>
+    
+    <!-- Component loader -->
+    <script src="js/components.js"></script>
 
     <script>
         // Global state
@@ -1753,8 +1757,8 @@
         let isSignUpMode = false;
         let isAuthenticated = false;
         
-        // Language system
-        let currentLanguage = 'EN';
+        // Language system - use global language manager
+        let currentLanguage = 'EN'; // Fallback, will be overridden by languageManager
         
         // Donation state
         let selectedAmount = 0;
@@ -1778,7 +1782,7 @@
             
             return `
                 <div class="logo-container ${clickableClass}" ${onClickHandler}>
-                    <img src="logo.svg" alt="SunnyMentor" class="${logoClass}">
+                    <img src="graphics/logo.svg" alt="SunnyMentor" class="${logoClass}">
                     <span class="logo-text" style="font-size: ${fontSize};">
                         <span class="logo-sunny" ${languageAttrs}>Sunny</span><span class="logo-mentor" ${languageAttrsMentor}>Mentor</span>
                     </span>
@@ -1787,6 +1791,10 @@
         
         // Navbar generation function
         function generateNavbar() {
+            // Get current language from global language manager or fallback to local variable
+            const langCode = window.languageManager ? window.languageManager.getCurrentLanguage() : currentLanguage;
+            console.log('generateNavbar: Using language code:', langCode);
+            
             return `
                 <nav class="navbar">
                     <div class="nav-content">
@@ -1801,11 +1809,11 @@
                             <button class="label" data-en="About" data-zh="关于">About</button>
                             <button class="label" data-en="FAQ" data-zh="常见问题">FAQ</button>
                             <button class="label" data-en="Contact" data-zh="联系我们">Contact</button>
-                            <button class="btn btn-white" onclick="showLogin()" data-en="Log In" data-zh="登录">Log In</button>
-                            <button class="btn btn-primary" onclick="showLogin()" data-en="Get Full Access" data-zh="获取完整功能">Get Full Access</button>
+                            <button class="btn btn-white" onclick="goToLogin()" data-en="Log In" data-zh="登录">Log In</button>
+                            <button class="btn btn-primary" onclick="goToSignup()" data-en="Get Full Access" data-zh="获取完整功能">Get Full Access</button>
                             <div class="language-switcher" onclick="toggleLanguage()" title="Switch Language">
-                                <img src="language-switcher.svg" alt="Language Switcher" class="globe-icon" />
-                                <span class="language-code">EN</span>
+                                <img src="graphics/language-switcher.svg" alt="Language Switcher" class="globe-icon" />
+                                <span class="language-code">${langCode}</span>
                             </div>
                         </div>
                     </div>
@@ -1819,15 +1827,28 @@
                 const navbarContainer = pageElement.querySelector('.navbar-container');
                 if (navbarContainer) {
                     navbarContainer.innerHTML = generateNavbar();
+                    // Update language content in the newly created navbar
+                    setTimeout(() => {
+                        initializeLanguage();
+                    }, 10);
                 }
             }
         }
         
         // Language system functions
         function toggleLanguage() {
-            currentLanguage = currentLanguage === 'EN' ? 'ZH' : 'EN';
-            updateLanguageDisplay();
-            updateAllText();
+            // Use global language manager if available
+            if (window.languageManager) {
+                window.languageManager.toggleLanguage();
+                currentLanguage = window.languageManager.getCurrentLanguage(); // Keep local var in sync
+                updateLanguageDisplay();
+                updateAllText();
+            } else {
+                // Fallback
+                currentLanguage = currentLanguage === 'EN' ? 'ZH' : 'EN';
+                updateLanguageDisplay();
+                updateAllText();
+            }
         }
         
         function updateLanguageDisplay() {
@@ -1870,6 +1891,10 @@
         }
         
         function initializeLanguage() {
+            // Sync with global language manager
+            if (window.languageManager) {
+                currentLanguage = window.languageManager.getCurrentLanguage();
+            }
             updateLanguageDisplay();
             updateAllText();
         }
@@ -1902,6 +1927,15 @@
             
             // Start periodic health monitoring for landing page
             startBackendHealthMonitoring();
+        }
+
+        // Navigation functions for new separate auth pages
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+
+        function goToSignup() {
+            window.location.href = 'signup.html';
         }
         
         async function showLogin() {
@@ -2266,6 +2300,8 @@
             await checkBackendHealthOnInteraction();
             
             isAuthenticated = true;
+            // Store authentication state for persistence
+            localStorage.setItem('isAuthenticated', 'true');
             showChat();
         }
         
@@ -2903,6 +2939,9 @@ Error: ${error.message}
         
         function logout() {
             isAuthenticated = false;
+            // Clear authentication state from localStorage
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('currentUser');
             showNotification('You have been logged out', 'success');
             showLanding();
         }
@@ -3412,9 +3451,56 @@ Error: ${error.message}
             }
         }
 
+        // Check URL parameters for authentication redirect
+        function checkAuthenticationRedirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isAuthenticatedParam = urlParams.get('authenticated');
+            const redirectParam = urlParams.get('redirect');
+            const storedAuth = localStorage.getItem('isAuthenticated');
+            const currentUser = localStorage.getItem('currentUser');
+            
+            console.log('Auth check:', { isAuthenticatedParam, redirectParam, storedAuth, currentUser });
+            
+            // Check if user is coming from login/signup with authentication
+            if (isAuthenticatedParam === 'true' && redirectParam === 'chat' && currentUser) {
+                console.log('New authentication from login/signup detected');
+                // Set authentication state
+                isAuthenticated = true;
+                // Clear URL parameters to clean up the address bar
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+                // Show chat page directly
+                showChat();
+                return true;
+            }
+            
+            // Check if user was previously authenticated (returning user) - BUT ONLY if they have valid credentials
+            if (storedAuth === 'true' && currentUser && currentUser.trim() !== '') {
+                console.log('Returning authenticated user detected');
+                isAuthenticated = true;
+                showChat();
+                return true;
+            }
+            
+            // Clear any invalid or empty authentication state
+            if (!currentUser || currentUser.trim() === '') {
+                console.log('Clearing invalid authentication state');
+                localStorage.removeItem('isAuthenticated');
+                localStorage.removeItem('currentUser');
+                isAuthenticated = false;
+            }
+            
+            console.log('User not authenticated, showing landing page');
+            // User is not authenticated, should show landing page
+            return false;
+        }
+
         // Initialize page functionality when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            showLanding();
+            // Check for authentication redirect first, otherwise show landing
+            if (!checkAuthenticationRedirect()) {
+                showLanding();
+            }
             initializeLanguage();
             
             // Auto-resize textarea

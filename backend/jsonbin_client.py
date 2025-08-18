@@ -75,7 +75,7 @@ class JSONBinClient:
     
     def get_users_data(self) -> Tuple[bool, Dict[str, Any]]:
         """Retrieve all users data from the bin"""
-        url = f"{self.base_url}/bins/{self.bin_id}/latest"
+        url = f"{self.base_url}/{self.bin_id}/latest"
         
         success, result = self._make_request('GET', url)
         
@@ -83,7 +83,7 @@ class JSONBinClient:
             return False, result
         
         # If the bin is empty or doesn't exist yet, return empty users list
-        users_data = result.get('record', {})
+        users_data = result
         if not users_data or 'users' not in users_data:
             return True, {"users": []}
         
@@ -91,7 +91,7 @@ class JSONBinClient:
     
     def save_users_data(self, users_data: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
         """Save users data to the bin"""
-        url = f"{self.base_url}/bins/{self.bin_id}"
+        url = f"{self.base_url}/{self.bin_id}"
         
         # Add metadata
         data_to_save = {
@@ -327,7 +327,7 @@ class JSONBinClient:
     def test_connection(self) -> Tuple[bool, Dict[str, Any]]:
         """Test connection to JSONBin API"""
         try:
-            url = f"{self.base_url}/bins/{self.bin_id}/latest"
+            url = f"{self.base_url}/{self.bin_id}/latest"
             success, result = self._make_request('GET', url)
             
             if success:

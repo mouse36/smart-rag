@@ -59,7 +59,7 @@ class Config:
         
         # JSONBin API settings
         self.JSONBIN_API_KEY = os.getenv('JSONBIN_API_KEY')
-        self.JSONBIN_BASE_URL = os.getenv('JSONBIN_BASE_URL')
+        self.JSONBIN_BASE_URL = os.getenv('JSONBIN_BASE_URL', 'https://api.jsonbin.io/v3/b')
         self.JSONBIN_BIN_ID = os.getenv('JSONBIN_BIN_ID')
         
         # Stripe payment settings

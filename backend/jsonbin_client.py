@@ -147,6 +147,8 @@ class JSONBinClient:
             # Create new account
             new_account = {
                 "email": email,
+                "username": email.split("@")[0],
+                "profile-picture": "default",
                 "password-hash": self._hash_password(password),
                 "phone-number": phone_number or "",
                 "status": "pending",  # Default to pending for new signups
@@ -232,6 +234,7 @@ class JSONBinClient:
             return True, {
                 "message": "Login successful",
                 "email": email,
+                "username": account_found.get("username", email.split("@")[0]),
                 "last_login": accounts[account_index]["last-seen"],
                 "created_at": account_found.get("last-seen")
             }
@@ -256,6 +259,7 @@ class JSONBinClient:
                     # Return account info without password hash
                     account_info = {
                         "email": account.get("email"),
+                        "username": account.get("username"),
                         "phone-number": account.get("phone-number"),
                         "status": account.get("status"),
                         "admin": account.get("admin"),
@@ -287,6 +291,7 @@ class JSONBinClient:
             for account in accounts:
                 account_info = {
                     "email": account.get("email"),
+                    "username": account.get("username"),
                     "phone-number": account.get("phone-number"),
                     "status": account.get("status"),
                     "admin": account.get("admin"),

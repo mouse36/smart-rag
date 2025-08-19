@@ -546,8 +546,8 @@
         }
 
         function startUsingCoach() {
-            const email = document.getElementById('email').value || currentPhoneNumber;
-            localStorage.setItem('currentUser', email);
+            const username = document.getElementById('username').value || currentPhoneNumber;
+            localStorage.setItem('currentUser', username);
             localStorage.setItem('isAuthenticated', 'true');
             // Use replace to avoid back button issues and add a timestamp to force page reload
             window.location.replace('index.html?authenticated=true&redirect=chat&t=' + Date.now());

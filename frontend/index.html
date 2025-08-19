@@ -1532,7 +1532,13 @@
                     <!-- User account menu on the right -->
                     <div class="user-profile" onclick="toggleProfileMenu()">
                         <div class="profile-pic">U</div>
-                        <span>User</span>
+                        <span id="current-user-display">User</span>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                var currentUser = localStorage.getItem('currentUser');
+                                document.getElementById('current-user-display').textContent = currentUser ? currentUser : '';
+                            });
+                        </script>
                         <div class="profile-menu" id="profile-menu">
                             <div class="profile-menu-item" onclick="showSettings()">Settings</div>
                             <div class="profile-menu-item" onclick="showAdmin()">Admin Dashboard</div>

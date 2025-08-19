@@ -250,7 +250,8 @@ def login_user():
             return jsonify({
                 'success': True,
                 'message': result['message'],
-                'email': result.get('email', result.get('username')),  # Handle both old and new response formats
+                'email': result.get('email'),
+                'username': result.get('username'),
                 'last_login': result['last_login'],
                 'created_at': result.get('created_at'),
                 'timestamp': datetime.now().isoformat()

@@ -172,27 +172,27 @@ def validate_phone():
 
 @app.route('/auth/register', methods=['POST'])
 def register_user():
-    """Register a new user with username and password"""
+    """Register a new user with email and password"""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Request body is required'}), 400
         
-        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
         password = data.get('password', '').strip()
         
-        if not username or not password:
-            return jsonify({'error': 'Username and password are required'}), 400
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required'}), 400
         
         # Register user using JSONBin client
-        success, result = jsonbin_client.register_user(username, password)
+        success, result = jsonbin_client.register_user(email, password)
         
         if success:
-            logger.info(f"User registered successfully: {username}")
+            logger.info(f"User registered successfully: {email}")
             return jsonify({
                 'success': True,
                 'message': result['message'],
-                'username': result['username'],
+                'email': result.get('email', result.get('username')),  # Handle both old and new response formats
                 'created_at': result['created_at'],
                 'timestamp': datetime.now().isoformat()
             }), 201
@@ -211,7 +211,7 @@ def register_user():
             else:
                 status_code = 500  # Internal Server Error
             
-            logger.warning(f"User registration failed for {username}: {error_message}")
+            logger.warning(f"User registration failed for {email}: {error_message}")
             return jsonify({
                 'success': False,
                 'error': error_type,
@@ -230,27 +230,27 @@ def register_user():
 
 @app.route('/auth/login', methods=['POST'])
 def login_user():
-    """Authenticate user login with username and password"""
+    """Authenticate user login with email and password"""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Request body is required'}), 400
         
-        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
         password = data.get('password', '').strip()
         
-        if not username or not password:
-            return jsonify({'error': 'Username and password are required'}), 400
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required'}), 400
         
         # Authenticate user using JSONBin client
-        success, result = jsonbin_client.login_user(username, password)
+        success, result = jsonbin_client.login_user(email, password)
         
         if success:
-            logger.info(f"User logged in successfully: {username}")
+            logger.info(f"User logged in successfully: {email}")
             return jsonify({
                 'success': True,
                 'message': result['message'],
-                'username': result['username'],
+                'email': result.get('email', result.get('username')),  # Handle both old and new response formats
                 'last_login': result['last_login'],
                 'created_at': result.get('created_at'),
                 'timestamp': datetime.now().isoformat()
@@ -272,7 +272,7 @@ def login_user():
             else:
                 status_code = 500  # Internal Server Error
             
-            logger.warning(f"User login failed for {username}: {error_message}")
+            logger.warning(f"User login failed for {email}: {error_message}")
             return jsonify({
                 'success': False,
                 'error': error_type,
@@ -297,20 +297,20 @@ def logout_user():
         if not data:
             return jsonify({'error': 'Request body is required'}), 400
         
-        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
         
-        if not username:
-            return jsonify({'error': 'Username is required'}), 400
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
         
         # Update user logout status using JSONBin client
-        success, result = jsonbin_client.logout_user(username)
+        success, result = jsonbin_client.logout_user(email)
         
         if success:
-            logger.info(f"User logged out successfully: {username}")
+            logger.info(f"User logged out successfully: {email}")
             return jsonify({
                 'success': True,
                 'message': result['message'],
-                'username': username,
+                'email': email,
                 'timestamp': datetime.now().isoformat()
             }), 200
         else:
@@ -328,7 +328,7 @@ def logout_user():
             else:
                 status_code = 500  # Internal Server Error
             
-            logger.warning(f"User logout failed for {username}: {error_message}")
+            logger.warning(f"User logout failed for {email}: {error_message}")
             return jsonify({
                 'success': False,
                 'error': error_type,
@@ -345,16 +345,16 @@ def logout_user():
             'timestamp': datetime.now().isoformat()
         }), 500
 
-@app.route('/auth/user/<username>', methods=['GET'])
-def get_user_info(username):
+@app.route('/auth/user/<email>', methods=['GET'])
+def get_user_info(email):
     """Get user information (admin endpoint)"""
     try:
         # Basic validation
-        if not username or not username.strip():
-            return jsonify({'error': 'Username is required'}), 400
+        if not email or not email.strip():
+            return jsonify({'error': 'Email is required'}), 400
         
         # Get user info using JSONBin client
-        success, result = jsonbin_client.get_user_info(username.strip())
+        success, result = jsonbin_client.get_user_info(email.strip())
         
         if success:
             return jsonify({
@@ -440,18 +440,18 @@ def change_password():
         if not data:
             return jsonify({'error': 'Request body is required'}), 400
         
-        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
         old_password = data.get('old_password', '').strip()
         new_password = data.get('new_password', '').strip()
         
-        if not username or not old_password or not new_password:
-            return jsonify({'error': 'Username, old password, and new password are required'}), 400
+        if not email or not old_password or not new_password:
+            return jsonify({'error': 'Email, old password, and new password are required'}), 400
         
         # Change password using JSONBin client
-        success, result = jsonbin_client.change_password(username, old_password, new_password)
+        success, result = jsonbin_client.change_password(email, old_password, new_password)
         
         if success:
-            logger.info(f"Password changed successfully for user: {username}")
+            logger.info(f"Password changed successfully for user: {email}")
             return jsonify({
                 'success': True,
                 'message': result['message'],
@@ -471,7 +471,7 @@ def change_password():
             else:
                 status_code = 500  # Internal Server Error
             
-            logger.warning(f"Password change failed for {username}: {error_message}")
+            logger.warning(f"Password change failed for {email}: {error_message}")
             return jsonify({
                 'success': False,
                 'error': error_type,

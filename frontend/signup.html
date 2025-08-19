@@ -226,26 +226,26 @@
                     </form>
                     
                     <p style="text-align: center; color: #718096; font-size: 14px; margin-top: 15px;">
-                        <a href="#" onclick="switchToUsernameSignup()" style="color: #667eea; text-decoration: none;" data-en="Use username and password instead" data-zh="改用用户名和密码登录">Use username and password instead</a>
+                        <a href="#" onclick="switchToEmailSignup()" style="color: #667eea; text-decoration: none;" data-en="Use email and password instead" data-zh="改用邮箱和密码登录">Use email and password instead</a>
                     </p>
                 </div>
                 
-                <!-- Username/Password Input Phase -->
-                <div id="username-input-phase" style="display: none;">
-                    <form id="username-form">
+                <!-- Email/Password Input Phase -->
+                <div id="email-input-phase" style="display: none;">
+                    <form id="email-form">
                         <div class="form-group">
-                            <input type="text" id="username" class="form-input" placeholder="Enter your username" data-placeholder-en="Enter your username" data-placeholder-zh="请输入您的用户名" required>
-                            <div id="username-error" class="error-message"></div>
+                            <input type="email" id="email" class="form-input" placeholder="Enter your email address" data-placeholder-en="Enter your email address" data-placeholder-zh="请输入您的邮箱地址" required>
+                            <div id="email-error" class="error-message"></div>
                         </div>
                         
                         <div class="form-group">
-                            <input type="password" id="password" class="form-input" placeholder="Enter your password" data-placeholder-en="Enter your password" data-placeholder-zh="请输入您的密码" required>
+                            <input type="password" id="password" class="form-input" placeholder="Enter a password" data-placeholder-en="Enter a password" data-placeholder-zh="请输入您的密码" required>
                             <div id="password-error" class="error-message"></div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
-                            <span id="username-submit-text" data-en="Sign Up" data-zh="注册">Sign Up</span>
-                            <div id="username-loading" class="loading" style="display: none;"></div>
+                            <span id="email-submit-text" data-en="Create Account" data-zh="创建账户">Create Account</span>
+                            <div id="email-loading" class="loading" style="display: none;"></div>
                         </button>
                     </form>
                     
@@ -497,9 +497,9 @@
             }
         }
 
-        function showUsernameLoading(show) {
-            const loadingEl = document.getElementById('username-loading');
-            const submitTextEl = document.getElementById('username-submit-text');
+        function showEmailLoading(show) {
+            const loadingEl = document.getElementById('email-loading');
+            const submitTextEl = document.getElementById('email-submit-text');
             
             if (loadingEl && submitTextEl) {
                 if (show) {
@@ -513,9 +513,9 @@
         }
 
         // Phase switching functions
-        function switchToUsernameSignup() {
+        function switchToEmailSignup() {
             document.getElementById('phone-input-phase').style.display = 'none';
-            document.getElementById('username-input-phase').style.display = 'block';
+            document.getElementById('email-input-phase').style.display = 'block';
             document.getElementById('verification-phase').style.display = 'none';
             document.getElementById('success-phase').style.display = 'none';
             clearErrors();
@@ -523,7 +523,7 @@
 
         function switchToPhoneSignup() {
             document.getElementById('phone-input-phase').style.display = 'block';
-            document.getElementById('username-input-phase').style.display = 'none';
+            document.getElementById('email-input-phase').style.display = 'none';
             document.getElementById('verification-phase').style.display = 'none';
             document.getElementById('success-phase').style.display = 'none';
             clearErrors();
@@ -546,8 +546,8 @@
         }
 
         function startUsingCoach() {
-            const username = document.getElementById('username').value || currentPhoneNumber;
-            localStorage.setItem('currentUser', username);
+            const email = document.getElementById('email').value || currentPhoneNumber;
+            localStorage.setItem('currentUser', email);
             localStorage.setItem('isAuthenticated', 'true');
             // Use replace to avoid back button issues and add a timestamp to force page reload
             window.location.replace('index.html?authenticated=true&redirect=chat&t=' + Date.now());
@@ -709,26 +709,28 @@
                 });
             }
 
-            // Username/Password form
-            const usernameForm = document.getElementById('username-form');
-            if (usernameForm) {
-                usernameForm.addEventListener('submit', async function(e) {
+            // Email/Password form
+            const emailForm = document.getElementById('email-form');
+            if (emailForm) {
+                emailForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
 
-                    const username = document.getElementById('username').value.trim();
+                    const email = document.getElementById('email').value.trim();
                     const password = document.getElementById('password').value.trim();
                     
                     // Clear previous errors
                     clearErrors();
                     
                     // Validate inputs for signup
-                    if (!username) {
-                        showError('username-error', 'Username is required');
+                    if (!email) {
+                        showError('email-error', 'Email address is required');
                         return;
                     }
                     
-                    if (username.length < 3) {
-                        showError('username-error', 'Username must be at least 3 characters long');
+                    // Basic email validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        showError('email-error', 'Please enter a valid email address');
                         return;
                     }
                     
@@ -743,7 +745,7 @@
                     }
                     
                     // Show loading
-                    showUsernameLoading(true);
+                    showEmailLoading(true);
                     
                     try {
                         // Register new user
@@ -753,7 +755,7 @@
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({
-                                username: username,
+                                email: email,
                                 password: password
                             })
                         });
@@ -762,24 +764,24 @@
                         
                         if (response.ok && result.success) {
                             // Registration successful - show success
-                            document.getElementById('username-input-phase').style.display = 'none';
+                            document.getElementById('email-input-phase').style.display = 'none';
                             document.getElementById('success-phase').style.display = 'block';
                         } else {
                             // Registration failed - show red error messages
                             const errorMessage = result.message || 'Registration failed';
                             
                             if (result.error === 'user_exists') {
-                                showError('username-error', 'Username already exists. Please choose a different username.');
+                                showError('email-error', 'Email address already exists. Please use a different email address.');
                             } else if (result.error === 'validation_error') {
-                                if (errorMessage.includes('username')) {
-                                    showError('username-error', errorMessage);
+                                if (errorMessage.includes('email')) {
+                                    showError('email-error', errorMessage);
                                 } else if (errorMessage.includes('password')) {
                                     showError('password-error', errorMessage);
                                 } else {
-                                    showError('username-error', errorMessage);
+                                    showError('email-error', errorMessage);
                                 }
                             } else {
-                                showError('username-error', errorMessage);
+                                showError('email-error', errorMessage);
                             }
                             
                             // Show backend error banner if connection issues
@@ -791,14 +793,14 @@
                         }
                     } catch (error) {
                         console.error('Signup error:', error);
-                        showError('username-error', 'Unable to connect to server. Please check your connection and try again.');
+                        showError('email-error', 'Unable to connect to server. Please check your connection and try again.');
                         
                         // Show backend error banner on connection failure
                         if (shouldShowBackendErrorBanner()) {
                             showBackendErrorBanner();
                         }
                     } finally {
-                        showUsernameLoading(false);
+                        showEmailLoading(false);
                     }
                 });
             }

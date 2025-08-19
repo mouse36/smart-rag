@@ -119,12 +119,18 @@ class JSONBinClient:
         logger.info(f"Successfully saved accounts data (version {data_to_save['version']})")
         return True, {"message": "Accounts data saved successfully"}
     
-    def register_user(self, username: str, password: str, phone_number: str = None) -> Tuple[bool, Dict[str, Any]]:
+    def register_user(self, email: str, password: str, phone_number: str = None) -> Tuple[bool, Dict[str, Any]]:
         """Register a new user with the new account format"""
         try:
             # Validate input
-            if not username or not password:
-                return False, {"error": "validation_error", "message": "Username and password are required."}
+            if not email or not password:
+                return False, {"error": "validation_error", "message": "Email and password are required."}
+            
+            # Basic email validation
+            import re
+            email_regex = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+            if not re.match(email_regex, email):
+                return False, {"error": "validation_error", "message": "Please enter a valid email address."}
             
             # Get current accounts data
             success, accounts_data = self.get_accounts_data()
@@ -133,14 +139,14 @@ class JSONBinClient:
             
             accounts = accounts_data.get("accounts", [])
             
-            # Check if username already exists
+            # Check if email already exists
             for account in accounts:
-                if account.get("username", "").lower() == username.lower():
-                    return False, {"error": "user_exists", "message": "Username is taken. Please choose a different username."}
+                if account.get("email", "").lower() == email.lower():
+                    return False, {"error": "user_exists", "message": "Email address is already registered. Please use a different email address."}
             
             # Create new account
             new_account = {
-                "username": username,
+                "email": email,
                 "password-hash": self._hash_password(password),
                 "phone-number": phone_number or "",
                 "status": "pending",  # Default to pending for new signups
@@ -161,23 +167,23 @@ class JSONBinClient:
             if not success:
                 return False, result
             
-            logger.info(f"Successfully registered user: {username}")
+            logger.info(f"Successfully registered user: {email}")
             return True, {
                 "message": "User registered successfully",
-                "username": username,
+                "email": email,
                 "created_at": new_account["last-seen"]
             }
             
         except Exception as e:
-            logger.error(f"Error registering user {username}: {str(e)}")
+            logger.error(f"Error registering user {email}: {str(e)}")
             return False, {"error": "registration_error", "message": f"Registration failed: {str(e)}"}
     
-    def login_user(self, username: str, password: str) -> Tuple[bool, Dict[str, Any]]:
+    def login_user(self, email: str, password: str) -> Tuple[bool, Dict[str, Any]]:
         """Authenticate user login with new account format"""
         try:
             # Validate input
-            if not username or not password:
-                return False, {"error": "validation_error", "message": "Username and password are required"}
+            if not email or not password:
+                return False, {"error": "validation_error", "message": "Email and password are required"}
             
             # Get current accounts data
             success, accounts_data = self.get_accounts_data()
@@ -190,13 +196,13 @@ class JSONBinClient:
             account_found = None
             account_index = None
             for i, account in enumerate(accounts):
-                if account.get("username", "").lower() == username.lower():
+                if account.get("email", "").lower() == email.lower():
                     account_found = account
                     account_index = i
                     break
             
             if not account_found:
-                return False, {"error": "user_not_found", "message": "No account found with this username. Please contact support if you believe this is an error."}
+                return False, {"error": "user_not_found", "message": "No account found with this email address. Please contact support if you believe this is an error."}
             
             # Check if account status allows login
             account_status = account_found.get("status", "approved")
@@ -219,22 +225,22 @@ class JSONBinClient:
             success, result = self.save_accounts_data(updated_data)
             
             if not success:
-                logger.warning(f"Failed to update last login for user {username}")
+                logger.warning(f"Failed to update last login for user {email}")
                 # Don't fail the login for this, just log the warning
             
-            logger.info(f"Successfully logged in user: {username}")
+            logger.info(f"Successfully logged in user: {email}")
             return True, {
                 "message": "Login successful",
-                "username": username,
+                "email": email,
                 "last_login": accounts[account_index]["last-seen"],
                 "created_at": account_found.get("last-seen")
             }
             
         except Exception as e:
-            logger.error(f"Error logging in user {username}: {str(e)}")
+            logger.error(f"Error logging in user {email}: {str(e)}")
             return False, {"error": "login_error", "message": f"Login failed: {str(e)}"}
     
-    def get_user_info(self, username: str) -> Tuple[bool, Dict[str, Any]]:
+    def get_user_info(self, email: str) -> Tuple[bool, Dict[str, Any]]:
         """Get account information (without password)"""
         try:
             # Get current accounts data
@@ -246,10 +252,10 @@ class JSONBinClient:
             
             # Find account
             for account in accounts:
-                if account.get("username", "").lower() == username.lower():
+                if account.get("email", "").lower() == email.lower():
                     # Return account info without password hash
                     account_info = {
-                        "username": account.get("username"),
+                        "email": account.get("email"),
                         "phone-number": account.get("phone-number"),
                         "status": account.get("status"),
                         "admin": account.get("admin"),
@@ -263,7 +269,7 @@ class JSONBinClient:
             return False, {"error": "user_not_found", "message": "User not found"}
             
         except Exception as e:
-            logger.error(f"Error getting user info for {username}: {str(e)}")
+            logger.error(f"Error getting user info for {email}: {str(e)}")
             return False, {"error": "user_info_error", "message": f"Failed to get user info: {str(e)}"}
     
     def list_users(self) -> Tuple[bool, Dict[str, Any]]:
@@ -280,7 +286,7 @@ class JSONBinClient:
             account_list = []
             for account in accounts:
                 account_info = {
-                    "username": account.get("username"),
+                    "email": account.get("email"),
                     "phone-number": account.get("phone-number"),
                     "status": account.get("status"),
                     "admin": account.get("admin"),
@@ -301,15 +307,15 @@ class JSONBinClient:
             logger.error(f"Error listing users: {str(e)}")
             return False, {"error": "list_users_error", "message": f"Failed to list users: {str(e)}"}
     
-    def change_password(self, username: str, old_password: str, new_password: str) -> Tuple[bool, Dict[str, Any]]:
+    def change_password(self, email: str, old_password: str, new_password: str) -> Tuple[bool, Dict[str, Any]]:
         """Change account password"""
         try:
             # Validate input
-            if not username or not old_password or not new_password:
+            if not email or not old_password or not new_password:
                 return False, {"error": "validation_error", "message": "All fields are required"}
             
             # First verify current credentials
-            success, login_result = self.login_user(username, old_password)
+            success, login_result = self.login_user(email, old_password)
             if not success:
                 return False, {"error": "invalid_credentials", "message": "Current password is incorrect"}
             
@@ -322,7 +328,7 @@ class JSONBinClient:
             
             # Find and update account
             for i, account in enumerate(accounts):
-                if account.get("username", "").lower() == username.lower():
+                if account.get("email", "").lower() == email.lower():
                     accounts[i]["password-hash"] = self._hash_password(new_password)
                     accounts[i]["last-seen"] = datetime.now().isoformat()
                     break
@@ -334,19 +340,19 @@ class JSONBinClient:
             if not success:
                 return False, result
             
-            logger.info(f"Successfully changed password for user: {username}")
+            logger.info(f"Successfully changed password for user: {email}")
             return True, {"message": "Password changed successfully"}
             
         except Exception as e:
-            logger.error(f"Error changing password for user {username}: {str(e)}")
+            logger.error(f"Error changing password for user {email}: {str(e)}")
             return False, {"error": "password_change_error", "message": f"Password change failed: {str(e)}"}
     
-    def logout_user(self, username: str) -> Tuple[bool, Dict[str, Any]]:
+    def logout_user(self, email: str) -> Tuple[bool, Dict[str, Any]]:
         """Update user's last-seen time and set online to false when logging out"""
         try:
             # Validate input
-            if not username:
-                return False, {"error": "validation_error", "message": "Username is required"}
+            if not email:
+                return False, {"error": "validation_error", "message": "Email is required"}
             
             # Get current accounts data
             success, accounts_data = self.get_accounts_data()
@@ -358,7 +364,7 @@ class JSONBinClient:
             # Find and update account
             account_found = False
             for i, account in enumerate(accounts):
-                if account.get("username", "").lower() == username.lower():
+                if account.get("email", "").lower() == email.lower():
                     accounts[i]["last-seen"] = datetime.now().isoformat()
                     accounts[i]["online"] = False
                     account_found = True
@@ -374,11 +380,11 @@ class JSONBinClient:
             if not success:
                 return False, result
             
-            logger.info(f"Successfully logged out user: {username}")
+            logger.info(f"Successfully logged out user: {email}")
             return True, {"message": "User logged out successfully"}
             
         except Exception as e:
-            logger.error(f"Error logging out user {username}: {str(e)}")
+            logger.error(f"Error logging out user {email}: {str(e)}")
             return False, {"error": "logout_error", "message": f"Logout failed: {str(e)}"}
     
     def test_connection(self) -> Tuple[bool, Dict[str, Any]]:

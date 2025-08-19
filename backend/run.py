@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Startup script for the Smart RAG Backend
+Startup script for the Backend
 """
 
 import os
@@ -94,7 +94,7 @@ def check_requirements():
 
 def main():
     """Main startup function"""
-    print("🚀 Starting Smart RAG Backend...")
+    print("🚀 Starting Backend...")
     print("=" * 50)
     
     # Check requirements

@@ -759,7 +759,8 @@
                         
                         if (response.ok && result.success) {
                             // Login successful - redirect to chat
-                            localStorage.setItem('currentUser', result.user?.username || result.username || email);
+                            localStorage.setItem('currentUser', result.username || email);
+                            localStorage.setItem('currentUserProfilePic', result.profile_picture || 'default');
                             localStorage.setItem('isAuthenticated', 'true');
                             window.location.href = 'index.html?authenticated=true&redirect=chat&t=' + Date.now();
                         } else {

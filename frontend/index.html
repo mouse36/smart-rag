@@ -1531,12 +1531,24 @@
                     
                     <!-- User account menu on the right -->
                     <div class="user-profile" onclick="toggleProfileMenu()">
-                        <div class="profile-pic">U</div>
+                        <div class="profile-pic" id="profile-pic-container">U</div>
                         <span id="current-user-display">User</span>
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {
                                 var currentUser = localStorage.getItem('currentUser');
+                                var currentUserProfilePic = localStorage.getItem('currentUserProfilePic') || 'default';
+                                
                                 document.getElementById('current-user-display').textContent = currentUser ? currentUser : '';
+                                
+                                // Update profile picture
+                                var profilePicContainer = document.getElementById('profile-pic-container');
+                                if (currentUserProfilePic) {
+                                    // Use the image from user-icons folder
+                                    profilePicContainer.innerHTML = '<img src="graphics/user-icons/' + currentUserProfilePic + '.png" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
+                                } else {
+                                    // Use the image from user-icons folder
+                                    profilePicContainer.innerHTML = '<img src="graphics/user-icons/default.svg" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
+                                }
                             });
                         </script>
                         <div class="profile-menu" id="profile-menu">
@@ -2830,7 +2842,19 @@ Error: ${error.message}
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
             
-            const avatar = type === 'user' ? 'U' : 'AI';
+            // Set avatar based on type
+            let avatar;
+            if (type === 'user') {
+                const currentUserProfilePic = localStorage.getItem('currentUserProfilePic') || 'default';
+                const currentUser = localStorage.getItem('currentUser') || 'User';
+                if (currentUserProfilePic && currentUserProfilePic !== 'default') {
+                    avatar = `<img src="graphics/user-icons/${currentUserProfilePic}.png" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                } else {
+                    avatar = currentUser.charAt(0).toUpperCase();
+                }
+            } else {
+                avatar = 'AI';
+            }
             const time = new Date().toLocaleTimeString();
             
             // Generate recommendations for assistant messages

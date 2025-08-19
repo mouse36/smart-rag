@@ -235,6 +235,7 @@ class JSONBinClient:
                 "message": "Login successful",
                 "email": email,
                 "username": account_found.get("username", email.split("@")[0]),
+                "profile_picture": account_found.get("profile-picture", "default"),
                 "last_login": accounts[account_index]["last-seen"],
                 "created_at": account_found.get("last-seen")
             }
@@ -260,6 +261,7 @@ class JSONBinClient:
                     account_info = {
                         "email": account.get("email"),
                         "username": account.get("username"),
+                        "profile-picture": account.get("profile-picture", "default"),
                         "phone-number": account.get("phone-number"),
                         "status": account.get("status"),
                         "admin": account.get("admin"),

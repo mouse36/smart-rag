@@ -252,6 +252,7 @@ def login_user():
                 'message': result['message'],
                 'email': result.get('email'),
                 'username': result.get('username'),
+                'profile_picture': result.get('profile_picture'),
                 'last_login': result['last_login'],
                 'created_at': result.get('created_at'),
                 'timestamp': datetime.now().isoformat()

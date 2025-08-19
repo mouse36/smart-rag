@@ -519,6 +519,224 @@ def test_auth_connection():
             'timestamp': datetime.now().isoformat()
         }), 500
 
+@app.route('/chat/history/<email>', methods=['GET'])
+def get_chat_history(email):
+    """Get chat history for a specific user"""
+    try:
+        if not email or not email.strip():
+            return jsonify({'error': 'Email is required'}), 400
+        
+        # Get chat history using JSONBin client
+        success, result = jsonbin_client.get_user_chat_history(email.strip())
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'chat_history': result['chat_history'],
+                'total_chats': result['total_chats'],
+                'timestamp': datetime.now().isoformat()
+            }), 200
+        else:
+            error_type = result.get('error', 'unknown_error')
+            error_message = result.get('message', 'Failed to get chat history')
+            
+            if error_type == 'user_not_found':
+                status_code = 404
+            elif error_type in ['api_auth_failed', 'bin_not_found', 'rate_limit', 'timeout', 'connection_error']:
+                status_code = 503
+                error_message = 'Chat history service temporarily unavailable'
+            else:
+                status_code = 500
+            
+            return jsonify({
+                'success': False,
+                'error': error_type,
+                'message': error_message,
+                'timestamp': datetime.now().isoformat()
+            }), status_code
+            
+    except Exception as e:
+        logger.error(f"Error in get chat history endpoint: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'chat_history_error',
+            'message': 'Failed to get chat history due to server error',
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/chat/save-message', methods=['POST'])
+def save_message():
+    """Save a message to a user's chat history"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Request body is required'}), 400
+        
+        email = data.get('email', '').strip()
+        chat_id = data.get('chat_id')
+        message = data.get('message')
+        
+        if not email or chat_id is None or not message:
+            return jsonify({'error': 'Email, chat_id, and message are required'}), 400
+        
+        if not isinstance(message, dict) or 'from' not in message or 'content' not in message:
+            return jsonify({'error': 'Message must be an object with "from" and "content" fields'}), 400
+        
+        if message['from'] not in ['user', 'chatbot']:
+            return jsonify({'error': 'Message "from" field must be "user" or "chatbot"'}), 400
+        
+        # Save message using JSONBin client
+        success, result = jsonbin_client.save_message_to_chat(email, chat_id, message)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': result['message'],
+                'timestamp': datetime.now().isoformat()
+            }), 200
+        else:
+            error_type = result.get('error', 'unknown_error')
+            error_message = result.get('message', 'Failed to save message')
+            
+            if error_type == 'user_not_found':
+                status_code = 404
+            elif error_type == 'invalid_chat_id':
+                status_code = 400
+            elif error_type in ['api_auth_failed', 'bin_not_found', 'rate_limit', 'timeout', 'connection_error']:
+                status_code = 503
+                error_message = 'Chat service temporarily unavailable'
+            else:
+                status_code = 500
+            
+            return jsonify({
+                'success': False,
+                'error': error_type,
+                'message': error_message,
+                'timestamp': datetime.now().isoformat()
+            }), status_code
+            
+    except Exception as e:
+        logger.error(f"Error in save message endpoint: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'save_message_error',
+            'message': 'Failed to save message due to server error',
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/chat/create-new-chat', methods=['POST'])
+def create_new_chat():
+    """Create a new chat for a user"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Request body is required'}), 400
+        
+        email = data.get('email', '').strip()
+        initial_message = data.get('initial_message')
+        user_first_message = data.get('user_first_message')
+        
+        if not email or not initial_message or not user_first_message:
+            return jsonify({'error': 'Email, initial_message, and user_first_message are required'}), 400
+        
+        # Validate message format
+        for msg, name in [(initial_message, 'initial_message'), (user_first_message, 'user_first_message')]:
+            if not isinstance(msg, dict) or 'from' not in msg or 'content' not in msg:
+                return jsonify({'error': f'{name} must be an object with "from" and "content" fields'}), 400
+        
+        # Create new chat using JSONBin client
+        success, result = jsonbin_client.create_new_chat(email, initial_message, user_first_message)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': result['message'],
+                'chat_id': result['chat_id'],
+                'total_chats': result['total_chats'],
+                'timestamp': datetime.now().isoformat()
+            }), 201
+        else:
+            error_type = result.get('error', 'unknown_error')
+            error_message = result.get('message', 'Failed to create new chat')
+            
+            if error_type == 'user_not_found':
+                status_code = 404
+            elif error_type in ['api_auth_failed', 'bin_not_found', 'rate_limit', 'timeout', 'connection_error']:
+                status_code = 503
+                error_message = 'Chat service temporarily unavailable'
+            else:
+                status_code = 500
+            
+            return jsonify({
+                'success': False,
+                'error': error_type,
+                'message': error_message,
+                'timestamp': datetime.now().isoformat()
+            }), status_code
+            
+    except Exception as e:
+        logger.error(f"Error in create new chat endpoint: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'create_chat_error',
+            'message': 'Failed to create new chat due to server error',
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/chat/update-title', methods=['PUT'])
+def update_chat_title():
+    """Update the title of a specific chat"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Request body is required'}), 400
+        
+        email = data.get('email', '').strip()
+        chat_id = data.get('chat_id')
+        new_title = data.get('new_title', '').strip()
+        
+        if not email or chat_id is None or not new_title:
+            return jsonify({'error': 'Email, chat_id, and new_title are required'}), 400
+        
+        # Update chat title using JSONBin client
+        success, result = jsonbin_client.update_chat_title(email, chat_id, new_title)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': result['message'],
+                'timestamp': datetime.now().isoformat()
+            }), 200
+        else:
+            error_type = result.get('error', 'unknown_error')
+            error_message = result.get('message', 'Failed to update chat title')
+            
+            if error_type == 'user_not_found':
+                status_code = 404
+            elif error_type == 'invalid_chat_id':
+                status_code = 400
+            elif error_type in ['api_auth_failed', 'bin_not_found', 'rate_limit', 'timeout', 'connection_error']:
+                status_code = 503
+                error_message = 'Chat service temporarily unavailable'
+            else:
+                status_code = 500
+            
+            return jsonify({
+                'success': False,
+                'error': error_type,
+                'message': error_message,
+                'timestamp': datetime.now().isoformat()
+            }), status_code
+            
+    except Exception as e:
+        logger.error(f"Error in update chat title endpoint: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'update_title_error',
+            'message': 'Failed to update chat title due to server error',
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
 @app.route('/donate/config', methods=['GET'])
 def get_donation_config():
     """Get Stripe configuration for frontend"""

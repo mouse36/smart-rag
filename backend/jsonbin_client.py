@@ -394,6 +394,171 @@ class JSONBinClient:
             logger.error(f"Error logging out user {email}: {str(e)}")
             return False, {"error": "logout_error", "message": f"Logout failed: {str(e)}"}
     
+    def get_user_chat_history(self, email: str) -> Tuple[bool, Dict[str, Any]]:
+        """Get chat history for a specific user"""
+        try:
+            # Get user info which includes chat history
+            success, user_info = self.get_user_info(email)
+            if not success:
+                return False, user_info
+            
+            chat_history = user_info.get("chat-history", [])
+            
+            return True, {
+                "chat_history": chat_history,
+                "total_chats": len(chat_history)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting chat history for user {email}: {str(e)}")
+            return False, {"error": "chat_history_error", "message": f"Failed to get chat history: {str(e)}"}
+    
+    def save_message_to_chat(self, email: str, chat_id: int, message: Dict[str, str]) -> Tuple[bool, Dict[str, Any]]:
+        """Save a message to a specific chat for a user"""
+        try:
+            # Get current accounts data
+            success, accounts_data = self.get_accounts_data()
+            if not success:
+                return False, accounts_data
+            
+            accounts = accounts_data.get("accounts", [])
+            
+            # Find user account
+            user_index = None
+            for i, account in enumerate(accounts):
+                if account.get("email", "").lower() == email.lower():
+                    user_index = i
+                    break
+            
+            if user_index is None:
+                return False, {"error": "user_not_found", "message": "User not found"}
+            
+            # Get chat history
+            chat_history = accounts[user_index].get("chat-history", [])
+            
+            # Validate chat_id
+            if chat_id < 1 or chat_id > len(chat_history):
+                return False, {"error": "invalid_chat_id", "message": "Invalid chat ID"}
+            
+            # Add message to the specified chat (chat_id is 1-indexed)
+            chat_index = chat_id - 1
+            if "messages" not in chat_history[chat_index]:
+                chat_history[chat_index]["messages"] = []
+            
+            chat_history[chat_index]["messages"].append(message)
+            accounts[user_index]["chat-history"] = chat_history
+            
+            # Save updated data
+            updated_data = {"accounts": accounts}
+            success, result = self.save_accounts_data(updated_data)
+            
+            if not success:
+                return False, result
+            
+            logger.info(f"Successfully saved message to chat {chat_id} for user: {email}")
+            return True, {"message": "Message saved successfully"}
+            
+        except Exception as e:
+            logger.error(f"Error saving message for user {email}: {str(e)}")
+            return False, {"error": "save_message_error", "message": f"Failed to save message: {str(e)}"}
+    
+    def create_new_chat(self, email: str, initial_message: Dict[str, str], user_first_message: Dict[str, str]) -> Tuple[bool, Dict[str, Any]]:
+        """Create a new chat for a user with initial messages"""
+        try:
+            # Get current accounts data
+            success, accounts_data = self.get_accounts_data()
+            if not success:
+                return False, accounts_data
+            
+            accounts = accounts_data.get("accounts", [])
+            
+            # Find user account
+            user_index = None
+            for i, account in enumerate(accounts):
+                if account.get("email", "").lower() == email.lower():
+                    user_index = i
+                    break
+            
+            if user_index is None:
+                return False, {"error": "user_not_found", "message": "User not found"}
+            
+            # Get current chat history
+            chat_history = accounts[user_index].get("chat-history", [])
+            
+            # Create new chat object
+            new_chat = {
+                "title": "Untitled Chat",
+                "messages": [initial_message, user_first_message]
+            }
+            
+            # Add new chat to the beginning of the array
+            chat_history.insert(0, new_chat)
+            accounts[user_index]["chat-history"] = chat_history
+            
+            # Save updated data
+            updated_data = {"accounts": accounts}
+            success, result = self.save_accounts_data(updated_data)
+            
+            if not success:
+                return False, result
+            
+            logger.info(f"Successfully created new chat for user: {email}")
+            return True, {
+                "message": "New chat created successfully",
+                "chat_id": 1,  # New chat is always at position 1
+                "total_chats": len(chat_history)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error creating new chat for user {email}: {str(e)}")
+            return False, {"error": "create_chat_error", "message": f"Failed to create new chat: {str(e)}"}
+    
+    def update_chat_title(self, email: str, chat_id: int, new_title: str) -> Tuple[bool, Dict[str, Any]]:
+        """Update the title of a specific chat for a user"""
+        try:
+            # Get current accounts data
+            success, accounts_data = self.get_accounts_data()
+            if not success:
+                return False, accounts_data
+            
+            accounts = accounts_data.get("accounts", [])
+            
+            # Find user account
+            user_index = None
+            for i, account in enumerate(accounts):
+                if account.get("email", "").lower() == email.lower():
+                    user_index = i
+                    break
+            
+            if user_index is None:
+                return False, {"error": "user_not_found", "message": "User not found"}
+            
+            # Get chat history
+            chat_history = accounts[user_index].get("chat-history", [])
+            
+            # Validate chat_id
+            if chat_id < 1 or chat_id > len(chat_history):
+                return False, {"error": "invalid_chat_id", "message": "Invalid chat ID"}
+            
+            # Update chat title (chat_id is 1-indexed)
+            chat_index = chat_id - 1
+            chat_history[chat_index]["title"] = new_title
+            accounts[user_index]["chat-history"] = chat_history
+            
+            # Save updated data
+            updated_data = {"accounts": accounts}
+            success, result = self.save_accounts_data(updated_data)
+            
+            if not success:
+                return False, result
+            
+            logger.info(f"Successfully updated chat {chat_id} title for user: {email}")
+            return True, {"message": "Chat title updated successfully"}
+            
+        except Exception as e:
+            logger.error(f"Error updating chat title for user {email}: {str(e)}")
+            return False, {"error": "update_title_error", "message": f"Failed to update chat title: {str(e)}"}
+    
     def test_connection(self) -> Tuple[bool, Dict[str, Any]]:
         """Test connection to JSONBin API"""
         try:

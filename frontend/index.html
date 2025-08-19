@@ -582,11 +582,85 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 14px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .menu-item:hover, .menu-item.active {
-            background: #ff8900;
+            background: #ffe0bc;
             color: white;
+        }
+        
+        .chat-title {
+            flex: 1;
+            cursor: pointer;
+        }
+        
+        .edit-chat-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: #666;
+            margin-left: 8px;
+        }
+        
+        .edit-chat-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+        
+        .menu-item:hover .edit-chat-btn {
+            opacity: 1;
+        }
+        
+        .menu-item.active .edit-chat-btn {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .menu-item.active .edit-chat-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        /* Loading ellipsis animation */
+        .loading-ellipsis {
+            display: inline-block;
+            font-weight: bold;
+            animation: ellipsis 1.5s infinite;
+        }
+        
+        @keyframes ellipsis {
+            0% { content: ""; }
+            25% { content: "."; }
+            50% { content: ".."; }
+            75% { content: "..."; }
+            100% { content: ""; }
+        }
+        
+        .loading-ellipsis::after {
+            content: "";
+            animation: ellipsis-dots 1.5s infinite;
+        }
+        
+        @keyframes ellipsis-dots {
+            0% { content: ""; }
+            25% { content: "."; }
+            50% { content: ".."; }
+            75% { content: "..."; }
+            100% { content: ""; }
+        }
+        
+        /* Chat loading state */
+        .chat-loading {
+            opacity: 0.6;
+            pointer-events: none;
         }
 
         .sidebar-footer {
@@ -615,7 +689,7 @@
         }
 
         .chat-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
             color: #2d3748;
         }
@@ -1613,12 +1687,11 @@
     <div id="chat-page">
         <div class="chat-layout">
             <div class="sidebar">
-                <h3 style="margin: 0 0 20px 0; padding: 15px; font-size: 18px; font-weight: 600; color: #333; border-bottom: 1px solid #e9ecef;">Chat History</h3>
+                <h3 style="margin: 0 0 20px 0; padding: 15px; font-size: 18px; font-weight: 600; color: #333; border-bottom: 1px solid #e9ecef;">Previous Chats</h3>
                 
                 <div class="sidebar-menu">
-                    <div class="menu-item active" onclick="startNewChat()">New Chat</div>
-                    <div class="menu-item" onclick="showChat('chat1')">Previous Chat 1</div>
-                    <div class="menu-item" onclick="showChat('chat2')">Previous Chat 2</div>
+                    <div class="menu-item new-chat-item active" onclick="startNewChat()" style="font-size: 16px;">New Chat</div>
+                    <!-- Chat history items will be dynamically added here -->
                 </div>
                 
 
@@ -1644,12 +1717,13 @@
                                 
                                 // Update profile picture
                                 var profilePicContainer = document.getElementById('profile-pic-container');
-                                if (currentUserProfilePic) {
+                                if (currentUserProfilePic === 'default') {
+                                    // Use the default profile picture svg
+                                    profilePicContainer.innerHTML = '<img src="graphics/user-icons/default.svg" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
+                                }
+                                else if (currentUserProfilePic) {
                                     // Use the image from user-icons folder
                                     profilePicContainer.innerHTML = '<img src="graphics/user-icons/' + currentUserProfilePic + '.png" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
-                                } else {
-                                    // Use the image from user-icons folder
-                                    profilePicContainer.innerHTML = '<img src="graphics/user-icons/default.svg" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
                                 }
                             });
                         </script>
@@ -2113,10 +2187,13 @@
                 chatLogoContainer.innerHTML = generateStandardLogo({ showLanguageData: false });
             }
             
-            // Initialize with welcome message if no messages exist
+            // Load chat history from server
+            await loadChatHistory();
+            
+            // Initialize with welcome message if no messages exist and start a new chat
             const messagesArea = document.getElementById('messages');
             if (messagesArea && messagesArea.children.length === 0) {
-                addMessage("Hello! I'm your selective mutism virtual coach. I have access to comprehensive knowledge about selective mutism, including treatment approaches, parent guidance, and educational strategies. How can I help you today?", 'assistant');
+                startNewChat(); // This will show the welcome message and set currentChatId to 0
                 
                 // Check backend health
                 await checkBackendHealth();
@@ -2417,15 +2494,52 @@
         }
         
         async function startUsingCoach() {
-            // Check backend health immediately on user interaction
-            await checkBackendHealthOnInteraction();
+            // Show loading state on button
+            const button = event?.target || document.querySelector('button[onclick="startUsingCoach()"]');
+            const originalText = button?.textContent;
+            if (button) {
+                button.innerHTML = '<span class="loading-ellipsis">Loading</span>';
+                button.disabled = true;
+            }
             
-            isAuthenticated = true;
-            currentUsername = document.getElementById('username').value || currentPhoneNumber;
-            // Store authentication state for persistence
-            localStorage.setItem('isAuthenticated', 'true');
-            localStorage.setItem('currentUser', currentUsername);
-            showChat();
+            try {
+                // Check backend health immediately on user interaction
+                await checkBackendHealthOnInteraction();
+                
+                isAuthenticated = true;
+                currentUsername = document.getElementById('username').value || currentPhoneNumber;
+                
+                // Store authentication state for persistence
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('currentUser', currentUsername);
+                
+                // For phone-based login, we need to determine the email
+                // For now, let's use a mapping or make an API call to get user info
+                console.log('DEBUG: Phone login - currentUsername:', currentUsername);
+                console.log('DEBUG: Phone login - currentPhoneNumber:', currentPhoneNumber);
+                
+                // TODO: We need to implement a way to get the email for phone-based users
+                // For now, let's check if this is the known test user
+                if (currentUsername === 'clukr' || currentPhoneNumber === '+447400000000') {
+                    localStorage.setItem('currentUserEmail', 'clukr@sprunki.com');
+                    localStorage.setItem('currentUserProfilePic', 'silver');
+                    console.log('DEBUG: Set email for clukr user');
+                } else if (currentUsername === 'Mr. Fun Computer' || currentPhoneNumber === '+447400000001') {
+                    localStorage.setItem('currentUserEmail', 'mrfuncomputer@sprunki.com');
+                    localStorage.setItem('currentUserProfilePic', 'default');
+                    console.log('DEBUG: Set email for mrfuncomputer user');
+                } else {
+                    console.log('DEBUG: Unknown user, no email mapping available');
+                }
+                
+                showChat();
+            } finally {
+                // Restore button state
+                if (button && originalText) {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }
         }
         
         // Toggle between signup methods
@@ -2710,7 +2824,7 @@
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({
-                                    username: username,
+                                    email: username,  // The username field actually contains the email
                                     password: password
                                 })
                             });
@@ -2722,6 +2836,14 @@
                             if (response.ok && result.success) {
                                 // Registration successful
                                 console.log('User registered successfully:', result);
+                                
+                                // Store user information: username for display, email for API calls
+                                const userEmail = result.email;
+                                const displayName = userEmail.split('@')[0];  // Use part before @ as username
+                                localStorage.setItem('currentUser', displayName);  // For display
+                                localStorage.setItem('currentUserEmail', userEmail);  // For API calls
+                                localStorage.setItem('currentUserProfilePic', 'default');
+                                
                                 showSuccessPhase();
                                 hideLoginBackendErrorBanner();
                             } else {
@@ -2756,7 +2878,7 @@
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({
-                                    username: username,
+                                    email: username,  // The username field actually contains the email
                                     password: password
                                 })
                             });
@@ -2768,6 +2890,17 @@
                             if (response.ok && result.success) {
                                 // Login successful
                                 console.log('User logged in successfully:', result);
+                                console.log('Storing username:', result.username);
+                                console.log('Storing email:', result.email);
+                                
+                                // Store user information: username for display, email for API calls
+                                localStorage.setItem('currentUser', result.username);  // For display
+                                localStorage.setItem('currentUserEmail', result.email);  // For API calls
+                                localStorage.setItem('currentUserProfilePic', result.profile_picture || 'default');
+                                
+                                console.log('Stored currentUser:', localStorage.getItem('currentUser'));
+                                console.log('Stored currentUserEmail:', localStorage.getItem('currentUserEmail'));
+                                
                                 showSuccessPhase();
                                 hideLoginBackendErrorBanner();
                             } else {
@@ -2840,6 +2973,11 @@
             }
         }
         
+        // Global chat history variables
+        let currentChatId = 0; // 0 means new chat, >0 means existing chat ID
+        let localChatHistory = []; // Store chat history locally for offline access
+        let hasLoadedChatHistory = false; // Flag to prevent multiple loads
+        
         // Chat functions
         async function sendMessage() {
             const input = document.getElementById('message-input');
@@ -2855,6 +2993,15 @@
             // Add user message
             addMessage(message, 'user');
             input.value = '';
+            
+            // Save user message if in existing chat
+            if (currentChatId > 0) {
+                const userMessage = {
+                    from: 'user',
+                    content: message
+                };
+                await saveMessageToHistory(userMessage);
+            }
             
             // Disable send button temporarily
             const sendButton = document.getElementById('send-button');
@@ -2897,6 +3044,31 @@
                 }
                 
                 addMessage(responseText, 'assistant');
+                
+                // Handle chat history saving
+                if (currentChatId === 0) {
+                    // Show loading in sidebar for new chat creation
+                    const newChatButton = document.querySelector('.new-chat-item');
+                    const originalText = newChatButton?.textContent;
+                    if (newChatButton) {
+                        newChatButton.innerHTML = '<span class="loading-ellipsis">Creating chat</span>';
+                    }
+                    
+                    // This is a new chat, create it with the first message exchange
+                    await createNewChatAfterFirstMessage(message, responseText);
+                    
+                    // Restore new chat button text
+                    if (newChatButton && originalText) {
+                        newChatButton.textContent = originalText;
+                    }
+                } else {
+                    // Save assistant message to existing chat (this is usually fast, no loading needed)
+                    const assistantMessage = {
+                        from: 'chatbot',
+                        content: responseText
+                    };
+                    await saveMessageToHistory(assistantMessage);
+                }
 
             } catch (error) {
                 console.error('Error sending message:', error);
@@ -3085,7 +3257,8 @@ Error: ${error.message}
         
         async function logout() {
             // Call backend logout API to update account status
-            if (currentUsername) {
+            const currentUserEmail = localStorage.getItem('currentUserEmail');
+            if (currentUserEmail) {
                 try {
                     const response = await fetch(`${API_BASE_URL}/auth/logout`, {
                         method: 'POST',
@@ -3093,7 +3266,7 @@ Error: ${error.message}
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            username: currentUsername
+                            email: currentUserEmail
                         })
                     });
                     
@@ -3114,6 +3287,13 @@ Error: ${error.message}
             currentUsername = null;
             localStorage.removeItem('isAuthenticated');
             localStorage.removeItem('currentUser');
+            localStorage.removeItem('currentUserEmail');
+            localStorage.removeItem('currentUserProfilePic');
+            
+            // Reset chat history variables
+            currentChatId = 0;
+            localChatHistory = [];
+            hasLoadedChatHistory = false;
             
             showNotification('You have been logged out', 'success');
             showLanding();
@@ -3131,12 +3311,361 @@ Error: ${error.message}
             }
         }
         
+        // Chat history management functions
+        async function loadChatHistory() {
+            if (hasLoadedChatHistory) return; // Prevent multiple loads
+            
+            try {
+                const currentUserEmail = localStorage.getItem('currentUserEmail');
+                const currentUser = localStorage.getItem('currentUser');
+                if (!currentUserEmail) {
+                    console.log('No user email found, skipping chat history load');
+                    return;
+                }
+                
+                // Show loading state in sidebar
+                const sidebarMenu = document.querySelector('.sidebar-menu');
+                if (sidebarMenu) {
+                    const loadingItem = document.createElement('div');
+                    loadingItem.className = 'menu-item loading-placeholder';
+                    loadingItem.innerHTML = '<span class="loading-ellipsis">Loading chats</span>';
+                    sidebarMenu.appendChild(loadingItem);
+                }
+                
+                const url = `http://127.0.0.1:5000/chat/history/${encodeURIComponent(currentUserEmail)}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    localChatHistory = data.chat_history || [];
+                    hasLoadedChatHistory = true;
+                    updateChatHistorySidebar();
+                    console.log('Chat history loaded:', localChatHistory.length, 'chats');
+                } else {
+                    console.error('Failed to load chat history:', response.status);
+                    localChatHistory = [];
+                    updateChatHistorySidebar(); // Still update to remove loading
+                }
+                
+                // Remove loading placeholder
+                const loadingPlaceholder = document.querySelector('.loading-placeholder');
+                if (loadingPlaceholder) {
+                    loadingPlaceholder.remove();
+                }
+                
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                localChatHistory = [];
+                updateChatHistorySidebar(); // Still update to remove loading
+                
+                // Remove loading placeholder
+                const loadingPlaceholder = document.querySelector('.loading-placeholder');
+                if (loadingPlaceholder) {
+                    loadingPlaceholder.remove();
+                }
+            }
+        }
+        
+        function updateChatHistorySidebar() {
+            const sidebarMenu = document.querySelector('.sidebar-menu');
+            if (!sidebarMenu) return;
+            
+            // Clear existing items except the "New Chat" button
+            const existingItems = sidebarMenu.querySelectorAll('.menu-item:not(.new-chat-item)');
+            existingItems.forEach(item => item.remove());
+            
+            // Add chat history items
+            localChatHistory.forEach((chat, index) => {
+                const chatId = index + 1; // 1-indexed
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item chat-history-item';
+                menuItem.setAttribute('data-chat-id', chatId);
+                
+                menuItem.innerHTML = `
+                    <span class="chat-title" onclick="loadChat(${chatId})">${escapeHtml(chat.title)}</span>
+                    <button class="edit-chat-btn" onclick="startEditChatTitle(${chatId}, event)" title="Edit chat title">
+                        ✏️
+                    </button>
+                `;
+                
+                sidebarMenu.appendChild(menuItem);
+            });
+        }
+        
+        function loadChat(chatId) {
+            if (chatId < 1 || chatId > localChatHistory.length) {
+                console.error('Invalid chat ID:', chatId);
+                return;
+            }
+            
+            // Show loading state
+            const currentItem = document.querySelector(`[data-chat-id="${chatId}"]`);
+            const titleSpan = currentItem?.querySelector('.chat-title');
+            let originalTitle = '';
+            
+            if (titleSpan) {
+                originalTitle = titleSpan.textContent;
+                titleSpan.innerHTML = '<span class="loading-ellipsis">Loading</span>';
+            }
+            
+            // Add a small delay to simulate loading (you can remove this if the API is fast enough)
+            setTimeout(() => {
+                currentChatId = chatId;
+                const chat = localChatHistory[chatId - 1]; // Convert to 0-indexed
+                
+                // Clear messages area
+                const messagesArea = document.getElementById('messages');
+                if (messagesArea) {
+                    messagesArea.innerHTML = '';
+                    
+                    // Load all messages from this chat
+                    if (chat.messages && chat.messages.length > 0) {
+                        chat.messages.forEach(message => {
+                            const messageType = message.from === 'user' ? 'user' : 'assistant';
+                            addMessage(message.content, messageType, false); // Don't add recommendations to loaded messages
+                        });
+                    }
+                }
+                
+                // Update active state in sidebar
+                const menuItems = document.querySelectorAll('.menu-item');
+                menuItems.forEach(item => item.classList.remove('active'));
+                if (currentItem) {
+                    currentItem.classList.add('active');
+                }
+                
+                // Restore original title
+                if (titleSpan) {
+                    titleSpan.textContent = originalTitle;
+                }
+            }, 300); // 300ms delay for smooth UX
+        }
+        
         function startNewChat() {
+            currentChatId = 0; // Set to new chat mode
+            
             const messagesArea = document.getElementById('messages');
             if (messagesArea) {
                 messagesArea.innerHTML = '';
                 addMessage("Hello! I'm your selective mutism virtual coach. I have access to comprehensive knowledge about selective mutism, including treatment approaches, parent guidance, and educational strategies. How can I help you today?", 'assistant');
             }
+            
+            // Update active state in sidebar
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => item.classList.remove('active'));
+            const newChatButton = document.querySelector('.menu-item.new-chat-item');
+            if (newChatButton) {
+                newChatButton.classList.add('active');
+            }
+        }
+        
+        async function saveMessageToHistory(message) {
+            try {
+                const currentUserEmail = localStorage.getItem('currentUserEmail');
+                if (!currentUserEmail || currentChatId === 0) {
+                    console.log('Not saving message - no user email or new chat');
+                    return;
+                }
+                
+                const response = await fetch('http://127.0.0.1:5000/chat/save-message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: currentUserEmail,
+                        chat_id: currentChatId,
+                        message: message
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('Message saved to history');
+                    // Update local chat history
+                    if (currentChatId <= localChatHistory.length) {
+                        const chatIndex = currentChatId - 1;
+                        if (!localChatHistory[chatIndex].messages) {
+                            localChatHistory[chatIndex].messages = [];
+                        }
+                        localChatHistory[chatIndex].messages.push(message);
+                    }
+                } else {
+                    console.error('Failed to save message:', response.status);
+                }
+            } catch (error) {
+                console.error('Error saving message:', error);
+            }
+        }
+        
+        async function createNewChatAfterFirstMessage(userMessage, botResponse) {
+            try {
+                const currentUserEmail = localStorage.getItem('currentUserEmail');
+                if (!currentUserEmail) {
+                    console.log('No user email found, cannot create chat');
+                    return;
+                }
+                
+                const initialMessage = {
+                    from: 'chatbot',
+                    content: "Hello! I'm your selective mutism virtual coach. I have access to comprehensive knowledge about selective mutism, including treatment approaches, parent guidance, and educational strategies. How can I help you today?"
+                };
+                
+                const userFirstMessage = {
+                    from: 'user',
+                    content: userMessage
+                };
+                
+                const response = await fetch('http://127.0.0.1:5000/chat/create-new-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: currentUserEmail,
+                        initial_message: initialMessage,
+                        user_first_message: userFirstMessage
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentChatId = data.chat_id; // Set to the new chat ID
+                    console.log('New chat created with ID:', currentChatId);
+                    
+                    // Reload chat history to reflect the new chat
+                    hasLoadedChatHistory = false;
+                    await loadChatHistory();
+                    
+                    // Save the bot response to the new chat
+                    const botMessage = {
+                        from: 'chatbot',
+                        content: botResponse
+                    };
+                    await saveMessageToHistory(botMessage);
+                } else {
+                    console.error('Failed to create new chat:', response.status);
+                }
+            } catch (error) {
+                console.error('Error creating new chat:', error);
+            }
+        }
+        
+        // Chat title editing functions
+        function startEditChatTitle(chatId, event) {
+            event.stopPropagation(); // Prevent loading the chat
+            
+            const chatItem = document.querySelector(`[data-chat-id="${chatId}"]`);
+            if (!chatItem) return;
+            
+            const titleSpan = chatItem.querySelector('.chat-title');
+            const currentTitle = titleSpan.textContent;
+            
+            // Create input field
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentTitle;
+            input.className = 'chat-title-input';
+            input.style.cssText = `
+                background: transparent;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-size: inherit;
+                font-family: inherit;
+                color: inherit;
+                width: calc(100% - 40px);
+                margin-right: 8px;
+            `;
+            
+            // Handle save on enter or blur
+            const saveTitle = async () => {
+                const newTitle = input.value.trim();
+                if (newTitle && newTitle !== currentTitle) {
+                    // Show loading state
+                    titleSpan.innerHTML = '<span class="loading-ellipsis">Saving</span>';
+                    titleSpan.style.display = '';
+                    input.remove();
+                    
+                    await updateChatTitle(chatId, newTitle);
+                    
+                    // Restore with new title after API call
+                    titleSpan.textContent = newTitle;
+                } else {
+                    // No change, just restore
+                    titleSpan.textContent = newTitle || currentTitle;
+                    titleSpan.style.display = '';
+                    input.remove();
+                }
+            };
+            
+            const cancelEdit = () => {
+                titleSpan.style.display = '';
+                input.remove();
+            };
+            
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveTitle();
+                }
+                if (e.key === 'Escape') {
+                    cancelEdit();
+                }
+            });
+            
+            input.addEventListener('blur', saveTitle);
+            
+            // Replace title with input
+            titleSpan.style.display = 'none';
+            chatItem.insertBefore(input, titleSpan);
+            input.focus();
+            input.select();
+        }
+        
+        async function updateChatTitle(chatId, newTitle) {
+            try {
+                const currentUserEmail = localStorage.getItem('currentUserEmail');
+                if (!currentUserEmail) {
+                    console.log('No user email found, cannot update chat title');
+                    return;
+                }
+                
+                const response = await fetch('http://127.0.0.1:5000/chat/update-title', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: currentUserEmail,
+                        chat_id: chatId,
+                        new_title: newTitle
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('Chat title updated successfully');
+                    // Update local chat history
+                    if (chatId <= localChatHistory.length) {
+                        const chatIndex = chatId - 1;
+                        localChatHistory[chatIndex].title = newTitle;
+                    }
+                } else {
+                    console.error('Failed to update chat title:', response.status);
+                }
+            } catch (error) {
+                console.error('Error updating chat title:', error);
+            }
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
         
         function showSettingsSection(section) {
@@ -3640,6 +4169,25 @@ Error: ${error.message}
                 // Set authentication state
                 isAuthenticated = true;
                 currentUsername = currentUser;
+                
+                // Check if we need to set the email for this user
+                const currentUserEmail = localStorage.getItem('currentUserEmail');
+                console.log('DEBUG: Checking currentUserEmail in redirect flow:', currentUserEmail);
+                
+                if (!currentUserEmail) {
+                    console.log('DEBUG: No email found, mapping based on username:', currentUser);
+                    // Map username to email for known users
+                    if (currentUser === 'clukr') {
+                        localStorage.setItem('currentUserEmail', 'clukr@sprunki.com');
+                        console.log('DEBUG: Set email for clukr user in redirect flow');
+                    } else if (currentUser === 'Mr. Fun Computer') {
+                        localStorage.setItem('currentUserEmail', 'mrfuncomputer@sprunki.com');
+                        console.log('DEBUG: Set email for mrfuncomputer user in redirect flow');
+                    } else {
+                        console.log('DEBUG: Unknown user in redirect flow, no email mapping available');
+                    }
+                }
+                
                 // Clear URL parameters to clean up the address bar
                 const newUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, newUrl);

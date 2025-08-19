@@ -1763,7 +1763,7 @@
         <div class="chat-layout">
             <div class="sidebar">
                 <div class="sidebar-header" style="margin: 0 0 20px 0; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e9ecef;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #333;">Previous Chats</h3>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #333;">Chat History</h3>
                     <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar">
                         ←
                     </button>
@@ -3476,7 +3476,7 @@ Error: ${error.message}
                 menuItem.innerHTML = `
                     <span class="chat-title" onclick="loadChat(${chatId})">${escapeHtml(chat.title)}</span>
                     <button class="edit-chat-btn" onclick="startEditChatTitle(${chatId}, event)" title="Edit chat title">
-                        ✏️
+                        <img src="graphics/edit.svg" alt="Edit" style="width: 16px; height: 16px;">
                     </button>
                 `;
                 

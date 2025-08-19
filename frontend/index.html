@@ -572,6 +572,82 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px); /* Leave space for header and footer */
+            padding-right: 5px; /* Add some padding for the scrollbar */
+        }
+
+        /* Scrollbar styling for sidebar-menu */
+        .sidebar-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-menu::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .sidebar-menu::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .sidebar-menu::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+
+        /* Sidebar toggle button */
+        .sidebar-toggle-btn {
+            background: none;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            line-height: 1;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: #f8f9fa;
+            color: #333;
+            border-color: #d6d9dc;
+        }
+
+        /* Collapsed sidebar styles */
+        .sidebar.collapsed {
+            width: 50px;
+            min-width: 50px;
+            padding: 10px;
+        }
+
+        .sidebar.collapsed .sidebar-header h3 {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-menu {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-toggle-btn {
+            transform: rotate(180deg);
+            margin: 0 auto;
+        }
+
+        /* Chat layout adjustments for collapsed sidebar */
+        .chat-layout.sidebar-collapsed {
+            grid-template-columns: 50px 1fr;
+        }
+
+        /* Smooth transitions */
+        .sidebar {
+            transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+        }
+
+        .chat-layout {
+            transition: grid-template-columns 0.3s ease;
         }
 
         .menu-item {
@@ -589,8 +665,7 @@
         }
 
         .menu-item:hover, .menu-item.active {
-            background: #ffe0bc;
-            color: white;
+            background: #fde6cf;
         }
         
         .chat-title {
@@ -1687,7 +1762,12 @@
     <div id="chat-page">
         <div class="chat-layout">
             <div class="sidebar">
-                <h3 style="margin: 0 0 20px 0; padding: 15px; font-size: 18px; font-weight: 600; color: #333; border-bottom: 1px solid #e9ecef;">Previous Chats</h3>
+                <div class="sidebar-header" style="margin: 0 0 20px 0; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e9ecef;">
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #333;">Previous Chats</h3>
+                    <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar">
+                        ←
+                    </button>
+                </div>
                 
                 <div class="sidebar-menu">
                     <div class="menu-item new-chat-item active" onclick="startNewChat()" style="font-size: 16px;">New Chat</div>
@@ -3325,8 +3405,9 @@ Error: ${error.message}
                 
                 // Show loading state in sidebar
                 const sidebarMenu = document.querySelector('.sidebar-menu');
+                let loadingItem = null;
                 if (sidebarMenu) {
-                    const loadingItem = document.createElement('div');
+                    loadingItem = document.createElement('div');
                     loadingItem.className = 'menu-item loading-placeholder';
                     loadingItem.innerHTML = '<span class="loading-ellipsis">Loading chats</span>';
                     sidebarMenu.appendChild(loadingItem);
@@ -3344,30 +3425,36 @@ Error: ${error.message}
                     const data = await response.json();
                     localChatHistory = data.chat_history || [];
                     hasLoadedChatHistory = true;
+                    
+                    // Remove loading placeholder immediately when data is received
+                    if (loadingItem) {
+                        loadingItem.remove();
+                    }
+                    
                     updateChatHistorySidebar();
                     console.log('Chat history loaded:', localChatHistory.length, 'chats');
                 } else {
                     console.error('Failed to load chat history:', response.status);
                     localChatHistory = [];
+                    
+                    // Remove loading placeholder immediately on error
+                    if (loadingItem) {
+                        loadingItem.remove();
+                    }
+                    
                     updateChatHistorySidebar(); // Still update to remove loading
-                }
-                
-                // Remove loading placeholder
-                const loadingPlaceholder = document.querySelector('.loading-placeholder');
-                if (loadingPlaceholder) {
-                    loadingPlaceholder.remove();
                 }
                 
             } catch (error) {
                 console.error('Error loading chat history:', error);
                 localChatHistory = [];
-                updateChatHistorySidebar(); // Still update to remove loading
                 
-                // Remove loading placeholder
-                const loadingPlaceholder = document.querySelector('.loading-placeholder');
-                if (loadingPlaceholder) {
-                    loadingPlaceholder.remove();
+                // Remove loading placeholder immediately on error
+                if (loadingItem) {
+                    loadingItem.remove();
                 }
+                
+                updateChatHistorySidebar(); // Still update to remove loading
             }
         }
         
@@ -3413,37 +3500,35 @@ Error: ${error.message}
                 titleSpan.innerHTML = '<span class="loading-ellipsis">Loading</span>';
             }
             
-            // Add a small delay to simulate loading (you can remove this if the API is fast enough)
-            setTimeout(() => {
-                currentChatId = chatId;
-                const chat = localChatHistory[chatId - 1]; // Convert to 0-indexed
+            // Load chat immediately - no artificial delay
+            currentChatId = chatId;
+            const chat = localChatHistory[chatId - 1]; // Convert to 0-indexed
+            
+            // Clear messages area
+            const messagesArea = document.getElementById('messages');
+            if (messagesArea) {
+                messagesArea.innerHTML = '';
                 
-                // Clear messages area
-                const messagesArea = document.getElementById('messages');
-                if (messagesArea) {
-                    messagesArea.innerHTML = '';
-                    
-                    // Load all messages from this chat
-                    if (chat.messages && chat.messages.length > 0) {
-                        chat.messages.forEach(message => {
-                            const messageType = message.from === 'user' ? 'user' : 'assistant';
-                            addMessage(message.content, messageType, false); // Don't add recommendations to loaded messages
-                        });
-                    }
+                // Load all messages from this chat
+                if (chat.messages && chat.messages.length > 0) {
+                    chat.messages.forEach(message => {
+                        const messageType = message.from === 'user' ? 'user' : 'assistant';
+                        addMessage(message.content, messageType, false); // Don't add recommendations to loaded messages
+                    });
                 }
-                
-                // Update active state in sidebar
-                const menuItems = document.querySelectorAll('.menu-item');
-                menuItems.forEach(item => item.classList.remove('active'));
-                if (currentItem) {
-                    currentItem.classList.add('active');
-                }
-                
-                // Restore original title
-                if (titleSpan) {
-                    titleSpan.textContent = originalTitle;
-                }
-            }, 300); // 300ms delay for smooth UX
+            }
+            
+            // Update active state in sidebar
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => item.classList.remove('active'));
+            if (currentItem) {
+                currentItem.classList.add('active');
+            }
+            
+            // Restore original title immediately after content is loaded
+            if (titleSpan) {
+                titleSpan.textContent = originalTitle;
+            }
         }
         
         function startNewChat() {
@@ -3461,6 +3546,31 @@ Error: ${error.message}
             const newChatButton = document.querySelector('.menu-item.new-chat-item');
             if (newChatButton) {
                 newChatButton.classList.add('active');
+            }
+        }
+        
+        // Sidebar toggle functionality
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const chatLayout = document.querySelector('.chat-layout');
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            
+            if (sidebar && chatLayout && toggleBtn) {
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    // Expand sidebar
+                    sidebar.classList.remove('collapsed');
+                    chatLayout.classList.remove('sidebar-collapsed');
+                    toggleBtn.innerHTML = '←';
+                    toggleBtn.title = 'Collapse sidebar';
+                } else {
+                    // Collapse sidebar
+                    sidebar.classList.add('collapsed');
+                    chatLayout.classList.add('sidebar-collapsed');
+                    toggleBtn.innerHTML = '→';
+                    toggleBtn.title = 'Expand sidebar';
+                }
             }
         }
         

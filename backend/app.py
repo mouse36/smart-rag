@@ -289,6 +289,62 @@ def login_user():
             'timestamp': datetime.now().isoformat()
         }), 500
 
+@app.route('/auth/logout', methods=['POST'])
+def logout_user():
+    """Handle user logout and update account status"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Request body is required'}), 400
+        
+        username = data.get('username', '').strip()
+        
+        if not username:
+            return jsonify({'error': 'Username is required'}), 400
+        
+        # Update user logout status using JSONBin client
+        success, result = jsonbin_client.logout_user(username)
+        
+        if success:
+            logger.info(f"User logged out successfully: {username}")
+            return jsonify({
+                'success': True,
+                'message': result['message'],
+                'username': username,
+                'timestamp': datetime.now().isoformat()
+            }), 200
+        else:
+            # Handle different error types
+            error_type = result.get('error', 'unknown_error')
+            error_message = result.get('message', 'Logout failed')
+            
+            if error_type == 'user_not_found':
+                status_code = 404  # Not Found
+            elif error_type == 'validation_error':
+                status_code = 400  # Bad Request
+            elif error_type in ['api_auth_failed', 'bin_not_found', 'rate_limit', 'timeout', 'connection_error']:
+                status_code = 503  # Service Unavailable
+                error_message = 'Authentication service temporarily unavailable'
+            else:
+                status_code = 500  # Internal Server Error
+            
+            logger.warning(f"User logout failed for {username}: {error_message}")
+            return jsonify({
+                'success': False,
+                'error': error_type,
+                'message': error_message,
+                'timestamp': datetime.now().isoformat()
+            }), status_code
+            
+    except Exception as e:
+        logger.error(f"Error in user logout endpoint: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'logout_error',
+            'message': 'Logout failed due to server error',
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
 @app.route('/auth/user/<username>', methods=['GET'])
 def get_user_info(username):
     """Get user information (admin endpoint)"""

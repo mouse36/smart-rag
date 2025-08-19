@@ -1756,6 +1756,7 @@
         let currentPage = 'landing';
         let isSignUpMode = false;
         let isAuthenticated = false;
+        let currentUsername = null;
         
         // Language system - use global language manager
         let currentLanguage = 'EN'; // Fallback, will be overridden by languageManager
@@ -1901,7 +1902,7 @@
         
         // Page navigation functions
         function handleLogoClick() {
-            if (isAuthenticated) {
+            if (isAuthenticated && currentUsername) {
                 showChat();
             } else {
                 showLanding();
@@ -2300,8 +2301,10 @@
             await checkBackendHealthOnInteraction();
             
             isAuthenticated = true;
+            currentUsername = document.getElementById('username').value || currentPhoneNumber;
             // Store authentication state for persistence
             localStorage.setItem('isAuthenticated', 'true');
+            localStorage.setItem('currentUser', currentUsername);
             showChat();
         }
         
@@ -2937,11 +2940,38 @@ Error: ${error.message}
             }
         }
         
-        function logout() {
+        async function logout() {
+            // Call backend logout API to update account status
+            if (currentUsername) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            username: currentUsername
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            console.log('User logout status updated on server');
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to update logout status on server:', error);
+                    // Continue with logout even if backend call fails
+                }
+            }
+            
+            // Clear local authentication state
             isAuthenticated = false;
-            // Clear authentication state from localStorage
+            currentUsername = null;
             localStorage.removeItem('isAuthenticated');
             localStorage.removeItem('currentUser');
+            
             showNotification('You have been logged out', 'success');
             showLanding();
         }
@@ -3466,6 +3496,7 @@ Error: ${error.message}
                 console.log('New authentication from login/signup detected');
                 // Set authentication state
                 isAuthenticated = true;
+                currentUsername = currentUser;
                 // Clear URL parameters to clean up the address bar
                 const newUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, newUrl);
@@ -3478,6 +3509,7 @@ Error: ${error.message}
             if (storedAuth === 'true' && currentUser && currentUser.trim() !== '') {
                 console.log('Returning authenticated user detected');
                 isAuthenticated = true;
+                currentUsername = currentUser;
                 showChat();
                 return true;
             }
@@ -3488,6 +3520,7 @@ Error: ${error.message}
                 localStorage.removeItem('isAuthenticated');
                 localStorage.removeItem('currentUser');
                 isAuthenticated = false;
+                currentUsername = null;
             }
             
             console.log('User not authenticated, showing landing page');

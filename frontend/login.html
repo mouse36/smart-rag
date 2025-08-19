@@ -546,7 +546,8 @@
         }
 
         function startUsingCoach() {
-            localStorage.setItem('currentUser', currentPhoneNumber || document.getElementById('username').value);
+            const username = document.getElementById('username').value || currentPhoneNumber;
+            localStorage.setItem('currentUser', username);
             localStorage.setItem('isAuthenticated', 'true');
             // Use replace to avoid back button issues and add a timestamp to force page reload
             window.location.replace('index.html?authenticated=true&redirect=chat&t=' + Date.now());
@@ -752,19 +753,18 @@
                         if (response.ok && result.success) {
                             // Login successful - redirect to chat
                             localStorage.setItem('currentUser', username);
-                            window.location.href = 'index.html#chat';
+                            localStorage.setItem('isAuthenticated', 'true');
+                            window.location.href = 'index.html?authenticated=true&redirect=chat&t=' + Date.now();
                         } else {
-                            // Login failed - show error
-                            const errorMessage = result.message || 'Login failed';
                             
                             if (result.error === 'user_not_found') {
-                                showError('username-error', 'No account found with this username');
+                                showError('username-error', result.message);
                             } else if (result.error === 'invalid_password') {
-                                showError('password-error', 'Incorrect password');
-                            } else if (result.error === 'account_disabled') {
-                                showError('username-error', 'Account is disabled');
+                                showError('password-error', result.message);
+                            } else if (result.error === 'account_disabled' || result.error === 'account_pending') {
+                                showError('username-error', result.message);
                             } else {
-                                showError('username-error', errorMessage);
+                                showError('username-error', result.message);
                             }
                             
                             // Show backend error banner if connection issues

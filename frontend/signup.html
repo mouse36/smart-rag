@@ -546,7 +546,8 @@
         }
 
         function startUsingCoach() {
-            localStorage.setItem('currentUser', currentPhoneNumber || document.getElementById('username').value);
+            const username = document.getElementById('username').value || currentPhoneNumber;
+            localStorage.setItem('currentUser', username);
             localStorage.setItem('isAuthenticated', 'true');
             // Use replace to avoid back button issues and add a timestamp to force page reload
             window.location.replace('index.html?authenticated=true&redirect=chat&t=' + Date.now());
@@ -764,7 +765,7 @@
                             document.getElementById('username-input-phase').style.display = 'none';
                             document.getElementById('success-phase').style.display = 'block';
                         } else {
-                            // Registration failed - show error
+                            // Registration failed - show red error messages
                             const errorMessage = result.message || 'Registration failed';
                             
                             if (result.error === 'user_exists') {

@@ -68,8 +68,7 @@ body {
 }
 
 .language-switcher:hover {
-    background: rgba(255, 137, 0, 0.1);
-    color: #ff8900;
+    background: #eef0f1;
 }
 
 .globe-icon {

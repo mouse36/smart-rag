@@ -798,7 +798,7 @@
         }
 
         .user-profile:hover {
-            background: #fff8f0;
+            background: #eef0f1;
         }
 
         .profile-pic {
@@ -1348,7 +1348,7 @@
         }
 
         .profile-menu-item:hover {
-            background: #fff8f0;
+            background: #eef0f1;
         }
 
         /* Responsive */
@@ -1815,10 +1815,12 @@
                         <span id="current-user-display">User</span>
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {
-                                var currentUser = localStorage.getItem('currentUser');
-                                var currentUserProfilePic = localStorage.getItem('currentUserProfilePic') || 'default';
+                                // Get user data from authentication service
+                                var userData = window.authService ? window.authService.getUserData() : null;
+                                var currentUser = userData ? (userData.username || userData.email) : '';
+                                var currentUserProfilePic = userData ? (userData.profile_picture || 'default') : 'default';
                                 
-                                document.getElementById('current-user-display').textContent = currentUser ? currentUser : '';
+                                document.getElementById('current-user-display').textContent = currentUser;
                                 
                                 // Update profile picture
                                 var profilePicContainer = document.getElementById('profile-pic-container');
@@ -2049,6 +2051,9 @@
     
     <!-- Component loader -->
     <script src="js/components.js"></script>
+    
+    <!-- Authentication Service -->
+    <script src="js/auth-service.js"></script>
 
     <script>
         // Global state
@@ -3184,12 +3189,9 @@
             showTypingIndicator();
             
             try {
-                // Send message to backend API
-                const response = await fetch('http://127.0.0.1:5000/chat', {
+                // Send message to backend API using authenticated request
+                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
                     body: JSON.stringify({ message: message })
                 });
 
@@ -3466,39 +3468,22 @@ Error: ${error.message}
         }
         
         async function logout() {
-            // Call backend logout API to update account status
-            const currentUserEmail = localStorage.getItem('currentUserEmail');
-            if (currentUserEmail) {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            email: currentUserEmail
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.success) {
-                            console.log('User logout status updated on server');
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Failed to update logout status on server:', error);
-                    // Continue with logout even if backend call fails
+            try {
+                // Use authentication service to logout
+                const result = await window.authService.logout();
+                
+                if (result.success) {
+                    console.log('User logged out successfully');
+                } else {
+                    console.warn('Logout warning:', result.message);
                 }
+            } catch (error) {
+                console.error('Logout error:', error);
             }
             
-            // Clear local authentication state
+            // Clear local state
             isAuthenticated = false;
             currentUsername = null;
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('currentUserEmail');
-            localStorage.removeItem('currentUserProfilePic');
             
             // Reset chat history variables
             currentChatId = 0;
@@ -3526,8 +3511,10 @@ Error: ${error.message}
             if (hasLoadedChatHistory) return; // Prevent multiple loads
             
             try {
-                const currentUserEmail = localStorage.getItem('currentUserEmail');
-                const currentUser = localStorage.getItem('currentUser');
+                const userData = window.authService ? window.authService.getUserData() : null;
+                const currentUserEmail = userData ? userData.email : null;
+                const currentUser = userData ? (userData.username || userData.email) : null;
+                
                 if (!currentUserEmail) {
                     console.log('No user email found, skipping chat history load');
                     return;
@@ -3544,11 +3531,8 @@ Error: ${error.message}
                 }
                 
                 const url = `http://127.0.0.1:5000/chat/history/${encodeURIComponent(currentUserEmail)}`;
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
+                const response = await window.authService.authenticatedRequest(url, {
+                    method: 'GET'
                 });
                 
                 if (response.ok) {
@@ -4398,76 +4382,49 @@ Error: ${error.message}
             }
         }
 
-        // Check URL parameters for authentication redirect
-        function checkAuthenticationRedirect() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const isAuthenticatedParam = urlParams.get('authenticated');
-            const redirectParam = urlParams.get('redirect');
-            const storedAuth = localStorage.getItem('isAuthenticated');
-            const currentUser = localStorage.getItem('currentUser');
-            
-            console.log('Auth check:', { isAuthenticatedParam, redirectParam, storedAuth, currentUser });
-            
-            // Check if user is coming from login/signup with authentication
-            if (isAuthenticatedParam === 'true' && redirectParam === 'chat' && currentUser) {
-                console.log('New authentication from login/signup detected');
-                // Set authentication state
-                isAuthenticated = true;
-                currentUsername = currentUser;
-                
-                // Check if we need to set the email for this user
-                const currentUserEmail = localStorage.getItem('currentUserEmail');
-                console.log('DEBUG: Checking currentUserEmail in redirect flow:', currentUserEmail);
-                
-                if (!currentUserEmail) {
-                    console.log('DEBUG: No email found, mapping based on username:', currentUser);
-                    // Map username to email for known users
-                    if (currentUser === 'clukr') {
-                        localStorage.setItem('currentUserEmail', 'clukr@sprunki.com');
-                        console.log('DEBUG: Set email for clukr user in redirect flow');
-                    } else if (currentUser === 'Mr. Fun Computer') {
-                        localStorage.setItem('currentUserEmail', 'mrfuncomputer@sprunki.com');
-                        console.log('DEBUG: Set email for mrfuncomputer user in redirect flow');
+        // Check authentication status using JWT tokens
+        async function checkAuthenticationStatus() {
+            try {
+                // Check if user has a valid JWT token
+                if (window.authService && window.authService.isAuthenticated()) {
+                    // Validate token with server
+                    const isValid = await window.authService.validateToken();
+                    
+                    if (isValid) {
+                        const userData = window.authService.getUserData();
+                        isAuthenticated = true;
+                        currentUsername = userData.username || userData.email;
+                        console.log('User authenticated with valid JWT token:', currentUsername);
+                        return true;
                     } else {
-                        console.log('DEBUG: Unknown user in redirect flow, no email mapping available');
+                        console.log('JWT token is invalid, clearing authentication');
+                        window.authService.clearAuth();
+                        isAuthenticated = false;
+                        currentUsername = null;
+                        return false;
                     }
+                } else {
+                    console.log('No JWT token found, user not authenticated');
+                    isAuthenticated = false;
+                    currentUsername = null;
+                    return false;
                 }
-                
-                // Clear URL parameters to clean up the address bar
-                const newUrl = window.location.pathname;
-                window.history.replaceState({}, document.title, newUrl);
-                // Show chat page directly
-                showChat();
-                return true;
-            }
-            
-            // Check if user was previously authenticated (returning user) - BUT ONLY if they have valid credentials
-            if (storedAuth === 'true' && currentUser && currentUser.trim() !== '') {
-                console.log('Returning authenticated user detected');
-                isAuthenticated = true;
-                currentUsername = currentUser;
-                showChat();
-                return true;
-            }
-            
-            // Clear any invalid or empty authentication state
-            if (!currentUser || currentUser.trim() === '') {
-                console.log('Clearing invalid authentication state');
-                localStorage.removeItem('isAuthenticated');
-                localStorage.removeItem('currentUser');
+            } catch (error) {
+                console.error('Error checking authentication status:', error);
+                // On error, assume not authenticated
                 isAuthenticated = false;
                 currentUsername = null;
+                return false;
             }
-            
-            console.log('User not authenticated, showing landing page');
-            // User is not authenticated, should show landing page
-            return false;
         }
 
         // Initialize page functionality when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check for authentication redirect first, otherwise show landing
-            if (!checkAuthenticationRedirect()) {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication status using JWT tokens
+            const isAuth = await checkAuthenticationStatus();
+            if (isAuth) {
+                showChat();
+            } else {
                 showLanding();
             }
             initializeLanguage();

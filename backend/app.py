@@ -4,6 +4,7 @@ Features:
 - Vector similarity search for knowledge base retrieval
 - DeepSeek API integration for intelligent responses
 - RESTful API endpoints for frontend integration
+- JWT-based authentication for secure session management
 """
 
 from flask import Flask, request, jsonify, send_from_directory, send_file
@@ -11,6 +12,9 @@ from flask_cors import CORS
 import os
 import json
 import time
+import jwt
+from datetime import datetime, timedelta
+from functools import wraps
 
 import logging
 from typing import List, Dict, Any, Optional, Tuple
@@ -47,6 +51,72 @@ jsonbin_client = JSONBinClient(config)
 if config.STRIPE_SECRET_KEY:
     stripe.api_key = config.STRIPE_SECRET_KEY
 
+# JWT Configuration
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-super-secret-jwt-key-change-this-in-production')
+JWT_ALGORITHM = 'HS256'
+JWT_EXPIRATION_HOURS = 24  # Tokens expire after 24 hours
+
+# Blacklisted tokens (for logout functionality)
+blacklisted_tokens = set()
+
+def generate_jwt_token(user_data: Dict[str, Any]) -> str:
+    """Generate a JWT token for authenticated user"""
+    payload = {
+        'user_id': user_data.get('email'),
+        'username': user_data.get('username'),
+        'email': user_data.get('email'),
+        'profile_picture': user_data.get('profile_picture'),
+        'exp': datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS),
+        'iat': datetime.utcnow()
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+def verify_jwt_token(token: str) -> Optional[Dict[str, Any]]:
+    """Verify and decode a JWT token"""
+    try:
+        # Check if token is blacklisted
+        if token in blacklisted_tokens:
+            return None
+        
+        # Decode and verify token
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        logger.warning("JWT token expired")
+        return None
+    except jwt.InvalidTokenError:
+        logger.warning("Invalid JWT token")
+        return None
+    except Exception as e:
+        logger.error(f"Error verifying JWT token: {str(e)}")
+        return None
+
+def require_auth(f):
+    """Decorator to require authentication for protected endpoints"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        
+        if not auth_header:
+            return jsonify({'error': 'Authorization header required'}), 401
+        
+        try:
+            # Extract token from "Bearer <token>" format
+            token = auth_header.split(' ')[1]
+        except IndexError:
+            return jsonify({'error': 'Invalid authorization header format'}), 401
+        
+        # Verify token
+        payload = verify_jwt_token(token)
+        if not payload:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+        
+        # Add user info to request context
+        request.user = payload
+        return f(*args, **kwargs)
+    
+    return decorated_function
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint to verify backend status"""
@@ -74,8 +144,9 @@ def health_check():
         }), 500
 
 @app.route('/chat', methods=['POST'])
+@require_auth
 def chat():
-    """Main chat endpoint for processing user messages"""
+    """Main chat endpoint for processing user messages - requires authentication"""
     try:
         # Parse request data
         data = request.get_json()
@@ -95,21 +166,19 @@ def chat():
             context_passages=relevant_passages
         )
         
-        # Log the interaction
-        logger.info(f"Generated response for: {user_message[:50]}... (Context passages: {len(relevant_passages)})")
+        # Log the interaction with user info
+        user_email = request.user.get('email', 'unknown')
+        logger.info(f"Generated response for user {user_email}: {user_message[:50]}... (Context passages: {len(relevant_passages)})")
         
         return jsonify({
             'response': response,
-            'context_passages_count': len(relevant_passages),
+            'context_sources': len(relevant_passages),
             'timestamp': datetime.now().isoformat()
-        })
+        }), 200
         
     except Exception as e:
         logger.error(f"Error in chat endpoint: {str(e)}")
-        return jsonify({
-            'error': 'Internal server error occurred',
-            'timestamp': datetime.now().isoformat()
-        }), 500
+        return jsonify({'error': 'Failed to process message'}), 500
 
 
 
@@ -230,7 +299,7 @@ def register_user():
 
 @app.route('/auth/login', methods=['POST'])
 def login_user():
-    """Authenticate user login with email and password"""
+    """Authenticate user login with email and password and return JWT token"""
     try:
         data = request.get_json()
         if not data:
@@ -247,6 +316,10 @@ def login_user():
         
         if success:
             logger.info(f"User logged in successfully: {email}")
+            
+            # Generate JWT token
+            token = generate_jwt_token(result)
+            
             return jsonify({
                 'success': True,
                 'message': result['message'],
@@ -255,6 +328,8 @@ def login_user():
                 'profile_picture': result.get('profile_picture'),
                 'last_login': result['last_login'],
                 'created_at': result.get('created_at'),
+                'token': token,
+                'token_expires_in': JWT_EXPIRATION_HOURS * 3600,  # seconds
                 'timestamp': datetime.now().isoformat()
             }), 200
         else:
@@ -292,51 +367,39 @@ def login_user():
         }), 500
 
 @app.route('/auth/logout', methods=['POST'])
+@require_auth
 def logout_user():
-    """Handle user logout and update account status"""
+    """Handle user logout, blacklist token, and update account status"""
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'Request body is required'}), 400
+        # Get token from Authorization header
+        auth_header = request.headers.get('Authorization')
+        token = auth_header.split(' ')[1]
         
-        email = data.get('email', '').strip()
-        
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
+        # Blacklist the token
+        blacklisted_tokens.add(token)
+        logger.info(f"Token blacklisted for user: {request.user.get('email')}")
         
         # Update user logout status using JSONBin client
+        email = request.user.get('email')
         success, result = jsonbin_client.logout_user(email)
         
         if success:
             logger.info(f"User logged out successfully: {email}")
             return jsonify({
                 'success': True,
-                'message': result['message'],
+                'message': 'Successfully logged out',
                 'email': email,
                 'timestamp': datetime.now().isoformat()
             }), 200
         else:
-            # Handle different error types
-            error_type = result.get('error', 'unknown_error')
-            error_message = result.get('message', 'Logout failed')
-            
-            if error_type == 'user_not_found':
-                status_code = 404  # Not Found
-            elif error_type == 'validation_error':
-                status_code = 400  # Bad Request
-            elif error_type in ['api_auth_failed', 'bin_not_found', 'rate_limit', 'timeout', 'connection_error']:
-                status_code = 503  # Service Unavailable
-                error_message = 'Authentication service temporarily unavailable'
-            else:
-                status_code = 500  # Internal Server Error
-            
-            logger.warning(f"User logout failed for {email}: {error_message}")
+            # Even if JSONBin update fails, we've already blacklisted the token
+            logger.warning(f"JSONBin logout update failed for {email}, but token was blacklisted")
             return jsonify({
-                'success': False,
-                'error': error_type,
-                'message': error_message,
+                'success': True,
+                'message': 'Successfully logged out',
+                'email': email,
                 'timestamp': datetime.now().isoformat()
-            }), status_code
+            }), 200
             
     except Exception as e:
         logger.error(f"Error in user logout endpoint: {str(e)}")
@@ -488,6 +551,46 @@ def change_password():
             'error': 'password_change_error',
             'message': 'Password change failed due to server error',
             'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/auth/validate-token', methods=['POST'])
+def validate_token():
+    """Validate JWT token and return user information"""
+    try:
+        data = request.get_json()
+        if not data or 'token' not in data:
+            return jsonify({'error': 'Token is required'}), 400
+        
+        token = data['token'].strip()
+        if not token:
+            return jsonify({'error': 'Token cannot be empty'}), 400
+        
+        # Verify token
+        payload = verify_jwt_token(token)
+        if not payload:
+            return jsonify({
+                'success': False,
+                'error': 'invalid_token',
+                'message': 'Invalid or expired token'
+            }), 401
+        
+        # Token is valid, return user info
+        return jsonify({
+            'success': True,
+            'user': {
+                'email': payload.get('email'),
+                'username': payload.get('username'),
+                'profile_picture': payload.get('profile_picture')
+            },
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error in token validation endpoint: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'validation_error',
+            'message': 'Token validation failed due to server error'
         }), 500
 
 @app.route('/auth/test', methods=['GET'])

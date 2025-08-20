@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SunnyMentor</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="graphics/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="graphics/logo.png">
+    <link rel="shortcut icon" href="graphics/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/components.css">
+    
     <style>
         :root {
             --main-font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -209,7 +213,7 @@
     <div class="main-content">
         <div class="form-container">
             <div class="form-card">
-                <h1 id="form-title" data-en="Welcome Back" data-zh="欢迎回来">Welcome Back</h1>
+                <h1 id="form-title" data-en="Welcome to SunnyMentor" data-zh="欢迎来到SunnyMentor">Welcome to SunnyMentor</h1>
                 
                 <!-- Phone Number Input Phase -->
                 <div id="phone-input-phase">
@@ -299,6 +303,9 @@
     <!-- Component loader -->
     <script src="js/components.js"></script>
     
+    <!-- Authentication Service -->
+    <script src="js/auth-service.js"></script>
+
     <script>
         // API Configuration
         const API_BASE_URL = 'http://127.0.0.1:5000';
@@ -546,11 +553,22 @@
         }
 
         function startUsingCoach() {
-            const username = document.getElementById('username').value;
-            localStorage.setItem('currentUser', username);
-            localStorage.setItem('isAuthenticated', 'true');
-            // Use replace to avoid back button issues and add a timestamp to force page reload
-            window.location.replace('index.html?authenticated=true&redirect=chat&t=' + Date.now());
+            // Use JWT authentication service instead of localStorage
+            if (window.authService) {
+                // For phone-based login, we need to create a token
+                // This is a simplified version - in production you'd want proper phone verification
+                const userData = {
+                    email: currentPhoneNumber + '@phone.local',
+                    username: currentPhoneNumber,
+                    profile_picture: 'default'
+                };
+                
+                // Store temporary authentication (this should be replaced with proper server-side phone verification)
+                window.authService.setToken('temp_phone_token', userData);
+            }
+            
+            // Redirect to main page
+            window.location.href = 'index.html';
         }
 
         function showNotification(message, type) {
@@ -743,40 +761,24 @@
                     showEmailLoading(true);
                     
                     try {
-                        // Login existing user
-                        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                email: email,
-                                password: password
-                            })
-                        });
+                        // Use JWT authentication service for login
+                        const result = await window.authService.login(email, password);
                         
-                        const result = await response.json();
-                        
-                        if (response.ok && result.success) {
+                        if (result.success) {
                             // Login successful - redirect to chat
-                            localStorage.setItem('currentUser', result.username || email);
-                            localStorage.setItem('currentUserProfilePic', result.profile_picture || 'default');
-                            localStorage.setItem('isAuthenticated', 'true');
-                            window.location.href = 'index.html?authenticated=true&redirect=chat&t=' + Date.now();
+                            window.location.href = 'index.html';
                         } else {
-                            
-                            if (result.error === 'user_not_found') {
-                                showError('email-error', result.message);
-                            } else if (result.error === 'invalid_password') {
-                                showError('password-error', result.message);
-                            } else if (result.error === 'account_disabled' || result.error === 'account_pending') {
-                                showError('email-error', result.message);
+                            // Show error message
+                            if (result.error === 'invalid_password') {
+                                showError('password-error', 'Invalid password');
+                            } else if (result.error === 'user_not_found') {
+                                showError('email-error', 'User not found');
                             } else {
-                                showError('email-error', result.message);
+                                showError('email-error', result.message || 'Login failed');
                             }
                             
                             // Show backend error banner if connection issues
-                            if (!response.ok && response.status >= 500) {
+                            if (result.error === 'network_error') {
                                 if (shouldShowBackendErrorBanner()) {
                                     showBackendErrorBanner();
                                 }

@@ -14,6 +14,9 @@ requests==2.32.4
 # Payment Processing
 stripe==12.4.0
 
+# Authentication
+PyJWT==2.8.0
+
 
 
 # Data Processing

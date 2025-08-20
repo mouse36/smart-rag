@@ -458,7 +458,7 @@
         /* Chat Interface */
         .chat-layout {
             display: grid;
-            grid-template-columns: 280px 1fr;
+            grid-template-columns: 295px 1fr;
             height: 100vh;
             background: white;
         }
@@ -469,6 +469,8 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 1;
         }
 
         .sidebar-logo {
@@ -601,19 +603,31 @@
             background: none;
             border: 1px solid #e9ecef;
             border-radius: 4px;
-            padding: 6px 10px;
+            padding: 0;
             font-size: 16px;
             font-weight: bold;
             color: #666;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
             line-height: 1;
+            position: absolute;
+            left: 280px;
+            top: 45px;
+            z-index: 99999;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            transform: none;
         }
 
         .sidebar-toggle-btn:hover {
             background: #f8f9fa;
             color: #333;
             border-color: #d6d9dc;
+            transform: none;
         }
 
         /* Collapsed sidebar styles */
@@ -622,10 +636,32 @@
             width: 50px;
             min-width: 50px;
             padding: 10px;
+            overflow: visible;
         }
 
         .sidebar.collapsed .sidebar-header h3 {
-            display: none;
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        .sidebar.collapsed .sidebar-header h3 img {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        .sidebar.collapsed .sidebar-header h3 span {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        .sidebar.collapsed .logo-container {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            display: none !important;
+            visibility: hidden !important;
         }
 
         .sidebar.collapsed .sidebar-menu {
@@ -634,17 +670,34 @@
 
         .sidebar.collapsed .sidebar-toggle-btn {
             transform: rotate(180deg);
-            margin: 0 auto;
+            z-index: 99999;
+            position: absolute;
+            left: 50px;
+            top: 45px;
+            display: flex !important;
+            visibility: visible !important;
         }
+
+        .sidebar.collapsed .sidebar-toggle-btn:hover {
+            transform: rotate(180deg);
+        }
+
+
 
         /* Chat layout adjustments for collapsed sidebar */
         .chat-layout.sidebar-collapsed {
-            grid-template-columns: 50px 1fr;
+            grid-template-columns: 65px 1fr;
         }
 
         /* Smooth transitions */
         .sidebar {
             transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+            overflow: visible;
+        }
+
+        .sidebar-header, .sidebar-menu {
+            min-width: 250px;
+            width: 250px;
         }
 
         .chat-layout {
@@ -724,7 +777,6 @@
         /* Loading ellipsis animation */
         .loading-ellipsis {
             display: inline-block;
-            font-weight: bold;
             animation: ellipsis 1.5s infinite;
         }
         
@@ -769,6 +821,8 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            z-index: 2;
+            position: relative;
         }
 
         .chat-header {
@@ -782,7 +836,6 @@
 
         .chat-title {
             font-size: 16px;
-            font-weight: 600;
             color: #2d3748;
         }
 
@@ -818,6 +871,8 @@
             padding: 20px 30px;
             overflow-y: auto;
             background: #ffffff;
+            z-index: 2;
+            position: relative;
         }
 
         .message {
@@ -1779,14 +1834,16 @@
     <div id="chat-page">
         <div class="chat-layout">
             <div class="sidebar">
+                <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
+                    <span class="logo-text" style="font-size: 24px;">
+                        <span class="logo-sunny" data-en="Sunny" data-zh="阳光">Sunny</span><span class="logo-mentor" data-en="Mentor" data-zh="教练">Mentor</span>
+                    </span>
+                </div>
                 <div class="sidebar-header" style="margin: 0 0 20px 0; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e9ecef;">
                     <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
                         <img src="graphics/chat-history.svg" style="width: 24px; height: 24px;">
                         <span data-en="Chat History" data-zh="聊天记录">Chat History</span>
                     </h3>
-                    <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Close Chat History" data-title-en="Close Chat History" data-title-zh="关闭聊天记录">
-                        ←
-                    </button>
                 </div>
                 
                 <div class="sidebar-menu">
@@ -1796,9 +1853,10 @@
                     </div>
                     <!-- Chat history items will be dynamically added here -->
                 </div>
-                
-
             </div>
+            <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Close Chat History" data-title-en="Close Chat History" data-title-zh="关闭聊天记录">
+                ←
+            </button>
             
             <div class="chat-main">
                 <div class="chat-header">
@@ -3511,9 +3569,16 @@ Error: ${error.message}
             if (hasLoadedChatHistory) return; // Prevent multiple loads
             
             try {
+                // Try to get user data from JWT first, fall back to localStorage
                 const userData = window.authService ? window.authService.getUserData() : null;
-                const currentUserEmail = userData ? userData.email : null;
-                const currentUser = userData ? (userData.username || userData.email) : null;
+                let currentUserEmail = userData ? userData.email : null;
+                let currentUser = userData ? (userData.username || userData.email) : null;
+                
+                // Fall back to localStorage if JWT data is not available
+                if (!currentUserEmail) {
+                    currentUserEmail = localStorage.getItem('currentUserEmail');
+                    currentUser = localStorage.getItem('currentUser');
+                }
                 
                 if (!currentUserEmail) {
                     console.log('No user email found, skipping chat history load');
@@ -3530,8 +3595,7 @@ Error: ${error.message}
                     sidebarMenu.appendChild(loadingItem);
                 }
                 
-                const url = `http://127.0.0.1:5000/chat/history/${encodeURIComponent(currentUserEmail)}`;
-                const response = await window.authService.authenticatedRequest(url, {
+                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat/history', {
                     method: 'GET'
                 });
                 
@@ -3589,12 +3653,11 @@ Error: ${error.message}
                 
                 menuItem.style.display = 'flex';
                 menuItem.style.alignItems = 'center';
-                menuItem.style.gap = '8px';
-                menuItem.style.justifyContent = 'flex-start';
+                menuItem.style.justifyContent = 'space-between';
                 
                 menuItem.innerHTML = `
-                    <span onclick="loadChat(${chatId})">${escapeHtml(chat.title)}</span>
-                    <button class="edit-chat-btn" onclick="startEditChatTitle(${chatId}, event)" title="Edit chat title">
+                    <span class="chat-title" onclick="loadChat(${chatId})" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">${escapeHtml(chat.title)}</span>
+                    <button class="edit-chat-btn" onclick="startEditChatTitle(${chatId}, event)" title="Edit chat title" style="flex-shrink: 0;">
                         <img src="graphics/edit.svg" alt="Edit" style="width: 16px; height: 16px;">
                     </button>
                 `;
@@ -3683,31 +3746,29 @@ Error: ${error.message}
                     chatLayout.classList.remove('sidebar-collapsed');
                     toggleBtn.innerHTML = '←';
                     toggleBtn.title = 'Collapse Sidebar';
+                    toggleBtn.style.left = '280px';
                 } else {
                     // Collapse sidebar
                     sidebar.classList.add('collapsed');
                     chatLayout.classList.add('sidebar-collapsed');
-                    toggleBtn.innerHTML = '←';
+                    toggleBtn.innerHTML = '→';
                     toggleBtn.title = 'Expand Sidebar';
+                    toggleBtn.style.left = '50px';
                 }
             }
         }
         
         async function saveMessageToHistory(message) {
             try {
-                const currentUserEmail = localStorage.getItem('currentUserEmail');
-                if (!currentUserEmail || currentChatId === 0) {
-                    console.log('Not saving message - no user email or new chat');
+                if (currentChatId === 0) {
+                    console.log('Not saving message - new chat');
                     return;
                 }
                 
-                const response = await fetch('http://127.0.0.1:5000/chat/save-message', {
+                // Use authenticated request instead of passing email manually
+                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat/save-message', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
                     body: JSON.stringify({
-                        email: currentUserEmail,
                         chat_id: currentChatId,
                         message: message
                     })
@@ -3733,12 +3794,6 @@ Error: ${error.message}
         
         async function createNewChatAfterFirstMessage(userMessage, botResponse) {
             try {
-                const currentUserEmail = localStorage.getItem('currentUserEmail');
-                if (!currentUserEmail) {
-                    console.log('No user email found, cannot create chat');
-                    return;
-                }
-                
                 const initialMessage = {
                     from: 'chatbot',
                     content: "Hello! I'm your selective mutism virtual coach. I have access to comprehensive knowledge about selective mutism, including treatment approaches, parent guidance, and educational strategies. How can I help you today?"
@@ -3749,13 +3804,10 @@ Error: ${error.message}
                     content: userMessage
                 };
                 
-                const response = await fetch('http://127.0.0.1:5000/chat/create-new-chat', {
+                // Use authenticated request instead of passing email manually
+                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat/create-new-chat', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
                     body: JSON.stringify({
-                        email: currentUserEmail,
                         initial_message: initialMessage,
                         user_first_message: userFirstMessage
                     })
@@ -3857,19 +3909,10 @@ Error: ${error.message}
         
         async function updateChatTitle(chatId, newTitle) {
             try {
-                const currentUserEmail = localStorage.getItem('currentUserEmail');
-                if (!currentUserEmail) {
-                    console.log('No user email found, cannot update chat title');
-                    return;
-                }
-                
-                const response = await fetch('http://127.0.0.1:5000/chat/update-title', {
+                // Use authenticated request instead of passing email manually
+                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat/update-title', {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
                     body: JSON.stringify({
-                        email: currentUserEmail,
                         chat_id: chatId,
                         new_title: newTitle
                     })

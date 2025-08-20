@@ -622,15 +622,18 @@ def test_auth_connection():
             'timestamp': datetime.now().isoformat()
         }), 500
 
-@app.route('/chat/history/<email>', methods=['GET'])
-def get_chat_history(email):
-    """Get chat history for a specific user"""
+@app.route('/chat/history', methods=['GET'])
+@require_auth
+def get_chat_history():
+    """Get chat history for the authenticated user"""
     try:
-        if not email or not email.strip():
-            return jsonify({'error': 'Email is required'}), 400
+        # Get authenticated user's email from JWT token
+        email = request.user.get('email', '').strip()
+        if not email:
+            return jsonify({'error': 'User email not found in token'}), 401
         
         # Get chat history using JSONBin client
-        success, result = jsonbin_client.get_user_chat_history(email.strip())
+        success, result = jsonbin_client.get_user_chat_history(email)
         
         if success:
             return jsonify({
@@ -668,19 +671,24 @@ def get_chat_history(email):
         }), 500
 
 @app.route('/chat/save-message', methods=['POST'])
+@require_auth
 def save_message():
-    """Save a message to a user's chat history"""
+    """Save a message to a user's chat history - requires authentication"""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Request body is required'}), 400
         
-        email = data.get('email', '').strip()
+        # Get authenticated user's email from JWT token
+        email = request.user.get('email', '').strip()
+        if not email:
+            return jsonify({'error': 'User email not found in token'}), 401
+        
         chat_id = data.get('chat_id')
         message = data.get('message')
         
-        if not email or chat_id is None or not message:
-            return jsonify({'error': 'Email, chat_id, and message are required'}), 400
+        if chat_id is None or not message:
+            return jsonify({'error': 'chat_id and message are required'}), 400
         
         if not isinstance(message, dict) or 'from' not in message or 'content' not in message:
             return jsonify({'error': 'Message must be an object with "from" and "content" fields'}), 400
@@ -728,19 +736,24 @@ def save_message():
         }), 500
 
 @app.route('/chat/create-new-chat', methods=['POST'])
+@require_auth
 def create_new_chat():
-    """Create a new chat for a user"""
+    """Create a new chat for a user - requires authentication"""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Request body is required'}), 400
         
-        email = data.get('email', '').strip()
+        # Get authenticated user's email from JWT token
+        email = request.user.get('email', '').strip()
+        if not email:
+            return jsonify({'error': 'User email not found in token'}), 401
+        
         initial_message = data.get('initial_message')
         user_first_message = data.get('user_first_message')
         
-        if not email or not initial_message or not user_first_message:
-            return jsonify({'error': 'Email, initial_message, and user_first_message are required'}), 400
+        if not initial_message or not user_first_message:
+            return jsonify({'error': 'initial_message and user_first_message are required'}), 400
         
         # Validate message format
         for msg, name in [(initial_message, 'initial_message'), (user_first_message, 'user_first_message')]:
@@ -787,19 +800,24 @@ def create_new_chat():
         }), 500
 
 @app.route('/chat/update-title', methods=['PUT'])
+@require_auth
 def update_chat_title():
-    """Update the title of a specific chat"""
+    """Update the title of a specific chat - requires authentication"""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Request body is required'}), 400
         
-        email = data.get('email', '').strip()
+        # Get authenticated user's email from JWT token
+        email = request.user.get('email', '').strip()
+        if not email:
+            return jsonify({'error': 'User email not found in token'}), 401
+        
         chat_id = data.get('chat_id')
         new_title = data.get('new_title', '').strip()
         
-        if not email or chat_id is None or not new_title:
-            return jsonify({'error': 'Email, chat_id, and new_title are required'}), 400
+        if chat_id is None or not new_title:
+            return jsonify({'error': 'chat_id and new_title are required'}), 400
         
         # Update chat title using JSONBin client
         success, result = jsonbin_client.update_chat_title(email, chat_id, new_title)

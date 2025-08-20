@@ -600,7 +600,7 @@
 
         /* Sidebar toggle button */
         .sidebar-toggle-btn {
-            background: none;
+            background: white;
             border: 1px solid #e9ecef;
             border-radius: 4px;
             padding: 0;
@@ -1835,14 +1835,12 @@
         <div class="chat-layout">
             <div class="sidebar">
                 <!-- Black text logo for the chat page -->
-                <div class="logo-container clickable-logo" style="margin: 5px 0;">
-                    <span class="logo-text" style="font-size: 24px; padding: 8px;">SunnyMentor</span>
-                </div>
+                <span style="font-size: 24px; padding: 8px;">SunnyMentor</span>
 
                 <!-- Chat history header -->
                 <div class="sidebar-header" style="margin: 0 0 20px 0; padding: 8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e9ecef;">
                     <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
-                        <!-- <img src="graphics/chat-history.svg" style="width: 24px; height: 24px;"> -->
+                        <img src="graphics/chat-history.svg" style="width: 24px; height: 24px;">
                         <span data-en="Chat History" data-zh="聊天记录">Chat History</span>
                     </h3>
                 </div>
@@ -1928,7 +1926,7 @@
                 
                 <div class="input-area">
                     <div class="input-container">
-                        <textarea class="input-field" id="message-input" placeholder="Ask me anything about your content..." data-placeholder-en="Ask me anything about your content..." data-placeholder-zh="询问我任何关于内容的问题..." rows="1"></textarea>
+                        <textarea class="input-field" id="message-input" placeholder="Ask me anything..." data-placeholder-en="Ask me anything..." data-placeholder-zh="询问我任何..." rows="1"></textarea>
                         <button class="send-button" id="send-button" onclick="sendMessage()">
                             ➤
                         </button>

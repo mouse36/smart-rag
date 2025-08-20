@@ -281,15 +281,16 @@
                     </p>
                 </div>
                 
-                <!-- Success Phase -->
-                <div id="success-phase" style="display: none;">
-                    <div class="verification-message" style="background: #f0fff4; border-color: #9ae6b4;">
-                        <h3 style="color: #38a169;" data-en="Welcome! 🎉" data-zh="欢迎！🎉">Welcome! 🎉</h3>
-                        <p style="color: #2d3748;" data-en="You're all set to start using your Virtual AI Coach" data-zh="你已准备好开始使用你的虚拟AI教练">You're all set to start using your Virtual AI Coach</p>
+                <!-- Pending Approval Phase -->
+                <div id="pending-approval-phase" style="display: none;">
+                    <div class="verification-message" style="background: #fff5f5; border-color: #feb2b2;">
+                        <h3 style="color: #c53030;" data-en="Account Pending Approval" data-zh="账户待审核">Account Pending Approval</h3>
+                        <p style="color: #2d3748;" data-en="Thank you for signing up! Your account has been created and is now pending approval from an administrator." data-zh="感谢您的注册！您的账户已创建，正在等待管理员审核。">Thank you for signing up! Your account has been created and is now pending approval from an administrator.</p>
+                        <p style="color: #2d3748; margin-top: 10px;" data-en="You will be able to access the chatbot once your account has been approved. We'll notify you when this happens." data-zh="一旦您的账户获得批准，您就可以访问聊天机器人。我们会在此事发生时通知您。">You will be able to access the chatbot once your account has been approved. We'll notify you when this happens.</p>
                     </div>
                     
-                    <button onclick="startUsingCoach()" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;" data-en="Start Using Virtual Coach" data-zh="开始使用虚拟教练">
-                        Start Using Virtual Coach
+                    <button onclick="returnToLanding()" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;" data-en="Return to Landing Page" data-zh="返回首页">
+                        Return to Landing Page
                     </button>
                 </div>
             </div>
@@ -517,7 +518,7 @@
             document.getElementById('phone-input-phase').style.display = 'none';
             document.getElementById('email-input-phase').style.display = 'block';
             document.getElementById('verification-phase').style.display = 'none';
-            document.getElementById('success-phase').style.display = 'none';
+            document.getElementById('pending-approval-phase').style.display = 'none';
             clearErrors();
         }
 
@@ -525,14 +526,14 @@
             document.getElementById('phone-input-phase').style.display = 'block';
             document.getElementById('email-input-phase').style.display = 'none';
             document.getElementById('verification-phase').style.display = 'none';
-            document.getElementById('success-phase').style.display = 'none';
+            document.getElementById('pending-approval-phase').style.display = 'none';
             clearErrors();
         }
 
         function goBackToPhoneInput() {
             document.getElementById('phone-input-phase').style.display = 'block';
             document.getElementById('verification-phase').style.display = 'none';
-            document.getElementById('success-phase').style.display = 'none';
+            document.getElementById('pending-approval-phase').style.display = 'none';
             
             // Clear phone input and errors
             document.getElementById('phone').value = '';
@@ -545,12 +546,9 @@
             showNotification('Verification code resent!', 'success');
         }
 
-        function startUsingCoach() {
-            const username = document.getElementById('username').value || currentPhoneNumber;
-            localStorage.setItem('currentUser', username);
-            localStorage.setItem('isAuthenticated', 'true');
-            // Use replace to avoid back button issues and add a timestamp to force page reload
-            window.location.replace('index.html?authenticated=true&redirect=chat&t=' + Date.now());
+        function returnToLanding() {
+            // Redirect to the landing page
+            window.location.href = 'index.html';
         }
 
         function showNotification(message, type) {
@@ -698,9 +696,9 @@
                         showVerificationLoading(false);
                         
                         if (enteredCode === generatedCode) {
-                            // Code matches - proceed to success
+                            // Code matches - proceed to pending approval
                             document.getElementById('verification-phase').style.display = 'none';
-                            document.getElementById('success-phase').style.display = 'block';
+                            document.getElementById('pending-approval-phase').style.display = 'block';
                         } else {
                             // Code doesn't match
                             showError('verification-error', 'Invalid verification code. Please try again.');
@@ -763,9 +761,9 @@
                         const result = await response.json();
                         
                         if (response.ok && result.success) {
-                            // Registration successful - show success
+                            // Registration successful - show pending approval
                             document.getElementById('email-input-phase').style.display = 'none';
-                            document.getElementById('success-phase').style.display = 'block';
+                            document.getElementById('pending-approval-phase').style.display = 'block';
                         } else {
                             // Registration failed - show red error messages
                             const errorMessage = result.message || 'Registration failed';

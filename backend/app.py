@@ -23,11 +23,14 @@ from datetime import datetime
 import stripe
 
 # Import custom modules
-from vector_search import VectorSearchEngine
-from deepseek_client import DeepSeekClient
-
 from jsonbin_client import JSONBinClient
 from config import Config
+
+# Conditionally import AI/ML modules based on API_CALLS_ENABLED
+config = Config()
+if config.API_CALLS_ENABLED:
+    from vector_search import VectorSearchEngine
+    from deepseek_client import DeepSeekClient
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -41,11 +44,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Initialize components
-config = Config()
-vector_engine = VectorSearchEngine(config)
-deepseek_client = DeepSeekClient(config)
-
 jsonbin_client = JSONBinClient(config)
+
+# Conditionally initialize AI/ML components
+if config.API_CALLS_ENABLED:
+    vector_engine = VectorSearchEngine(config)
+    deepseek_client = DeepSeekClient(config)
+else:
+    vector_engine = None
+    deepseek_client = None
 
 # Initialize Stripe
 if config.STRIPE_SECRET_KEY:
@@ -129,8 +136,8 @@ def health_check():
                 'mode': 'live_api' if config.API_CALLS_ENABLED else 'placeholder'
             },
             'components': {
-                'vector_engine': vector_engine.is_ready(),
-                'deepseek_client': deepseek_client.is_ready(),
+                'vector_engine': vector_engine.is_ready() if vector_engine else False,
+                'deepseek_client': deepseek_client.is_ready() if deepseek_client else False,
                 'jsonbin_client': jsonbin_client.is_ready(),
                 'stripe_configured': config.is_stripe_configured()
             }
@@ -156,6 +163,14 @@ def chat():
         user_message = data['message'].strip()
         if not user_message:
             return jsonify({'error': 'Message cannot be empty'}), 400
+        
+        # Check if API calls are enabled
+        if not config.API_CALLS_ENABLED:
+            return jsonify({
+                'response': 'API calls are currently disabled. This is a placeholder response.',
+                'context_sources': 0,
+                'timestamp': datetime.now().isoformat()
+            }), 200
         
         # Retrieve relevant context from knowledge base
         relevant_passages = vector_engine.search(user_message, top_k=7)
@@ -192,6 +207,16 @@ def search_knowledge_base():
         
         query = data['query'].strip()
         top_k = data.get('top_k', 5)
+        
+        # Check if API calls are enabled
+        if not config.API_CALLS_ENABLED:
+            return jsonify({
+                'query': query,
+                'results': [],
+                'count': 0,
+                'message': 'API calls are currently disabled. Search functionality is not available.',
+                'timestamp': datetime.now().isoformat()
+            }), 200
         
         results = vector_engine.search(query, top_k=top_k)
         
@@ -1096,16 +1121,20 @@ def serve_static(filename):
 
 if __name__ == '__main__':
     try:
-        # Initialize the vector engine (load embeddings)
-        logger.info("Initializing vector search engine...")
-        vector_engine.initialize()
-        
         # Test connections
         logger.info("Testing component connections...")
-        if not vector_engine.is_ready():
-            raise Exception("Vector engine not ready")
-        if not deepseek_client.is_ready():
-            raise Exception("DeepSeek client not ready")
+        
+        if config.API_CALLS_ENABLED:
+            # Initialize the vector engine (load embeddings)
+            logger.info("Initializing vector search engine...")
+            vector_engine.initialize()
+            
+            if not vector_engine.is_ready():
+                raise Exception("Vector engine not ready")
+            if not deepseek_client.is_ready():
+                raise Exception("DeepSeek client not ready")
+        else:
+            logger.info("Skipping AI/ML component initialization - API calls disabled")
 
         if not jsonbin_client.is_ready():
             raise Exception("JSONBin client not ready - check JSONBIN_API_KEY and JSONBIN_BIN_ID")

@@ -80,11 +80,20 @@ def check_requirements():
     # Check Python dependencies
     try:
         import flask
-        import sentence_transformers
-        import faiss
-        import numpy
         import requests
-        print("✅ All required Python packages are installed")
+        print("✅ Core Python packages are installed")
+        
+        # Check AI/ML dependencies only if needed
+        from config import Config
+        config = Config()
+        if config.API_CALLS_ENABLED:
+            import sentence_transformers
+            import faiss
+            import numpy
+            print("✅ AI/ML packages are installed")
+        else:
+            print("⚠️  Skipping AI/ML package check - API calls disabled")
+            
     except ImportError as e:
         print(f"❌ ERROR: Missing required package: {e}")
         print("Please install requirements: pip install -r requirements.txt")
@@ -107,7 +116,11 @@ def main():
     
     try:
         # Import and run the Flask app
-        from app import app, config, vector_engine, deepseek_client
+        from app import app, config
+        
+        # Conditionally import AI/ML components
+        if config.API_CALLS_ENABLED:
+            from app import vector_engine, deepseek_client
         
         # Validate configuration
         config_error = config.validate()
@@ -124,15 +137,17 @@ def main():
         
         # Initialize components
         print("\n🔄 Initializing components...")
-        print("  📚 Loading knowledge base and generating embeddings...")
-        vector_engine.initialize()
         
-        print("  🔍 Testing DeepSeek API connection...")
-        if config.API_CALLS_ENABLED and not deepseek_client.is_ready():
-            print("❌ DeepSeek API connection failed")
-            sys.exit(1)
-        elif not config.API_CALLS_ENABLED:
-            print("⚠️  Skipping API test - API calls disabled")
+        if config.API_CALLS_ENABLED:
+            print("  📚 Loading knowledge base and generating embeddings...")
+            vector_engine.initialize()
+            
+            print("  🔍 Testing DeepSeek API connection...")
+            if not deepseek_client.is_ready():
+                print("❌ DeepSeek API connection failed")
+                sys.exit(1)
+        else:
+            print("⚠️  Skipping AI/ML component initialization - API calls disabled")
         
 
         

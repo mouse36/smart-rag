@@ -37,10 +37,20 @@ Frontend (HTML/JS) → Backend (Flask) → [DeepSeek API + Vector Search]
    ```
 
 2. **Install Python dependencies**
+   
+   **Option A: Full installation (with AI/ML capabilities)**
    ```bash
    cd backend
    pip install -r requirements.txt
    ```
+   
+   **Option B: Core installation only (without AI/ML capabilities)**
+   ```bash
+   cd backend
+   pip install -r requirements-core.txt
+   ```
+   
+   > **Note**: If you choose Option B, you'll need to set `API_CALLS_ENABLED=false` in your environment variables to disable AI/ML features.
 
 3. **Install and start Redis (optional but recommended)**
    ```bash
@@ -81,6 +91,7 @@ Frontend (HTML/JS) → Backend (Flask) → [DeepSeek API + Vector Search]
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `API_CALLS_ENABLED` | `true` | Enable/disable AI/ML features (embeddings, vector search, DeepSeek API) |
 | `DEEPSEEK_API_KEY` | *(required)* | Your DeepSeek API key |
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek API base URL |
 | `DEEPSEEK_MODEL` | `deepseek-chat` | Model to use |
@@ -95,6 +106,26 @@ Frontend (HTML/JS) → Backend (Flask) → [DeepSeek API + Vector Search]
 ### Advanced Configuration
 
 You can customize the system by modifying values in `backend/config.py` or setting environment variables.
+
+### Conditional Dependencies
+
+The application supports running in two modes:
+
+**Full Mode (API_CALLS_ENABLED=true)**
+- Includes all AI/ML capabilities (embeddings, vector search, DeepSeek API)
+- Requires: `sentence-transformers`, `faiss-cpu`, `numpy`, `torch`
+- Provides full chat functionality with intelligent responses
+
+**Core Mode (API_CALLS_ENABLED=false)**
+- Only includes core functionality (authentication, payments, basic API endpoints)
+- Skips AI/ML libraries to reduce installation size and startup time
+- Chat endpoints return placeholder responses
+- Useful for development, testing, or when AI features aren't needed
+
+To switch between modes:
+1. Set the `API_CALLS_ENABLED` environment variable
+2. Install the appropriate requirements file
+3. Restart the application
 
 ## Knowledge Base
 

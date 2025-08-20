@@ -1834,14 +1834,15 @@
     <div id="chat-page">
         <div class="chat-layout">
             <div class="sidebar">
-                <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
-                    <span class="logo-text" style="font-size: 24px;">
-                        <span class="logo-sunny" data-en="Sunny" data-zh="阳光">Sunny</span><span class="logo-mentor" data-en="Mentor" data-zh="教练">Mentor</span>
-                    </span>
+                <!-- Black text logo for the chat page -->
+                <div class="logo-container clickable-logo" style="margin: 5px 0;">
+                    <span class="logo-text" style="font-size: 24px; padding: 8px;">SunnyMentor</span>
                 </div>
-                <div class="sidebar-header" style="margin: 0 0 20px 0; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e9ecef;">
+
+                <!-- Chat history header -->
+                <div class="sidebar-header" style="margin: 0 0 20px 0; padding: 8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e9ecef;">
                     <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
-                        <img src="graphics/chat-history.svg" style="width: 24px; height: 24px;">
+                        <!-- <img src="graphics/chat-history.svg" style="width: 24px; height: 24px;"> -->
                         <span data-en="Chat History" data-zh="聊天记录">Chat History</span>
                     </h3>
                 </div>
@@ -1860,10 +1861,8 @@
             
             <div class="chat-main">
                 <div class="chat-header">
-                    <!-- Logo (The chat page only shows the text logo, not the image) -->
-                    <div class="logo-container clickable-logo" style="margin: 5px 0;">
-                        <span class="logo-text" style="font-size: 24px;">SunnyMentor</span>
-                    </div>
+                    <!-- Chat title -->
+                    <span style="font-size: 24px;">Chatj</span>
                     
                     <!-- Language switcher and user account menu on the right -->
                     <div style="display: flex; align-items: center; gap: 15px;">

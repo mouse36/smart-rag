@@ -1862,7 +1862,7 @@
             <div class="chat-main">
                 <div class="chat-header">
                     <!-- Chat title -->
-                    <span style="font-size: 24px;">Chatj</span>
+                    <span id="chat-title-display" style="font-size: 20px;">Loading...</span>
                     
                     <!-- Language switcher and user account menu on the right -->
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -2434,6 +2434,9 @@
 
             // Start periodic health monitoring when entering chat
             startBackendHealthMonitoring();
+            
+            // Update the chat title display
+            updateChatTitleDisplay();
         }
         
         async function checkBackendHealth() {
@@ -3610,6 +3613,9 @@ Error: ${error.message}
                     
                     updateChatHistorySidebar();
                     console.log('Chat history loaded:', localChatHistory.length, 'chats');
+                    
+                    // Update the chat title display after loading history
+                    updateChatTitleDisplay();
                 } else {
                     console.error('Failed to load chat history:', response.status);
                     localChatHistory = [];
@@ -3620,19 +3626,25 @@ Error: ${error.message}
                     }
                     
                     updateChatHistorySidebar(); // Still update to remove loading
+                    
+                    // Update the chat title display even on error
+                    updateChatTitleDisplay();
                 }
                 
-            } catch (error) {
-                console.error('Error loading chat history:', error);
-                localChatHistory = [];
-                
-                // Remove loading placeholder immediately on error
-                if (loadingItem) {
-                    loadingItem.remove();
+                            } catch (error) {
+                    console.error('Error loading chat history:', error);
+                    localChatHistory = [];
+                    
+                    // Remove loading placeholder immediately on error
+                    if (loadingItem) {
+                        loadingItem.remove();
+                    }
+                    
+                    updateChatHistorySidebar(); // Still update to remove loading
+                    
+                    // Update the chat title display even on error
+                    updateChatTitleDisplay();
                 }
-                
-                updateChatHistorySidebar(); // Still update to remove loading
-            }
         }
         
         function updateChatHistorySidebar() {
@@ -3710,6 +3722,9 @@ Error: ${error.message}
             if (titleSpan) {
                 titleSpan.textContent = originalTitle;
             }
+            
+            // Update the chat title display in the header
+            updateChatTitleDisplay();
         }
         
         function startNewChat() {
@@ -3728,6 +3743,9 @@ Error: ${error.message}
             if (newChatButton) {
                 newChatButton.classList.add('active');
             }
+            
+            // Update the chat title display in the header
+            updateChatTitleDisplay();
         }
         
         // Sidebar toggle functionality
@@ -3924,6 +3942,11 @@ Error: ${error.message}
                         const chatIndex = chatId - 1;
                         localChatHistory[chatIndex].title = newTitle;
                     }
+                    
+                    // Update the chat title display if this is the current chat
+                    if (chatId === currentChatId) {
+                        updateChatTitleDisplay();
+                    }
                 } else {
                     console.error('Failed to update chat title:', response.status);
                 }
@@ -3937,6 +3960,29 @@ Error: ${error.message}
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        // Function to update the chat title display in the header
+        function updateChatTitleDisplay() {
+            const titleDisplay = document.getElementById('chat-title-display');
+            if (!titleDisplay) return;
+            
+            if (currentChatId === 0) {
+                // New chat - show default text
+                titleDisplay.textContent = getTranslation('newChatTitle') || 'New Chat';
+            } else if (currentChatId > 0 && localChatHistory.length > 0) {
+                // Existing chat - show the chat title
+                const chatIndex = currentChatId - 1;
+                if (chatIndex < localChatHistory.length && localChatHistory[chatIndex]) {
+                    const chatTitle = localChatHistory[chatIndex].title;
+                    titleDisplay.textContent = chatTitle || `Chat ${currentChatId}`;
+                } else {
+                    titleDisplay.textContent = `Chat ${currentChatId}`;
+                }
+            } else {
+                // Fallback
+                titleDisplay.textContent = '';
+            }
         }
         
         function showSettingsSection(section) {

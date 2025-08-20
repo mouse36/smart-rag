@@ -618,6 +618,7 @@
 
         /* Collapsed sidebar styles */
         .sidebar.collapsed {
+            color: transparent;
             width: 50px;
             min-width: 50px;
             padding: 10px;
@@ -652,12 +653,13 @@
 
         .menu-item {
             padding: 12px 15px;
-            background: white;
+            background: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: normal;
             position: relative;
             display: flex;
             align-items: center;
@@ -665,7 +667,22 @@
         }
 
         .menu-item:hover, .menu-item.active {
-            background: #fde6cf;
+            background: #eef0f1;
+        }
+        
+        /* Special styling for new chat button - should not appear darkened when active */
+        .menu-item.new-chat-item.active {
+            background: #f8f9fa;
+        }
+        
+        .menu-item.new-chat-item:hover {
+            background: #eef0f1;
+        }
+        
+        /* Ensure new chat button has same font styling as other menu items */
+        .menu-item.new-chat-item {
+            font-size: 16px;
+            font-weight: normal;
         }
         
         .chat-title {
@@ -787,7 +804,7 @@
         .profile-pic {
             width: 32px;
             height: 32px;
-            background: #ff8900;
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -800,7 +817,7 @@
             flex: 1;
             padding: 20px 30px;
             overflow-y: auto;
-            background: #f8f9fa;
+            background: #ffffff;
         }
 
         .message {
@@ -1578,8 +1595,8 @@
             <section class="hero">
                 <div class="hero-content">
                     <h1 data-en="Your 24/7 Virtual Coach for Selective Mutism Support" data-zh="您的24/7选择性缄默症虚拟教练">
-                        <span class="hero-title-line1">Your 24/7 Virtual Coach</span>
-                        <span class="hero-title-line2">for Selective Mutism Support</span>
+                                        <span class="hero-title-line1" data-en="Your 24/7 Virtual Coach" data-zh="您的24/7虚拟教练">Your 24/7 Virtual Coach</span>
+                <span class="hero-title-line2" data-en="for Selective Mutism Support" data-zh="为选择性缄默症提供支持">for Selective Mutism Support</span>
                     </h1>
                     <p class="hero-subtitle" data-en="Evidence-based, compassionate answers for parents — anytime you need them." data-zh="基于科学证据的温暖解答，为家长提供随时随地的支持。">
                         Evidence-based, compassionate answers for parents — anytime you need them.
@@ -1594,7 +1611,7 @@
             <section id="features" class="features">
                 <div class="container">
                     <div class="section-header">
-                        <h2 class="section-title">Intelligent Content Processing</h2>
+                        <h2 class="section-title" data-en="Intelligent Content Processing" data-zh="智能内容处理">Intelligent Content Processing</h2>
                         <p class="section-subtitle">
                             Turn your existing video and audio content into a powerful, searchable knowledge base
                         </p>
@@ -1602,48 +1619,48 @@
                     <div class="features-grid">
                         <div class="feature-card">
                             <div class="feature-icon">🎥</div>
-                            <h3 class="feature-title">Video Transcription</h3>
-                            <p class="feature-description">
+                            <h3 class="feature-title" data-en="Video Transcription" data-zh="视频转录">Video Transcription</h3>
+                            <p class="feature-description" data-en="Automatically extract and process content from your training videos, webinars, and recorded meetings with high accuracy." data-zh="自动提取和处理您的培训视频、网络研讨会和录制会议的内容，准确率极高。">
                                 Automatically extract and process content from your training videos, 
                                 webinars, and recorded meetings with high accuracy.
                             </p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon">🎙️</div>
-                            <h3 class="feature-title">Audio Processing</h3>
-                            <p class="feature-description">
+                            <h3 class="feature-title" data-en="Audio Processing" data-zh="音频处理">Audio Processing</h3>
+                            <p class="feature-description" data-en="Convert podcasts, conference calls, and audio recordings into structured, searchable knowledge for instant retrieval." data-zh="将播客、电话会议和音频录制转换为结构化、可搜索的知识，实现即时检索。">
                                 Convert podcasts, conference calls, and audio recordings into 
                                 structured, searchable knowledge for instant retrieval.
                             </p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon">🤖</div>
-                            <h3 class="feature-title">Custom AI Training</h3>
-                            <p class="feature-description">
+                            <h3 class="feature-title" data-en="Custom AI Training" data-zh="自定义AI训练">Custom AI Training</h3>
+                            <p class="feature-description" data-en="Fine-tune advanced language models on your specific domain data for accurate, contextual responses tailored to your business." data-zh="在您的特定领域数据上微调高级语言模型，为您的业务提供准确、上下文的响应。">
                                 Fine-tune advanced language models on your specific domain data 
                                 for accurate, contextual responses tailored to your business.
                             </p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon">💬</div>
-                            <h3 class="feature-title">Intelligent Chat Interface</h3>
-                            <p class="feature-description">
+                            <h3 class="feature-title" data-en="Intelligent Chat Interface" data-zh="智能聊天界面">Intelligent Chat Interface</h3>
+                            <p class="feature-description" data-en="Interact naturally with your knowledge base through an intuitive chat interface that understands context and provides source references." data-zh="通过直观的聊天界面自然地与您的知识库交互，该界面理解上下文并提供来源参考。">
                                 Interact naturally with your knowledge base through an intuitive 
                                 chat interface that understands context and provides source references.
                             </p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon">📊</div>
-                            <h3 class="feature-title">Source Attribution</h3>
-                            <p class="feature-description">
+                            <h3 class="feature-title" data-en="Source Attribution" data-zh="来源归属">Source Attribution</h3>
+                            <p class="feature-description" data-en="Every response includes clear references to original sources, timestamps, and confidence levels for full transparency." data-zh="每个响应都包含对原始来源、时间戳和置信度的清晰引用，确保完全透明。">
                                 Every response includes clear references to original sources, 
                                 timestamps, and confidence levels for full transparency.
                             </p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon">🔒</div>
-                            <h3 class="feature-title">Enterprise Security</h3>
-                            <p class="feature-description">
+                            <h3 class="feature-title" data-en="Enterprise Security" data-zh="企业级安全">Enterprise Security</h3>
+                            <p class="feature-description" data-en="Bank-level encryption, private cloud deployment, and compliance with GDPR, HIPAA, and other industry standards." data-zh="银行级加密、私有云部署，并符合GDPR、HIPAA和其他行业标准。">
                                 Bank-level encryption, private cloud deployment, and compliance 
                                 with GDPR, HIPAA, and other industry standards.
                             </p>
@@ -1666,7 +1683,7 @@
                     <strong>Backend Server Error:</strong> Unable to connect to the authentication server. Please ensure the server is running to complete login/signup.
                 </div>
             </div>
-            <button class="banner-close" onclick="closeLoginBackendErrorBanner()" title="Close banner">&times;</button>
+            <button class="banner-close" onclick="closeLoginBackendErrorBanner()" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
         </div>
 
         <div class="login-page">
@@ -1746,8 +1763,8 @@
                 <!-- Success Phase -->
                 <div id="success-phase" style="display: none;">
                     <div class="verification-message" style="background: #f0fff4; border-color: #9ae6b4;">
-                        <h3 style="color: #38a169;">Welcome! 🎉</h3>
-                        <p style="color: #2d3748;">You're all set to start using your Virtual AI Coach</p>
+                        <h3 style="color: #38a169;" data-en="Welcome! 🎉" data-zh="欢迎！🎉">Welcome! 🎉</h3>
+                        <p style="color: #2d3748;" data-en="You're all set to start using your Virtual AI Coach" data-zh="你已准备好开始使用你的虚拟AI教练">You're all set to start using your Virtual AI Coach</p>
                     </div>
                     
                     <button onclick="startUsingCoach()" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
@@ -1763,14 +1780,20 @@
         <div class="chat-layout">
             <div class="sidebar">
                 <div class="sidebar-header" style="margin: 0 0 20px 0; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e9ecef;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #333;">Chat History</h3>
-                    <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar">
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
+                        <img src="graphics/chat-history.svg" style="width: 24px; height: 24px;">
+                        <span data-en="Chat History" data-zh="聊天记录">Chat History</span>
+                    </h3>
+                    <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Close Chat History" data-title-en="Close Chat History" data-title-zh="关闭聊天记录">
                         ←
                     </button>
                 </div>
                 
                 <div class="sidebar-menu">
-                    <div class="menu-item new-chat-item active" onclick="startNewChat()" style="font-size: 16px;">New Chat</div>
+                    <div class="menu-item new-chat-item active" onclick="startNewChat()" style="display: flex; align-items: center; gap: 8px; justify-content: flex-start;">
+                        <img src="graphics/new-chat.svg" alt="New Chat" style="width: 24px; height: 24px; margin: 0; padding: 0; display: block;">
+                        <span data-en="New Chat" data-zh="新聊天">New Chat</span>
+                    </div>
                     <!-- Chat history items will be dynamically added here -->
                 </div>
                 
@@ -1784,8 +1807,10 @@
                         <span class="logo-text" style="font-size: 24px;">SunnyMentor</span>
                     </div>
                     
-                    <!-- User account menu on the right -->
-                    <div class="user-profile" onclick="toggleProfileMenu()">
+                    <!-- Language switcher and user account menu on the right -->
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div id="language-switcher-container" style="min-width: 60px; min-height: 20px;"></div>
+                        <div class="user-profile" onclick="toggleProfileMenu()">
                         <div class="profile-pic" id="profile-pic-container">U</div>
                         <span id="current-user-display">User</span>
                         <script>
@@ -1803,14 +1828,15 @@
                                 }
                                 else if (currentUserProfilePic) {
                                     // Use the image from user-icons folder
-                                    profilePicContainer.innerHTML = '<img src="graphics/user-icons/' + currentUserProfilePic + '.png" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
+                                    profilePicContainer.innerHTML = '<img src="graphics/user-icons/' + currentUserProfilePic + '" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
                                 }
                             });
                         </script>
                         <div class="profile-menu" id="profile-menu">
-                            <div class="profile-menu-item" onclick="showSettings()">Settings</div>
-                            <div class="profile-menu-item" onclick="showAdmin()">Admin Dashboard</div>
-                            <div class="profile-menu-item" onclick="logout()">Logout</div>
+                            <div class="profile-menu-item" onclick="showSettings()" data-en="Settings" data-zh="设置">Settings</div>
+                            <div class="profile-menu-item" onclick="showAdmin()" data-en="Admin Dashboard" data-zh="管理面板">Admin Dashboard</div>
+                            <div class="profile-menu-item" onclick="logout()" data-en="Logout" data-zh="登出">Logout</div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -1820,10 +1846,10 @@
                     <div class="banner-content">
                         <div class="banner-icon">⚠️</div>
                         <div class="banner-text">
-                            <strong>Backend Server Error:</strong> Unable to connect to the backend server. Please ensure the server is running to access the knowledge base and AI features.
+                            <strong data-en="Backend Server Error:" data-zh="后端服务器错误：">Backend Server Error:</strong> <span data-en="Unable to connect to the backend server. Please ensure the server is running to access the knowledge base and AI features." data-zh="无法连接到后端服务器。请确保服务器正在运行以访问知识库和AI功能。">Unable to connect to the backend server. Please ensure the server is running to access the knowledge base and AI features.</span>
                         </div>
                     </div>
-                    <button class="banner-close" onclick="closeBackendErrorBanner()" title="Close banner">&times;</button>
+                    <button class="banner-close" onclick="closeBackendErrorBanner()" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
                 </div>
 
                 <!-- API Mode Banner -->
@@ -1831,11 +1857,10 @@
                     <div class="banner-content">
                         <div class="banner-icon">⚡</div>
                         <div class="banner-text">
-                            <strong>Demo Mode:</strong> This system is currently using placeholder responses for demonstration purposes. 
-                            To enable real AI responses, contact your administrator to configure the API settings.
+                            <strong data-en="Demo Mode:" data-zh="演示模式：">Demo Mode:</strong> <span data-en="This system is currently using placeholder responses for demonstration purposes. To enable real AI responses, contact your administrator to configure the API settings." data-zh="系统目前使用占位符回复作为演示。要启用真实AI回复，请联系管理员配置API设置。">This system is currently using placeholder responses for demonstration purposes. To enable real AI responses, contact your administrator to configure the API settings.</span>
                         </div>
                     </div>
-                    <button class="banner-close" onclick="closeBanner()" title="Close banner">&times;</button>
+                    <button class="banner-close" onclick="closeBanner()" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
                 </div>
                 
                 <div class="messages-area" id="messages">
@@ -1859,46 +1884,46 @@
         <div class="settings-layout">
             <div class="settings-sidebar">
                 <div class="settings-nav">
-                    <div class="settings-nav-item active" onclick="showSettingsSection('profile')">Profile</div>
-                    <div class="settings-nav-item" onclick="showSettingsSection('content')">Content Management</div>
-                    <div class="settings-nav-item" onclick="showSettingsSection('api')">API Settings</div>
-                    <div class="settings-nav-item" onclick="showSettingsSection('billing')">Billing</div>
+                                    <div class="settings-nav-item active" onclick="showSettingsSection('profile')" data-en="Profile" data-zh="个人资料">Profile</div>
+                <div class="settings-nav-item" onclick="showSettingsSection('content')" data-en="Content Management" data-zh="内容管理">Content Management</div>
+                <div class="settings-nav-item" onclick="showSettingsSection('api')" data-en="API Settings" data-zh="API设置">API Settings</div>
+                <div class="settings-nav-item" onclick="showSettingsSection('billing')" data-en="Billing" data-zh="账单">Billing</div>
                 </div>
             </div>
             
             <div class="settings-main">
                 <div class="settings-header">
                     <div class="settings-title-group">
-                        <h1 class="settings-title">Settings</h1>
+                        <h1 class="settings-title" data-en="Settings" data-zh="设置">Settings</h1>
                     </div>
-                    <button class="btn back-button" onclick="showChat()">← Back to Chat</button>
+                    <button class="btn back-button" onclick="showChat()" data-en="← Back to Chat" data-zh="← 返回聊天">← Back to Chat</button>
                 </div>
                 
                 <div id="settings-content">
                     <div class="settings-form">
                         <div class="form-group">
-                            <label class="form-label">Email Address</label>
+                            <label class="form-label" data-en="Email Address" data-zh="邮箱地址">Email Address</label>
                             <input type="email" class="form-input" value="user@example.com" readonly>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" class="form-input" value="User Name" placeholder="Enter your full name">
+                            <label class="form-label" data-en="Full Name" data-zh="全名">Full Name</label>
+                            <input type="text" class="form-input" value="User Name" placeholder="Enter your full name" data-placeholder-en="Enter your full name" data-placeholder-zh="请输入您的全名">
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Notification Preferences</label>
+                            <label class="form-label" data-en="Notification Preferences" data-zh="通知偏好">Notification Preferences</label>
                             <div style="display: flex; gap: 15px; margin-top: 8px;">
                                 <label style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="checkbox" checked> Email notifications
+                                    <input type="checkbox" checked> <span data-en="Email notifications" data-zh="邮件通知">Email notifications</span>
                                 </label>
                                 <label style="display: flex; align-items: center; gap: 8px;">
-                                    <input type="checkbox" checked> In-app notifications
+                                    <input type="checkbox" checked> <span data-en="In-app notifications" data-zh="应用内通知">In-app notifications</span>
                                 </label>
                             </div>
                         </div>
                         
-                        <button class="btn btn-primary">Save Changes</button>
+                        <button class="btn btn-primary" data-en="Save Changes" data-zh="保存更改">Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -1910,11 +1935,11 @@
         <div class="admin-layout">
             <div class="sidebar">
                 <div class="sidebar-menu">
-                    <div class="menu-item active">Dashboard</div>
-                    <div class="menu-item">Users</div>
-                    <div class="menu-item">Content</div>
-                    <div class="menu-item">Analytics</div>
-                    <div class="menu-item">Settings</div>
+                    <div class="menu-item active" data-en="Dashboard" data-zh="仪表板">Dashboard</div>
+                    <div class="menu-item" data-en="Users" data-zh="用户">Users</div>
+                    <div class="menu-item" data-en="Content" data-zh="内容">Content</div>
+                    <div class="menu-item" data-en="Analytics" data-zh="分析">Analytics</div>
+                    <div class="menu-item" data-en="Settings" data-zh="设置">Settings</div>
                 </div>
                 
 
@@ -1922,31 +1947,31 @@
             
             <div class="admin-main">
                 <div class="admin-header">
-                    <h1 class="admin-title">Admin Dashboard</h1>
-                    <button class="btn back-button" onclick="showChat()">← Back to Chat</button>
+                    <h1 class="admin-title" data-en="Admin Dashboard" data-zh="管理仪表板">Admin Dashboard</h1>
+                    <button class="btn back-button" onclick="showChat()" data-en="← Back to Chat" data-zh="← 返回聊天">← Back to Chat</button>
                 </div>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-number">1,234</div>
-                        <div class="stat-label">Total Users</div>
+                        <div class="stat-label" data-en="Total Users" data-zh="总用户数">Total Users</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number">5,678</div>
-                        <div class="stat-label">Messages Processed</div>
+                        <div class="stat-label" data-en="Messages Processed" data-zh="已处理消息">Messages Processed</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number">234</div>
-                        <div class="stat-label">Content Items</div>
+                        <div class="stat-label" data-en="Content Items" data-zh="内容项目">Content Items</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number">98.5%</div>
-                        <div class="stat-label">Uptime</div>
+                        <div class="stat-label" data-en="Uptime" data-zh="运行时间">Uptime</div>
                     </div>
                 </div>
                 
                 <div class="data-table">
-                    <p>User management and content analytics will be displayed here.</p>
+                    <p data-en="User management and content analytics will be displayed here." data-zh="用户管理和内容分析将在此显示。">User management and content analytics will be displayed here.</p>
                 </div>
             </div>
         </div>
@@ -1973,22 +1998,22 @@
                     </div>
                     
                     <div class="custom-amount">
-                        <label for="custom-amount-input">Or enter a custom amount:</label>
-                        <input type="number" id="custom-amount-input" placeholder="Enter amount" min="1" step="1" oninput="selectCustomAmount()">
+                        <label for="custom-amount-input" data-en="Or enter a custom amount:" data-zh="或输入自定义金额：">Or enter a custom amount:</label>
+                        <input type="number" id="custom-amount-input" placeholder="Enter amount" data-placeholder-en="Enter amount" data-placeholder-zh="输入金额" min="1" step="1" oninput="selectCustomAmount()">
                         <div id="amount-error" class="payment-error"></div>
                     </div>
                     
                     <div class="donate-actions">
-                        <button class="btn btn-back" onclick="showLanding()">Cancel</button>
-                        <button class="btn btn-donate" id="continue-to-payment" onclick="continueToPayment()" disabled>Continue to Payment</button>
+                                            <button class="btn btn-back" onclick="showLanding()" data-en="Cancel" data-zh="取消">Cancel</button>
+                    <button class="btn btn-donate" id="continue-to-payment" onclick="continueToPayment()" disabled data-en="Continue to Payment" data-zh="继续付款">Continue to Payment</button>
                     </div>
                 </div>
                 
                 <!-- Payment Form -->
                 <div id="payment-form" style="display: none;">
-                    <h2 style="margin-bottom: 20px; color: #2d3748;">Complete Your Donation</h2>
+                    <h2 style="margin-bottom: 20px; color: #2d3748;" data-en="Complete Your Donation" data-zh="完成您的捐赠">Complete Your Donation</h2>
                     <div style="text-align: left; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                        <strong>Amount: $<span id="selected-amount-display">0</span></strong>
+                        <strong data-en="Amount: $" data-zh="金额：$">Amount: $<span id="selected-amount-display">0</span></strong>
                     </div>
                     
                     <!-- Stripe Elements will be inserted here -->
@@ -1998,9 +2023,9 @@
                     <div id="card-errors" class="payment-error"></div>
                     
                     <div class="donate-actions">
-                        <button class="btn btn-back" onclick="backToAmountSelection()">← Back</button>
+                        <button class="btn btn-back" onclick="backToAmountSelection()" data-en="← Back" data-zh="← 返回">← Back</button>
                         <button class="btn btn-donate" id="submit-payment" onclick="submitPayment()">
-                            <span id="payment-button-text">Complete Donation</span>
+                            <span id="payment-button-text" data-en="Complete Donation" data-zh="完成捐赠">Complete Donation</span>
                             <div id="payment-loading" class="loading" style="display: none; margin-left: 10px;"></div>
                         </button>
                     </div>
@@ -2009,8 +2034,8 @@
                 <!-- Processing State -->
                 <div id="payment-processing" class="payment-processing">
                     <div class="processing-spinner"></div>
-                    <h3>Processing your donation...</h3>
-                    <p>Please don't close this page or refresh your browser.</p>
+                    <h3 data-en="Processing your donation..." data-zh="正在处理您的捐赠...">Processing your donation...</h3>
+                    <p data-en="Please don't close this page or refresh your browser." data-zh="请不要关闭此页面或刷新浏览器。">Please don't close this page or refresh your browser.</p>
                 </div>
             </div>
         </div>
@@ -2034,6 +2059,56 @@
         
         // Language system - use global language manager
         let currentLanguage = 'EN'; // Fallback, will be overridden by languageManager
+        
+        // Translation object for dynamic content
+        const translations = {
+            EN: {
+                welcomeMessage: "Hello! I'm your selective mutism virtual coach. I have access to comprehensive knowledge about selective mutism, including treatment approaches, parent guidance, and educational strategies. How can I help you today?",
+                errorMessage: "I apologize, but I encountered an error:",
+                newChatTitle: "New Chat",
+                typingIndicator: "Assistant is typing...",
+                successWelcome: "Welcome! 🎉",
+                successMessage: "You're all set to start using your Virtual AI Coach",
+                contextInfo: "Based on {count} relevant sources from the knowledge base",
+                loading: "Loading",
+                creatingChat: "Creating chat",
+                loadingChats: "Loading chats",
+                saving: "Saving"
+            },
+            ZH: {
+                welcomeMessage: "你好！我是你的选择性缄默症虚拟教练。我拥有关于选择性缄默症的全面知识，包括治疗方法、家长指导和教育策略。今天我能如何帮助你？",
+                errorMessage: "抱歉，我遇到了一个错误：",
+                newChatTitle: "新聊天",
+                typingIndicator: "助手正在输入...",
+                successWelcome: "欢迎！🎉",
+                successMessage: "你已准备好开始使用你的虚拟AI教练",
+                contextInfo: "基于知识库中的{count}个相关资源",
+                loading: "加载中",
+                creatingChat: "创建聊天中",
+                loadingChats: "加载聊天中",
+                saving: "保存中"
+            }
+        };
+        
+        function getTranslation(key) {
+            const lang = window.languageManager ? window.languageManager.getCurrentLanguage() : currentLanguage;
+            return translations[lang] && translations[lang][key] ? translations[lang][key] : translations.EN[key];
+        }
+        
+        // Function to update chat-specific language content
+        window.updateChatLanguage = function() {
+            // Re-add welcome message if we're in a new chat
+            if (currentChatId === 0) {
+                const messagesArea = document.getElementById('messages');
+                if (messagesArea && messagesArea.children.length === 1) {
+                    // Only one message (the welcome message), so update it
+                    const assistantMessage = messagesArea.querySelector('.message.assistant .message-content');
+                    if (assistantMessage) {
+                        assistantMessage.textContent = getTranslation('welcomeMessage');
+                    }
+                }
+            }
+        };
         
         // Donation state
         let selectedAmount = 0;
@@ -2265,6 +2340,22 @@
             const chatLogoContainer = document.getElementById('chat-logo-container');
             if (chatLogoContainer) {
                 chatLogoContainer.innerHTML = generateStandardLogo({ showLanguageData: false });
+            }
+            
+            // Load language switcher component
+            await loadComponent('language-switcher-container', 'components/language-switcher.html');
+            
+            // Debug: Check if language switcher loaded
+            const langContainer = document.getElementById('language-switcher-container');
+            if (langContainer && langContainer.innerHTML.trim() === '') {
+                console.log('Language switcher container is empty, trying fallback...');
+                // Fallback: load the component directly
+                langContainer.innerHTML = '<div class="language-switcher" onclick="toggleLanguage()" title="Switch Language" data-title-en="Switch Language" data-title-zh="切换语言"><img src="graphics/language-switcher.svg" alt="Language Switcher" class="globe-icon" /><span class="language-code">EN</span></div>';
+            }
+            
+            // Initialize language after components are loaded
+            if (window.languageManager) {
+                window.languageManager.initializeLanguage();
             }
             
             // Load chat history from server
@@ -2578,7 +2669,7 @@
             const button = event?.target || document.querySelector('button[onclick="startUsingCoach()"]');
             const originalText = button?.textContent;
             if (button) {
-                button.innerHTML = '<span class="loading-ellipsis">Loading</span>';
+                button.innerHTML = '<span class="loading-ellipsis">' + getTranslation('loading') + '</span>';
                 button.disabled = true;
             }
             
@@ -3111,7 +3202,7 @@
                 hideTypingIndicator();
                 
                 if (data.error) {
-                    addMessage(`I apologize, but I encountered an error: ${data.error}`, 'assistant');
+                    addMessage(`${getTranslation('errorMessage')} ${data.error}`, 'assistant');
                     return;
                 }
 
@@ -3120,7 +3211,8 @@
                 
                 // Add context information if available
                 if (data.context_passages_count > 0) {
-                    responseText += `<div style="font-size: 0.8em; color: rgba(100,100,100,0.7); margin-top: 8px; font-style: italic;">📚 Based on ${data.context_passages_count} relevant sources from the knowledge base</div>`;
+                    const contextText = getTranslation('contextInfo').replace('{count}', data.context_passages_count);
+                    responseText += `<div style="font-size: 0.8em; color: rgba(100,100,100,0.7); margin-top: 8px; font-style: italic;">📚 ${contextText}</div>`;
                 }
                 
                 addMessage(responseText, 'assistant');
@@ -3131,7 +3223,7 @@
                     const newChatButton = document.querySelector('.new-chat-item');
                     const originalText = newChatButton?.textContent;
                     if (newChatButton) {
-                        newChatButton.innerHTML = '<span class="loading-ellipsis">Creating chat</span>';
+                        newChatButton.innerHTML = '<span class="loading-ellipsis">' + getTranslation('creatingChat') + '</span>';
                     }
                     
                     // This is a new chat, create it with the first message exchange
@@ -3241,43 +3333,81 @@ Error: ${error.message}
         }
         
         function generateRecommendations(assistantMessage) {
-            // Generate selective mutism-specific recommendations based on common topics
-            const smRecommendationSets = [
-                [
-                    "What are some practical strategies for school?",
-                    "How can parents support at home?",
-                    "When should we seek professional help?"
-                ],
-                [
-                    "What techniques work for different age groups?",
-                    "How do we handle social situations?",
-                    "What are some gradual exposure methods?"
-                ],
-                [
-                    "How can teachers best support SM children?",
-                    "What accommodations are helpful?",
-                    "How do we build communication confidence?"
-                ],
-                [
-                    "What role does anxiety play in SM?",
-                    "Are there any warning signs to watch for?",
-                    "How do we create a supportive environment?"
-                ],
-                [
-                    "What treatment approaches are most effective?",
-                    "How long does treatment typically take?",
-                    "What can families do to help progress?"
-                ],
-                [
-                    "How do we help with peer relationships?",
-                    "What about family dynamics and SM?",
-                    "How do we handle setbacks or regression?"
-                ]
-            ];
+            // Get current language
+            const currentLang = window.languageManager ? window.languageManager.getCurrentLanguage() : 'EN';
             
-            // Pick a random set of SM-specific recommendations
-            const randomIndex = Math.floor(Math.random() * smRecommendationSets.length);
-            return smRecommendationSets[randomIndex];
+            // Generate selective mutism-specific recommendations based on common topics
+            const smRecommendationSets = {
+                EN: [
+                    [
+                        "What are some practical strategies for school?",
+                        "How can parents support at home?",
+                        "When should we seek professional help?"
+                    ],
+                    [
+                        "What techniques work for different age groups?",
+                        "How do we handle social situations?",
+                        "What are some gradual exposure methods?"
+                    ],
+                    [
+                        "How can teachers best support SM children?",
+                        "What accommodations are helpful?",
+                        "How do we build communication confidence?"
+                    ],
+                    [
+                        "What role does anxiety play in SM?",
+                        "Are there any warning signs to watch for?",
+                        "How do we create a supportive environment?"
+                    ],
+                    [
+                        "What treatment approaches are most effective?",
+                        "How long does treatment typically take?",
+                        "What can families do to help progress?"
+                    ],
+                    [
+                        "How do we help with peer relationships?",
+                        "What about family dynamics and SM?",
+                        "How do we handle setbacks or regression?"
+                    ]
+                ],
+                ZH: [
+                    [
+                        "学校有哪些实用的策略？",
+                        "家长如何在家提供支持？",
+                        "什么时候应该寻求专业帮助？"
+                    ],
+                    [
+                        "不同年龄段的技巧有哪些？",
+                        "如何处理社交场合？",
+                        "有哪些渐进式暴露方法？"
+                    ],
+                    [
+                        "教师如何最好地支持选择性缄默症儿童？",
+                        "哪些适应措施有帮助？",
+                        "如何建立沟通信心？"
+                    ],
+                    [
+                        "焦虑在选择性缄默症中起什么作用？",
+                        "有哪些需要注意的警告信号？",
+                        "如何创造支持性环境？"
+                    ],
+                    [
+                        "哪些治疗方法最有效？",
+                        "治疗通常需要多长时间？",
+                        "家庭可以做些什么来帮助进展？"
+                    ],
+                    [
+                        "如何帮助同伴关系？",
+                        "家庭动态和选择性缄默症有什么关系？",
+                        "如何处理挫折或倒退？"
+                    ]
+                ]
+            };
+            
+            // Pick a random set of SM-specific recommendations based on current language
+            const sets = smRecommendationSets[currentLang] || smRecommendationSets.EN;
+            const randomIndex = Math.floor(Math.random() * sets.length);
+            return sets[randomIndex];
         }
         
         async function sendRecommendation(recommendation) {
@@ -3409,7 +3539,7 @@ Error: ${error.message}
                 if (sidebarMenu) {
                     loadingItem = document.createElement('div');
                     loadingItem.className = 'menu-item loading-placeholder';
-                    loadingItem.innerHTML = '<span class="loading-ellipsis">Loading chats</span>';
+                    loadingItem.innerHTML = '<span class="loading-ellipsis">' + getTranslation('loadingChats') + '</span>';
                     sidebarMenu.appendChild(loadingItem);
                 }
                 
@@ -3473,8 +3603,13 @@ Error: ${error.message}
                 menuItem.className = 'menu-item chat-history-item';
                 menuItem.setAttribute('data-chat-id', chatId);
                 
+                menuItem.style.display = 'flex';
+                menuItem.style.alignItems = 'center';
+                menuItem.style.gap = '8px';
+                menuItem.style.justifyContent = 'flex-start';
+                
                 menuItem.innerHTML = `
-                    <span class="chat-title" onclick="loadChat(${chatId})">${escapeHtml(chat.title)}</span>
+                    <span onclick="loadChat(${chatId})">${escapeHtml(chat.title)}</span>
                     <button class="edit-chat-btn" onclick="startEditChatTitle(${chatId}, event)" title="Edit chat title">
                         <img src="graphics/edit.svg" alt="Edit" style="width: 16px; height: 16px;">
                     </button>
@@ -3497,7 +3632,7 @@ Error: ${error.message}
             
             if (titleSpan) {
                 originalTitle = titleSpan.textContent;
-                titleSpan.innerHTML = '<span class="loading-ellipsis">Loading</span>';
+                titleSpan.innerHTML = '<span class="loading-ellipsis">' + getTranslation('loading') + '</span>';
             }
             
             // Load chat immediately - no artificial delay
@@ -3537,7 +3672,7 @@ Error: ${error.message}
             const messagesArea = document.getElementById('messages');
             if (messagesArea) {
                 messagesArea.innerHTML = '';
-                addMessage("Hello! I'm your selective mutism virtual coach. I have access to comprehensive knowledge about selective mutism, including treatment approaches, parent guidance, and educational strategies. How can I help you today?", 'assistant');
+                addMessage(getTranslation('welcomeMessage'), 'assistant');
             }
             
             // Update active state in sidebar
@@ -3563,13 +3698,13 @@ Error: ${error.message}
                     sidebar.classList.remove('collapsed');
                     chatLayout.classList.remove('sidebar-collapsed');
                     toggleBtn.innerHTML = '←';
-                    toggleBtn.title = 'Collapse sidebar';
+                    toggleBtn.title = 'Collapse Sidebar';
                 } else {
                     // Collapse sidebar
                     sidebar.classList.add('collapsed');
                     chatLayout.classList.add('sidebar-collapsed');
-                    toggleBtn.innerHTML = '→';
-                    toggleBtn.title = 'Expand sidebar';
+                    toggleBtn.innerHTML = '←';
+                    toggleBtn.title = 'Expand Sidebar';
                 }
             }
         }
@@ -3697,7 +3832,7 @@ Error: ${error.message}
                 const newTitle = input.value.trim();
                 if (newTitle && newTitle !== currentTitle) {
                     // Show loading state
-                    titleSpan.innerHTML = '<span class="loading-ellipsis">Saving</span>';
+                    titleSpan.innerHTML = '<span class="loading-ellipsis">' + getTranslation('saving') + '</span>';
                     titleSpan.style.display = '';
                     input.remove();
                     

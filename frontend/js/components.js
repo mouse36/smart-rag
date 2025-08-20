@@ -257,6 +257,11 @@ function toggleLanguage() {
             window.updateAllText();
         }
         
+        // Call chat-specific language update if it exists
+        if (typeof window.updateChatLanguage === 'function') {
+            window.updateChatLanguage();
+        }
+        
         return;
     }
     

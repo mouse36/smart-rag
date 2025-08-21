@@ -26,6 +26,13 @@ import stripe
 from jsonbin_client import JSONBinClient
 from config import Config
 
+# Configure logging first
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 # Conditionally import AI/ML modules based on API_CALLS_ENABLED
 config = Config()
 if config.API_CALLS_ENABLED:
@@ -42,13 +49,6 @@ if config.API_CALLS_ENABLED:
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend integration
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 # Initialize components
 jsonbin_client = JSONBinClient(config)

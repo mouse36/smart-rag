@@ -18,7 +18,7 @@ PyJWT==2.8.0
 bcrypt==4.1.2
 
 # Data Processing
-pandas==2.0.3
+pandas>=2.1.0
 
 # Development & Debugging
 python-dotenv==1.1.1
@@ -30,9 +30,9 @@ psutil==7.0.0
 # Consider using requirements-core.txt for deployment without vector search
 sentence-transformers==3.3.0
 faiss-cpu==1.11.0.post1
-numpy==1.24.3
+numpy>=1.26.0
 # Use CPU-only torch for smaller memory footprint
-torch==2.0.1
+torch>=2.1.0
 --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Optional: GPU support (uncomment if you have CUDA)

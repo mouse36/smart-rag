@@ -36,14 +36,19 @@ logger = logging.getLogger(__name__)
 # Conditionally import AI/ML modules based on API_CALLS_ENABLED
 config = Config()
 if config.API_CALLS_ENABLED:
-    # Use memory-optimized vector search for better memory efficiency
+    # Use ultra-lightweight vector search for memory-constrained environments
     try:
-        from vector_search_memory_optimized import MemoryOptimizedVectorSearchEngine as VectorSearchEngine
-        logger.info("Using memory-optimized vector search engine")
+        from vector_search_ultra_lightweight import UltraLightweightVectorSearchEngine as VectorSearchEngine
+        logger.info("Using ultra-lightweight vector search engine")
     except ImportError:
-        # Fallback to original vector search
-        from vector_search import VectorSearchEngine
-        logger.info("Using standard vector search engine")
+        # Fallback to memory-optimized vector search
+        try:
+            from vector_search_memory_optimized import MemoryOptimizedVectorSearchEngine as VectorSearchEngine
+            logger.info("Using memory-optimized vector search engine")
+        except ImportError:
+            # Fallback to original vector search
+            from vector_search import VectorSearchEngine
+            logger.info("Using standard vector search engine")
     from deepseek_client import DeepSeekClient
 
 # Initialize Flask app

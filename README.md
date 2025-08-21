@@ -207,11 +207,11 @@ netstat -an | grep 6379
 
 ### Advanced Configuration
 
-You can customize the system by modifying values in `backend/config.py` or setting environment variables.
+You can customize the system by modifying values in `config.py` or setting environment variables.
 
 ## Knowledge Base
 
-The system comes with a comprehensive knowledge base about selective mutism located in `backend/knowledge_base/`. The knowledge base includes:
+The system comes with a comprehensive knowledge base about selective mutism located in `knowledge_base/`. The knowledge base includes:
 
 - Clinical research and findings
 - Treatment approaches and interventions
@@ -224,7 +224,7 @@ The system comes with a comprehensive knowledge base about selective mutism loca
 
 To add new knowledge to the system:
 
-1. Add `.txt` files to the `backend/knowledge_base/` directory
+1. Add `.txt` files to the `knowledge_base/` directory
 2. Restart the backend server (it will automatically process new files)
 3. The system will generate embeddings and update the search index
 
@@ -274,7 +274,7 @@ curl -X POST http://localhost:5000/chat \
 
 1. **Check API Key**: Ensure `DEEPSEEK_API_KEY` is set correctly
 2. **Check Dependencies**: Run `pip install -r requirements.txt`
-3. **Check Knowledge Base**: Ensure `.txt` files exist in `backend/knowledge_base/`
+3. **Check Knowledge Base**: Ensure `.txt` files exist in `knowledge_base/`
 
 ### Frontend Shows Connection Error
 
@@ -341,13 +341,12 @@ If you see "Redis connection failed" warnings:
 ### Project Structure
 
 ```
-smart-rag/
-├── backend/
-│   ├── app.py              # Main Flask application
-│   ├── vector_search.py    # Vector search engine
-│   ├── deepseek_client.py  # DeepSeek API client
-│   ├── cache_manager.py    # Cache management
-│   ├── config.py          # Configuration
+sunnymentor/
+├── app.py              # Main Flask application
+├── vector_search.py    # Vector search engine
+├── deepseek_client.py  # DeepSeek API client
+├── cache_manager.py    # Cache management
+├── config.py          # Configuration
 │   ├── run.py             # Startup script
 │   ├── requirements.txt   # Python dependencies
 │   ├── knowledge_base/    # Knowledge base files

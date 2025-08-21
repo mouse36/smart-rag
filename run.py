@@ -8,10 +8,6 @@ import sys
 import logging
 from pathlib import Path
 
-# Add backend directory to Python path
-backend_dir = Path(__file__).parent
-sys.path.insert(0, str(backend_dir))
-
 # Try to load environment variables from .env file
 try:
     from dotenv import load_dotenv
@@ -64,13 +60,13 @@ def check_requirements():
         print("⚠️  API calls are DISABLED - will use placeholder responses")
     
     # Check if knowledge base exists
-    knowledge_base_path = os.path.join(backend_dir, 'knowledge_base')
-    if not os.path.exists(knowledge_base_path):
+    knowledge_base_path = Path(__file__).parent / 'knowledge_base'
+    if not knowledge_base_path.exists():
         print(f"❌ ERROR: Knowledge base directory not found: {knowledge_base_path}")
         return False
     
     # Check if there are any .txt files in knowledge base
-    txt_files = list(Path(knowledge_base_path).glob('*.txt'))
+    txt_files = list(knowledge_base_path.glob('*.txt'))
     if not txt_files:
         print(f"❌ ERROR: No .txt files found in knowledge base: {knowledge_base_path}")
         return False
@@ -88,7 +84,6 @@ def check_requirements():
         config = Config()
         if config.API_CALLS_ENABLED:
             import sentence_transformers
-            import faiss
             import numpy
             print("✅ AI/ML packages are installed")
         else:

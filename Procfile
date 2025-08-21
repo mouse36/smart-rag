@@ -1,1 +1,1 @@
-web: cd backend && python run_railway.py
+web: python run.py

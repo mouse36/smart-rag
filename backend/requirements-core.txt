@@ -11,6 +11,7 @@ stripe==12.4.0
 
 # Authentication
 PyJWT==2.8.0
+bcrypt==4.1.2
 
 # Data Processing
 pandas==2.3.1

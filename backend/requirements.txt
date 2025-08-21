@@ -11,6 +11,7 @@ stripe==12.4.0
 
 # Authentication
 PyJWT==2.8.0
+bcrypt==4.1.2
 
 # Data Processing
 pandas==2.3.1
@@ -24,23 +25,6 @@ sentence-transformers==3.3.0
 faiss-cpu==1.11.0.post1
 numpy==2.3.2
 torch==2.8.0
-
-# HTTP Requests
-requests==2.32.4
-
-# Payment Processing
-stripe==12.4.0
-
-# Authentication
-PyJWT==2.8.0
-
-
-
-# Data Processing
-pandas==2.3.1
-
-# Development & Debugging
-python-dotenv==1.1.1
 
 # Optional: GPU support (uncomment if you have CUDA)
 # faiss-gpu==1.11.0.post1  # replace faiss-cpu with this for GPU support

@@ -1,0 +1,29 @@
+# Core Dependencies (always required)
+# Build Tools (required for package installation)
+setuptools>=65.0.0
+wheel>=0.38.0
+
+# Web Framework
+flask==3.1.1
+flask-cors==6.0.1
+
+# HTTP Requests
+requests==2.32.4
+
+# Payment Processing
+stripe==12.4.0
+
+# Authentication
+PyJWT==2.8.0
+bcrypt==4.1.2
+
+# Data Processing
+pandas==2.0.3
+
+# Development & Debugging
+python-dotenv==1.1.1
+psutil==7.0.0
+
+# Note: AI/ML libraries (sentence-transformers, faiss-cpu, torch, numpy) are excluded
+# from this file to reduce memory usage and build complexity.
+# Use requirements.txt for full functionality including vector search.

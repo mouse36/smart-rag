@@ -1,0 +1,42 @@
+# Railway Deployment Requirements - Memory Optimized
+# Core Dependencies (always required)
+setuptools>=65.0.0
+wheel>=0.38.0
+
+# Web Framework
+flask==3.1.1
+flask-cors==6.0.1
+
+# HTTP Requests
+requests==2.32.4
+
+# Payment Processing
+stripe==12.4.0
+
+# Authentication
+PyJWT==2.8.0
+bcrypt==4.1.2
+
+# Data Processing
+pandas>=2.1.0
+
+# Development & Debugging
+python-dotenv==1.1.1
+psutil==7.0.0
+
+# AI/ML Libraries - Railway Optimized
+# Using smaller, more efficient alternatives for Railway's 1GB RAM limit
+sentence-transformers==3.3.0
+# Use scikit-learn instead of faiss for smaller memory footprint
+scikit-learn==1.4.0
+numpy>=1.26.0
+# Use CPU-only torch with specific version for Railway stability
+torch==2.1.0+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# Alternative: Use transformers directly for even smaller footprint
+transformers==4.37.0
+tokenizers==0.15.0
+
+# Railway-specific optimizations
+gunicorn==21.2.0

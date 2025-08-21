@@ -25,7 +25,7 @@ env_vars = {
     'DEEPSEEK_API_KEY': 'your_deepseek_api_key_here',  # MUST be set by user
     'DEEPSEEK_BASE_URL': 'https://api.deepseek.com',
     'DEEPSEEK_MODEL': 'deepseek-chat',
-    'HOST': '127.0.0.1',
+    'HOST': '0.0.0.0',
     'PORT': '5000',
     'DEBUG': 'True',
     'EMBEDDINGS_MODEL': 'all-MiniLM-L6-v2',

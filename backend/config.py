@@ -14,7 +14,7 @@ class Config:
     
     def __init__(self):
         # Flask settings
-        self.HOST = os.getenv('HOST', '127.0.0.1')
+        self.HOST = os.getenv('HOST', '0.0.0.0')  # Changed default to 0.0.0.0 for deployment
         self.PORT = int(os.getenv('PORT', 5000))
         self.DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
         

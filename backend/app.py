@@ -29,7 +29,14 @@ from config import Config
 # Conditionally import AI/ML modules based on API_CALLS_ENABLED
 config = Config()
 if config.API_CALLS_ENABLED:
-    from vector_search import VectorSearchEngine
+    # Use memory-optimized vector search for better memory efficiency
+    try:
+        from vector_search_memory_optimized import MemoryOptimizedVectorSearchEngine as VectorSearchEngine
+        logger.info("Using memory-optimized vector search engine")
+    except ImportError:
+        # Fallback to original vector search
+        from vector_search import VectorSearchEngine
+        logger.info("Using standard vector search engine")
     from deepseek_client import DeepSeekClient
 
 # Initialize Flask app
@@ -50,6 +57,13 @@ jsonbin_client = JSONBinClient(config)
 if config.API_CALLS_ENABLED:
     vector_engine = VectorSearchEngine(config)
     deepseek_client = DeepSeekClient(config)
+    
+    # Initialize with lazy loading if enabled
+    if config.LAZY_LOAD_MODEL:
+        logger.info("Vector search engine initialized with lazy loading")
+    else:
+        logger.info("Initializing vector search engine...")
+        vector_engine.initialize()
 else:
     vector_engine = None
     deepseek_client = None

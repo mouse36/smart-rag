@@ -18,13 +18,18 @@ pandas==2.3.1
 
 # Development & Debugging
 python-dotenv==1.1.1
+psutil==7.0.0
 
 # AI/ML Libraries (only required when API_CALLS_ENABLED=true)
 # These libraries are used for embeddings, vector search, and DeepSeek API integration
+# NOTE: These are heavy libraries that may cause memory issues on limited environments
+# Consider using requirements-core.txt for deployment without vector search
 sentence-transformers==3.3.0
 faiss-cpu==1.11.0.post1
 numpy==2.3.2
-torch==2.8.0
+# Use CPU-only torch for smaller memory footprint
+torch==2.8.0+cpu
+--find-links https://download.pytorch.org/whl/torch_stable.html
 
 # Optional: GPU support (uncomment if you have CUDA)
 # faiss-gpu==1.11.0.post1  # replace faiss-cpu with this for GPU support

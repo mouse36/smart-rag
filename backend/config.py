@@ -32,6 +32,12 @@ class Config:
         self.CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', 500))
         self.CHUNK_OVERLAP = int(os.getenv('CHUNK_OVERLAP', 50))
         
+        # Lightweight vector search settings (for memory-constrained environments)
+        self.LIGHTWEIGHT_EMBEDDINGS_MODEL = os.getenv('LIGHTWEIGHT_EMBEDDINGS_MODEL', 'all-MiniLM-L6-v2')
+        self.LIGHTWEIGHT_VECTOR_DIMENSION = int(os.getenv('LIGHTWEIGHT_VECTOR_DIMENSION', 384))
+        self.USE_LIGHTWEIGHT_SEARCH = os.getenv('USE_LIGHTWEIGHT_SEARCH', 'True').lower() == 'true'
+        self.LAZY_LOAD_MODEL = os.getenv('LAZY_LOAD_MODEL', 'True').lower() == 'true'
+        
 
         
         # Knowledge base settings

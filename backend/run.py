@@ -139,10 +139,14 @@ def main():
         print("\n🔄 Initializing components...")
         
         if config.API_CALLS_ENABLED:
-            print("  📚 Loading knowledge base and generating embeddings...")
-            vector_engine.initialize()
+            if config.LAZY_LOAD_MODEL:
+                print("  📚 Vector search engine initialized with lazy loading")
+                print("  🔍 Testing DeepSeek API connection...")
+            else:
+                print("  📚 Loading knowledge base and generating embeddings...")
+                vector_engine.initialize()
+                print("  🔍 Testing DeepSeek API connection...")
             
-            print("  🔍 Testing DeepSeek API connection...")
             if not deepseek_client.is_ready():
                 print("❌ DeepSeek API connection failed")
                 sys.exit(1)

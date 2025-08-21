@@ -5,9 +5,6 @@ nixPkgs = [
   "python311Packages.flask",
   "python311Packages.flask-cors", 
   "python311Packages.requests",
-  "python311Packages.stripe",
-  "python311Packages.PyJWT",
-  "python311Packages.bcrypt",
   "python311Packages.pandas",
   "python311Packages.python-dotenv",
   "python311Packages.psutil",
@@ -19,7 +16,7 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
-  "pip install --user sentence-transformers"
+  "pip install --user PyJWT bcrypt stripe sentence-transformers"
 ]
 
 [phases.build]

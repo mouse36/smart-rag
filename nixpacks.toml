@@ -15,7 +15,9 @@ nixPkgs = [
   "python311Packages.pyjwt",
   "python311Packages.bcrypt",
   "python311Packages.stripe",
-  "python311Packages.sentence-transformers"
+  "python311Packages.sentence-transformers",
+  "python311Packages.transformers",
+  "python311Packages.tokenizers"
 ]
 
 [phases.build]

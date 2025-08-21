@@ -17,7 +17,11 @@ nixPkgs = [
   "python311Packages.stripe",
   "python311Packages.sentence-transformers",
   "python311Packages.transformers",
-  "python311Packages.tokenizers"
+  "python311Packages.tokenizers",
+  "python311Packages.faiss-cpu",
+  "python311Packages.scipy",
+  "python311Packages.tqdm",
+  "python311Packages.regex"
 ]
 
 [phases.build]
@@ -27,3 +31,9 @@ cmds = [
 
 [start]
 cmd = "python run.py"
+
+[healthcheck]
+path = "/health"
+interval = "30s"
+timeout = "10s"
+retries = 3

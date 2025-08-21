@@ -34,10 +34,12 @@ class MemoryOptimizedVectorSearchEngine:
         self.embeddings = None
         self._ready = False
         self._model_loaded = False
+        self._chunks_loaded = False
         
-        # Memory optimization settings
-        self.max_memory_mb = int(os.getenv('MAX_MEMORY_MB', 512))
+        # Memory optimization settings - be more conservative for deployment
+        self.max_memory_mb = int(os.getenv('MAX_MEMORY_MB', 400))  # Lower threshold
         self.use_smaller_model = os.getenv('USE_SMALLER_MODEL', 'True').lower() == 'true'
+        self.min_memory_for_model = int(os.getenv('MIN_MEMORY_FOR_MODEL', 150))  # Minimum for model loading
     
     def initialize(self):
         """Initialize the vector search engine with memory optimization"""
@@ -48,29 +50,41 @@ class MemoryOptimizedVectorSearchEngine:
             available_memory = psutil.virtual_memory().available / (1024 * 1024)  # MB
             logger.info(f"Available memory: {available_memory:.1f} MB")
             
-            if available_memory < self.max_memory_mb:
-                logger.warning(f"Low memory detected ({available_memory:.1f} MB). Using fallback search.")
-                self._ready = True
-                return
-            
-            # Try to load cached data first
+            # Always try to load chunks first - they're essential for RAG
             if self._load_cached_data():
                 logger.info("Loaded cached embeddings and index")
+                self._chunks_loaded = True
                 self._ready = True
                 return
             
-            # If no cache, process knowledge base with memory monitoring
+            # If no cache, we must process the knowledge base
             logger.info("No cached data found. Processing knowledge base...")
+            
+            # Check if we have enough memory to process
+            if available_memory < 100:  # Need at least 100MB to process files
+                logger.error(f"Insufficient memory ({available_memory:.1f} MB) to process knowledge base")
+                raise RuntimeError("Insufficient memory to process knowledge base")
+            
+            # Process knowledge base with memory monitoring
             self._process_knowledge_base_memory_optimized()
-            self._save_cached_data()
+            
+            # Save cache for future use
+            if self.chunks:  # Only save if we successfully loaded chunks
+                self._save_cached_data()
+                self._chunks_loaded = True
             
             self._ready = True
             logger.info(f"Vector search engine initialized with {len(self.chunks)} chunks")
             
         except Exception as e:
             logger.error(f"Failed to initialize vector search engine: {str(e)}")
-            # Don't raise - allow fallback to keyword search
-            self._ready = True
+            # Only mark as ready if we have chunks loaded
+            if self.chunks:
+                self._ready = True
+                self._chunks_loaded = True
+                logger.warning("Vector search failed, but chunks are available for keyword search")
+            else:
+                raise  # Re-raise if we can't even load chunks
     
     def _load_model_if_needed(self):
         """Load the sentence transformer model only when needed"""
@@ -78,8 +92,8 @@ class MemoryOptimizedVectorSearchEngine:
             try:
                 # Check memory before loading
                 available_memory = psutil.virtual_memory().available / (1024 * 1024)
-                if available_memory < 200:  # Need at least 200MB for model
-                    logger.warning(f"Insufficient memory ({available_memory:.1f} MB) for model loading")
+                if available_memory < self.min_memory_for_model:
+                    logger.warning(f"Insufficient memory ({available_memory:.1f} MB) for model loading. Need at least {self.min_memory_for_model} MB")
                     return False
                 
                 logger.info("Loading memory-optimized sentence transformer model...")
@@ -113,11 +127,17 @@ class MemoryOptimizedVectorSearchEngine:
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """Search for relevant passages given a query"""
         if not self.is_ready():
+            logger.error("Vector search engine not ready")
+            return []
+        
+        if not self.chunks:
+            logger.error("No chunks loaded - cannot perform search")
             return []
         
         try:
-            # Try vector search first
+            # Try vector search first if we have the model and index
             if self._load_model_if_needed() and self.index is not None:
+                logger.info("Using vector search")
                 return self._vector_search(query, top_k)
             else:
                 # Fallback to keyword search
@@ -204,14 +224,18 @@ class MemoryOptimizedVectorSearchEngine:
         
         # Process files in smaller batches to manage memory
         files = [f for f in os.listdir(knowledge_base_path) if f.endswith('.txt')]
-        batch_size = 5  # Process 5 files at a time
+        if not files:
+            raise ValueError("No .txt files found in knowledge base directory")
+        
+        batch_size = 3  # Smaller batch size for memory-constrained environments
+        logger.info(f"Processing {len(files)} files in batches of {batch_size}")
         
         for i in range(0, len(files), batch_size):
             batch_files = files[i:i + batch_size]
             
             # Check memory before processing batch
             available_memory = psutil.virtual_memory().available / (1024 * 1024)
-            if available_memory < 100:  # Need at least 100MB
+            if available_memory < 50:  # Lower threshold for deployment
                 logger.warning(f"Low memory during processing ({available_memory:.1f} MB). Stopping.")
                 break
             

@@ -106,6 +106,15 @@ def main():
     print("🚀 Starting Backend...")
     print("=" * 50)
     
+    # Set up deployment safeguards
+    try:
+        from deployment_safeguards import setup_deployment_safeguards
+        setup_deployment_safeguards()
+    except ImportError:
+        print("⚠️  Deployment safeguards not available")
+    except Exception as e:
+        print(f"⚠️  Deployment safeguards failed: {e}")
+    
     # Check requirements
     if not check_requirements():
         print("\n❌ Startup failed due to missing requirements")

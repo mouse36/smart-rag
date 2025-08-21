@@ -1,0 +1,244 @@
+/**
+ * Shared component styles for SunnyMentor
+ */
+
+:root {
+    --main-font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--main-font-family);
+    line-height: 1.6;
+    color: #333;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Navigation */
+.navbar {
+    background: rgba(255, 255, 255, 90.0);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.nav-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    height: 80px;
+}
+
+.nav-menu {
+    display: none;
+}
+
+.nav-auth {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.language-switcher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    color: #4a5568;
+}
+
+.language-switcher:hover {
+    background: #eef0f1;
+}
+
+.globe-icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.language-code {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Logo Container and Text Styling */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.3s ease;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    display: flex;
+}
+
+.logo-sunny {
+    background: linear-gradient(135deg, #fdb932 0%, #ffdf38 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+
+.logo-mentor {
+    background: linear-gradient(135deg, #ff8900 0%, #ffbf00 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+
+.clickable-logo:hover {
+    transform: scale(1.05);
+}
+
+.clickable-logo:hover .logo-sunny {
+    background: linear-gradient(135deg, #ff8900 0%, #ffdf38 50%, #ff8900 100%);
+    background-size: 200% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-flow 2s ease-in-out infinite;
+}
+
+.clickable-logo:hover .logo-mentor {
+    background: linear-gradient(135deg, #ffdf38 0%, #ff8900 50%, #ffdf38 100%);
+    background-size: 200% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-flow 2s ease-in-out infinite;
+}
+
+@keyframes gradient-flow {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Specific sizing adjustments for different contexts */
+.navbar .logo-text {
+    font-size: 18px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 50px;
+    font-family: var(--main-font-family);
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    line-height: 1;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 137, 0, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 137, 0, 0.4);
+}
+
+.btn-secondary {
+    background: white;
+    color: #4a5568;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #f8f9fa;
+    border-color: #cbd5e0;
+}
+
+.btn-white {
+    background: rgba(255, 255, 255, 0.9);
+    color: #4a5568;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-white:hover {
+    background: white;
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.label {
+    background: none;
+    border: none;
+    color: #4a5568;
+    cursor: pointer;
+    font-family: var(--main-font-family);
+    font-weight: 600;
+    font-size: 16px;
+    padding: 8px 12px;
+    transition: color 0.3s ease;
+}
+
+.label:hover {
+    color: #2d3748;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-content {
+        padding: 0 15px;
+    }
+    
+    .nav-auth {
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    .label {
+        display: none;
+    }
+
+    .navbar .logo-text {
+        font-size: 16px;
+    }
+}

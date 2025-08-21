@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SunnyMentor</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="graphics/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="graphics/logo.png">
+    <link rel="shortcut icon" href="graphics/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/components.css">
+    
+    <style>
+        :root {
+            --main-font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--main-font-family);
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
+            min-height: 100vh;
+        }
+
+        .main-content {
+            margin-top: 100px;
+            min-height: calc(100vh - 100px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .form-card h1 {
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: var(--main-font-family);
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ff8900;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 8px;
+            text-align: left;
+        }
+
+        .verification-message {
+            background: #e6f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .verification-message h3 {
+            color: #1a365d;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .verification-message p {
+            color: #2d3748;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .loading {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Backend Error Banner */
+        .backend-error-banner {
+            display: none;
+            position: fixed;
+            top: 100px;
+            left: 0;
+            right: 0;
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #9b2c2c;
+            padding: 12px 20px;
+            z-index: 999;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .backend-error-banner.show {
+            display: flex;
+        }
+
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .banner-icon {
+            font-size: 18px;
+        }
+
+        .banner-close {
+            background: none;
+            border: none;
+            color: #9b2c2c;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+
+            .form-card {
+                padding: 30px 20px;
+            }
+
+            .form-card h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Backend Error Banner -->
+    <div class="backend-error-banner" id="backend-error-banner">
+        <div class="banner-content">
+            <div class="banner-icon">⚠️</div>
+            <div class="banner-text">
+                <strong data-en="Backend Server Error:" data-zh="后端服务器错误：">Backend Server Error:</strong> 
+                <span data-en="Unable to connect to the authentication server. Please ensure the server is running to complete login." data-zh="无法连接到认证服务器。请确保服务器正在运行以完成登录。">Unable to connect to the authentication server. Please ensure the server is running to complete login.</span>
+            </div>
+        </div>
+        <button class="banner-close" onclick="closeBackendErrorBanner()" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
+                <img src="graphics/logo.svg" alt="SunnyMentor" class="logo">
+                <span class="logo-text" style="font-size: 48px;">
+                    <span class="logo-sunny" data-en="Sunny" data-zh="阳光">Sunny</span><span class="logo-mentor" data-en="Mentor" data-zh="教练">Mentor</span>
+                </span>
+            </div>
+            <div class="nav-auth">
+                <button class="btn btn-secondary" onclick="goToSignup()" data-en="Don't have an account? Sign up" data-zh="还没有账户？注册">Don't have an account? Sign up</button>
+                <div class="language-switcher" onclick="toggleLanguage()" title="Switch Language">
+                    <img src="graphics/language-switcher.svg" alt="Language Switcher" class="globe-icon" />
+                    <span class="language-code">EN</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="form-container">
+            <div class="form-card">
+                <h1 id="form-title" data-en="Welcome to SunnyMentor" data-zh="欢迎来到SunnyMentor">Welcome to SunnyMentor</h1>
+                
+                <!-- Phone Number Input Phase -->
+                <div id="phone-input-phase">
+                    <form id="phone-form">
+                        <div class="form-group">
+                            <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" data-placeholder-en="Enter your phone number" data-placeholder-zh="请输入您的手机号码" required>
+                            <div id="phone-error" class="error-message"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
+                            <span id="phone-submit-text" data-en="Next" data-zh="下一步">Next</span>
+                            <div id="phone-loading" class="loading" style="display: none;"></div>
+                        </button>
+                    </form>
+                    
+                    <p style="text-align: center; color: #718096; font-size: 14px; margin-top: 15px;">
+                        <a href="#" onclick="switchToEmailSignup()" style="color: #667eea; text-decoration: none;" data-en="Use email and password instead" data-zh="改用邮箱和密码登录">Use email and password instead</a>
+                    </p>
+                </div>
+                
+                <!-- Email/Password Input Phase -->
+                <div id="email-input-phase" style="display: none;">
+                    <form id="email-form">
+                        <div class="form-group">
+                            <input type="email" id="email" class="form-input" placeholder="Enter your email address" data-placeholder-en="Enter your email address" data-placeholder-zh="请输入您的邮箱地址" required>
+                            <div id="email-error" class="error-message"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="password" id="password" class="form-input" placeholder="Enter your password" data-placeholder-en="Enter your password" data-placeholder-zh="请输入您的密码" required>
+                            <div id="password-error" class="error-message"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
+                            <span id="email-submit-text" data-en="Login" data-zh="登录">Login</span>
+                            <div id="email-loading" class="loading" style="display: none;"></div>
+                        </button>
+                    </form>
+                    
+                    <p style="text-align: center; color: #718096; font-size: 14px; margin-top: 15px;">
+                        <a href="#" onclick="switchToPhoneSignup()" style="color: #667eea; text-decoration: none;">Use phone number instead</a>
+                    </p>
+                </div>
+                
+                <!-- Verification Code Phase -->
+                <div id="verification-phase" style="display: none;">
+                    <div class="verification-message">
+                        <h3 data-en="Verification Code Sent" data-zh="验证码已发送">Verification Code Sent</h3>
+                        <p data-en="We've sent you a verification code to " data-zh="我们已向您发送验证码至 ">We've sent you a verification code to <span id="sent-phone-number"></span></p>
+                        <p style="font-size: 14px; margin-top: 10px;" data-en="Enter the six-digit number sent to your phone to confirm login for your account" data-zh="请输入发送到您手机的六位数字来确认您的账户登录">Enter the six-digit number sent to your phone to confirm login for your account</p>
+                    </div>
+                    
+                    <form id="verification-form">
+                        <div class="form-group">
+                            <input type="text" id="verification-code" class="form-input" placeholder="Enter 6-digit code" data-placeholder-en="Enter 6-digit code" data-placeholder-zh="请输入6位验证码" maxlength="6" pattern="[0-9]{6}" required>
+                            <div id="verification-error" class="error-message"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
+                            <span id="verification-submit-text" data-en="Verify" data-zh="验证">Verify</span>
+                            <div id="verification-loading" class="loading" style="display: none;"></div>
+                        </button>
+                    </form>
+                    
+                    <p style="text-align: center; color: #718096; font-size: 14px;">
+                        <a href="#" id="resend-code" onclick="resendVerificationCode()" style="color: #667eea; text-decoration: none;">Resend code</a>
+                        |
+                        <a href="#" onclick="goBackToPhoneInput()" style="color: #667eea; text-decoration: none;">Change phone number</a>
+                    </p>
+                </div>
+                
+                <!-- Success Phase -->
+                <div id="success-phase" style="display: none;">
+                    <div class="verification-message" style="background: #f0fff4; border-color: #9ae6b4;">
+                        <h3 style="color: #38a169;" data-en="Welcome! 🎉" data-zh="欢迎！🎉">Welcome! 🎉</h3>
+                        <p style="color: #2d3748;" data-en="You're all set to start using your Virtual AI Coach" data-zh="你已准备好开始使用你的虚拟AI教练">You're all set to start using your Virtual AI Coach</p>
+                    </div>
+                    
+                    <button onclick="startUsingCoach()" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;" data-en="Start Using Virtual Coach" data-zh="开始使用虚拟教练">
+                        Start Using Virtual Coach
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Component loader -->
+    <script src="js/components.js"></script>
+    
+    <!-- Authentication Service -->
+    <script src="js/auth-service.js"></script>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+        
+        // Global state
+        let currentLanguage = 'EN'; // Fallback, will be overridden by languageManager
+        let currentPhoneNumber = '';
+        let generatedCode = '';
+
+        // Language switching
+        function toggleLanguage() {
+            // Use global language manager if available
+            if (window.languageManager) {
+                window.languageManager.toggleLanguage();
+                currentLanguage = window.languageManager.getCurrentLanguage(); // Keep local var in sync
+                document.querySelector('.language-code').textContent = currentLanguage;
+                updateLanguageContent();
+            } else {
+                // Fallback
+                currentLanguage = currentLanguage === 'EN' ? 'ZH' : 'EN';
+                document.querySelector('.language-code').textContent = currentLanguage;
+                updateLanguageContent();
+            }
+        }
+
+        function updateLanguageContent() {
+            const elements = document.querySelectorAll('[data-en]');
+            elements.forEach(el => {
+                const englishText = el.getAttribute('data-en');
+                const chineseText = el.getAttribute('data-zh');
+                if (currentLanguage === 'EN') {
+                    el.textContent = englishText;
+                } else {
+                    el.textContent = chineseText || englishText;
+                }
+            });
+
+            // Update placeholders
+            const placeholderElements = document.querySelectorAll('[data-placeholder-en]');
+            placeholderElements.forEach(el => {
+                const englishPlaceholder = el.getAttribute('data-placeholder-en');
+                const chinesePlaceholder = el.getAttribute('data-placeholder-zh');
+                if (currentLanguage === 'EN') {
+                    el.placeholder = englishPlaceholder;
+                } else {
+                    el.placeholder = chinesePlaceholder || englishPlaceholder;
+                }
+            });
+
+            // Update title attributes
+            const titleElements = document.querySelectorAll('[data-title-en]');
+            titleElements.forEach(el => {
+                const englishTitle = el.getAttribute('data-title-en');
+                const chineseTitle = el.getAttribute('data-title-zh');
+                if (currentLanguage === 'EN') {
+                    el.title = englishTitle;
+                } else {
+                    el.title = chineseTitle || englishTitle;
+                }
+            });
+        }
+
+        // Navigation functions
+        function goToSignup() {
+            window.location.href = 'signup.html';
+        }
+
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+
+        function handleLogoClick() {
+            window.location.href = 'index.html';
+        }
+
+        // Backend error banner functions
+        function showBackendErrorBanner() {
+            document.getElementById('backend-error-banner').classList.add('show');
+        }
+
+        function closeBackendErrorBanner() {
+            document.getElementById('backend-error-banner').classList.remove('show');
+        }
+
+        function shouldShowBackendErrorBanner() {
+            return !document.getElementById('backend-error-banner').classList.contains('show');
+        }
+
+        // Error display functions
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+        }
+
+        function clearErrors() {
+            const errorElements = document.querySelectorAll('.error-message');
+            errorElements.forEach(el => {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
+        }
+
+        // Phone number utilities
+        function normalizePhoneNumber(phone) {
+            // Remove all non-digit characters
+            const digits = phone.replace(/\D/g, '');
+            
+            // If it's a 10-digit number, assume US and add +1
+            if (digits.length === 10) {
+                return '+1' + digits;
+            }
+            
+            // If it's 11 digits and starts with 1, add +
+            if (digits.length === 11 && digits.startsWith('1')) {
+                return '+' + digits;
+            }
+            
+            // Otherwise return with + if not already there
+            return digits.startsWith('+') ? phone : '+' + digits;
+        }
+
+        async function isPhoneNumberApproved(phone) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/validate-phone`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phone: phone })
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to validate phone number:', response.statusText);
+                    
+                    // Show backend error banner if this is a connection issue
+                    if (shouldShowBackendErrorBanner()) {
+                        showBackendErrorBanner();
+                    }
+                    
+                    return { approved: false, error: 'backend_error' };
+                }
+                
+                const result = await response.json();
+                
+                // Hide backend error banner since we successfully connected
+                closeBackendErrorBanner();
+                
+                return { approved: result.is_approved, error: result.is_approved ? null : 'not_approved' };
+            } catch (error) {
+                console.error('Error validating phone number:', error);
+                
+                // Show backend error banner on connection failure
+                if (shouldShowBackendErrorBanner()) {
+                    showBackendErrorBanner();
+                }
+                
+                return { approved: false, error: 'backend_error' };
+            }
+        }
+
+        function generateVerificationCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // Loading state functions
+        function showPhoneLoading(show) {
+            const loadingEl = document.getElementById('phone-loading');
+            const submitTextEl = document.getElementById('phone-submit-text');
+            
+            if (loadingEl && submitTextEl) {
+                if (show) {
+                    loadingEl.style.display = 'inline-block';
+                    submitTextEl.style.display = 'none';
+                } else {
+                    loadingEl.style.display = 'none';
+                    submitTextEl.style.display = 'inline';
+                }
+            }
+        }
+
+        function showVerificationLoading(show) {
+            const loadingEl = document.getElementById('verification-loading');
+            const submitTextEl = document.getElementById('verification-submit-text');
+            
+            if (loadingEl && submitTextEl) {
+                if (show) {
+                    loadingEl.style.display = 'inline-block';
+                    submitTextEl.style.display = 'none';
+                } else {
+                    loadingEl.style.display = 'none';
+                    submitTextEl.style.display = 'inline';
+                }
+            }
+        }
+
+        function showEmailLoading(show) {
+            const loadingEl = document.getElementById('email-loading');
+            const submitTextEl = document.getElementById('email-submit-text');
+            
+            if (loadingEl && submitTextEl) {
+                if (show) {
+                    loadingEl.style.display = 'inline-block';
+                    submitTextEl.style.display = 'none';
+                } else {
+                    loadingEl.style.display = 'none';
+                    submitTextEl.style.display = 'inline';
+                }
+            }
+        }
+
+        // Phase switching functions
+        function switchToEmailSignup() {
+            document.getElementById('phone-input-phase').style.display = 'none';
+            document.getElementById('email-input-phase').style.display = 'block';
+            document.getElementById('verification-phase').style.display = 'none';
+            document.getElementById('success-phase').style.display = 'none';
+            clearErrors();
+        }
+
+        function switchToPhoneSignup() {
+            document.getElementById('phone-input-phase').style.display = 'block';
+            document.getElementById('email-input-phase').style.display = 'none';
+            document.getElementById('verification-phase').style.display = 'none';
+            document.getElementById('success-phase').style.display = 'none';
+            clearErrors();
+        }
+
+        function goBackToPhoneInput() {
+            document.getElementById('phone-input-phase').style.display = 'block';
+            document.getElementById('verification-phase').style.display = 'none';
+            document.getElementById('success-phase').style.display = 'none';
+            
+            // Clear phone input and errors
+            document.getElementById('phone').value = '';
+            clearErrors();
+        }
+
+        function resendVerificationCode() {
+            generatedCode = generateVerificationCode();
+            console.log('New verification code:', generatedCode); // In real app, send SMS
+            showNotification('Verification code resent!', 'success');
+        }
+
+        function startUsingCoach() {
+            // Use JWT authentication service instead of localStorage
+            if (window.authService) {
+                // For phone-based login, we need to create a token
+                // This is a simplified version - in production you'd want proper phone verification
+                const userData = {
+                    email: currentPhoneNumber + '@phone.local',
+                    username: currentPhoneNumber,
+                    profile_picture: 'default'
+                };
+                
+                // Store temporary authentication (this should be replaced with proper server-side phone verification)
+                window.authService.setToken('temp_phone_token', userData);
+            }
+            
+            // Redirect to main page
+            window.location.href = 'index.html';
+        }
+
+        function showNotification(message, type) {
+            // Simple notification - in a real app, you might use a toast library
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 120px;
+                right: 20px;
+                background: ${type === 'success' ? '#38a169' : '#e53e3e'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 1000;
+                font-size: 14px;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+
+        // Backend health check
+        async function checkBackendHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Backend health check:', data);
+                    closeBackendErrorBanner();
+                    return true;
+                } else {
+                    throw new Error('Health check failed');
+                }
+            } catch (error) {
+                console.warn('Backend health check failed:', error);
+                // Only show banner if it should be shown
+                if (shouldShowBackendErrorBanner()) {
+                    showBackendErrorBanner();
+                }
+                return false;
+            }
+        }
+
+        // Form submission handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sync with global language manager
+            if (window.languageManager) {
+                currentLanguage = window.languageManager.getCurrentLanguage();
+                document.querySelector('.language-code').textContent = currentLanguage;
+            }
+            updateLanguageContent();
+            checkBackendHealth();
+
+            // Phone number form
+            const phoneForm = document.getElementById('phone-form');
+            if (phoneForm) {
+                phoneForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const phoneInput = document.getElementById('phone');
+                    const phoneNumber = phoneInput.value.trim();
+                    
+                    // Clear previous errors
+                    clearErrors();
+                    
+                    // Validate phone number
+                    if (!phoneNumber) {
+                        showError('phone-error', 'Phone number is required');
+                        return;
+                    }
+                    
+                    showPhoneLoading(true);
+                    
+                    try {
+                        // Check if phone number is approved via backend API
+                        const result = await isPhoneNumberApproved(phoneNumber);
+                        
+                        showPhoneLoading(false);
+                        
+                        if (result.approved) {
+                            // Phone number is approved
+                            currentPhoneNumber = phoneNumber;
+                            generatedCode = generateVerificationCode();
+                            console.log('Verification code:', generatedCode); // In real app, send SMS
+                            
+                            // Show verification phase
+                            document.getElementById('phone-input-phase').style.display = 'none';
+                            document.getElementById('verification-phase').style.display = 'block';
+                            document.getElementById('sent-phone-number').textContent = phoneNumber;
+                        } else {
+                            // Phone number not approved or backend error
+                            if (result.error === 'backend_error') {
+                                showError('phone-error', 'Backend server is not running. Please ensure the server is started and try again.');
+                            } else {
+                                showError('phone-error', 'This phone number is not in our approved list. Please contact support for access.');
+                            }
+                        }
+                    } catch (error) {
+                        showPhoneLoading(false);
+                        showError('phone-error', 'Unable to verify phone number - backend server is not running. Please ensure the server is started and try again.');
+                        console.error('Phone validation error:', error);
+                        
+                        // Show backend error banner on connection failure
+                        if (shouldShowBackendErrorBanner()) {
+                            showBackendErrorBanner();
+                        }
+                    }
+                });
+            }
+
+            // Verification code form
+            const verificationForm = document.getElementById('verification-form');
+            if (verificationForm) {
+                verificationForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const codeInput = document.getElementById('verification-code');
+                    const enteredCode = codeInput.value.trim();
+                    
+                    // Clear previous errors
+                    clearErrors();
+                    
+                    // Validate code
+                    if (!enteredCode) {
+                        showError('verification-error', 'Verification code is required');
+                        return;
+                    }
+                    
+                    if (enteredCode.length !== 6) {
+                        showError('verification-error', 'Please enter a 6-digit code');
+                        return;
+                    }
+                    
+                    // Show loading
+                    showVerificationLoading(true);
+                    
+                    // Simulate API call delay
+                    setTimeout(() => {
+                        showVerificationLoading(false);
+                        
+                        if (enteredCode === generatedCode) {
+                            // Code matches - proceed to success
+                            document.getElementById('verification-phase').style.display = 'none';
+                            document.getElementById('success-phase').style.display = 'block';
+                        } else {
+                            // Code doesn't match
+                            showError('verification-error', 'Invalid verification code. Please try again.');
+                        }
+                    }, 1000);
+                });
+            }
+
+            // Email/Password form
+            const emailForm = document.getElementById('email-form');
+            if (emailForm) {
+                emailForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const email = document.getElementById('email').value.trim();
+                    const password = document.getElementById('password').value.trim();
+                    
+                    // Clear previous errors
+                    clearErrors();
+                    
+                    // Validate inputs
+                    if (!email) {
+                        showError('email-error', 'Email address is required');
+                        return;
+                    }
+                    
+                    // Basic email validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        showError('email-error', 'Please enter a valid email address');
+                        return;
+                    }
+                    
+                    if (!password) {
+                        showError('password-error', 'Password is required');
+                        return;
+                    }
+                    
+                    // Show loading
+                    showEmailLoading(true);
+                    
+                    try {
+                        // Use JWT authentication service for login
+                        const result = await window.authService.login(email, password);
+                        
+                        if (result.success) {
+                            // Login successful - redirect to chat
+                            window.location.href = 'index.html';
+                        } else {
+                            // Show error message
+                            if (result.error === 'invalid_password') {
+                                showError('password-error', 'Incorrect password');
+                            } else if (result.error === 'user_not_found') {
+                                showError('email-error', 'User not found');
+                            } else {
+                                showError('email-error', result.message || 'Login failed');
+                            }
+                            
+                            // Show backend error banner if connection issues
+                            if (result.error === 'network_error') {
+                                if (shouldShowBackendErrorBanner()) {
+                                    showBackendErrorBanner();
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Login error:', error);
+                        showError('email-error', 'Unable to connect to server. Please check your connection and try again.');
+                        
+                        // Show backend error banner on connection failure
+                        if (shouldShowBackendErrorBanner()) {
+                            showBackendErrorBanner();
+                        }
+                    } finally {
+                        showEmailLoading(false);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -11,12 +11,11 @@ nixPkgs = [
   "python311Packages.scikit-learn",
   "python311Packages.numpy",
   "python311Packages.torch",
-  "python311Packages.gunicorn"
-]
-
-[phases.install]
-cmds = [
-  "pip install --user PyJWT bcrypt stripe sentence-transformers"
+  "python311Packages.gunicorn",
+  "python311Packages.pyjwt",
+  "python311Packages.bcrypt",
+  "python311Packages.stripe",
+  "python311Packages.sentence-transformers"
 ]
 
 [phases.build]

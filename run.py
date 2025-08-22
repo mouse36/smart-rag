@@ -95,22 +95,22 @@ def main():
         print("\n❌ Startup failed due to missing requirements")
         sys.exit(1)
     
-            print("\n✅ Basic requirements satisfied")
-        print("🔄 Loading application...")
+    print("\n✅ Basic requirements satisfied")
+    print("🔄 Loading application...")
+    
+    try:
+        # Import and run the Flask app
+        print("📦 Importing Flask app...")
+        from app import app
+        print("✅ Flask app imported successfully")
         
-        try:
-            # Import and run the Flask app
-            print("📦 Importing Flask app...")
-            from app import app
-            print("✅ Flask app imported successfully")
-            
-            # Test health endpoint
-            print("🔍 Testing health endpoint...")
-            with app.test_client() as client:
-                response = client.get('/health')
-                print(f"✅ Health endpoint test: {response.status_code} - {response.data.decode()}")
-            
-            # Get configuration
+        # Test health endpoint
+        print("🔍 Testing health endpoint...")
+        with app.test_client() as client:
+            response = client.get('/health')
+            print(f"✅ Health endpoint test: {response.status_code} - {response.data.decode()}")
+        
+        # Get configuration
         from config import Config
         config = Config()
         

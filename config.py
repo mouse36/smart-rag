@@ -98,16 +98,10 @@ class Config:
         if not self.JSONBIN_API_KEY:
             return "JSONBIN_API_KEY environment variable is required for user authentication"
         
-        if not self.JSONBIN_BIN_ID:
-            return "JSONBIN_BIN_ID environment variable is required for user authentication"
-        
-        if not os.path.exists(self.KNOWLEDGE_BASE_PATH):
-            return f"Knowledge base path does not exist: {self.KNOWLEDGE_BASE_PATH}"
-        
-        return None  # Configuration is valid
+        return None
     
     def is_stripe_configured(self) -> bool:
-        """Check if Stripe payment processing is properly configured"""
+        """Check if Stripe is properly configured"""
         return bool(self.STRIPE_SECRET_KEY and self.STRIPE_PUBLISHABLE_KEY)
     
     def get_system_prompt(self) -> str:

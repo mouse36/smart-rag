@@ -22,8 +22,8 @@ env_vars = {
     'DEEPSEEK_BASE_URL': 'https://api.deepseek.com',
     'DEEPSEEK_MODEL': 'deepseek-chat',
     'HOST': '0.0.0.0',
-    'PORT': '5000',
-    'DEBUG': 'True',
+    'PORT': os.getenv('PORT', '5000'),  # Use Railway's PORT environment variable
+    'DEBUG': 'False',  # Set to False for production
     'EMBEDDINGS_MODEL': 'all-MiniLM-L6-v2',
     'VECTOR_DIMENSION': '384',
     'CHUNK_SIZE': '500',
@@ -34,7 +34,7 @@ env_vars = {
     'TEMPERATURE': '0.7',
     'TOP_P': '0.9',
 
-    'API_CALLS_ENABLED': 'False'  # Set to 'True' to enable real API calls, 'False' for placeholder responses
+    'API_CALLS_ENABLED': 'False'  # Set to 'False' for deployment safety
 }
 
 # Set environment variables if not already set
@@ -46,7 +46,7 @@ def check_requirements():
     """Check if required environment variables and dependencies are set"""
     
     # Check API calls configuration
-    api_enabled = os.environ.get('API_CALLS_ENABLED', 'True').lower() == 'true'
+    api_enabled = os.environ.get('API_CALLS_ENABLED', 'False').lower() == 'true'
     
     if api_enabled:
         # Check critical environment variables only if API calls are enabled

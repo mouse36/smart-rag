@@ -101,6 +101,12 @@ def main():
     print("🚀 Starting Backend...")
     print("=" * 50)
     
+    # Railway-specific logging
+    print(f"🚂 Railway Environment:")
+    print(f"  PORT: {os.getenv('PORT', 'Not set')}")
+    print(f"  RAILWAY_ENVIRONMENT: {os.getenv('RAILWAY_ENVIRONMENT', 'Not set')}")
+    print(f"  RAILWAY_PROJECT_ID: {os.getenv('RAILWAY_PROJECT_ID', 'Not set')}")
+    
     # Debug: Check if JSONBIN_API_KEY is available
     jsonbin_key = os.getenv('JSONBIN_API_KEY')
     if jsonbin_key:

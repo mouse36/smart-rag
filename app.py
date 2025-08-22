@@ -33,33 +33,41 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Conditionally import AI/ML modules based on API_CALLS_ENABLED
-config = Config()
-if config.API_CALLS_ENABLED:
-    # Import vector search engine using scikit-learn
-    from vector_search import VectorSearchEngine
-    logger.info("Using scikit-learn vector search engine")
-    from deepseek_client import DeepSeekClient
-
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend integration
 
+# Initialize configuration first
+config = Config()
+
 # Initialize components
 jsonbin_client = JSONBinClient(config)
 
-# Conditionally initialize AI/ML components
-if config.API_CALLS_ENABLED:
-    vector_engine = VectorSearchEngine(config)
-    deepseek_client = DeepSeekClient(config)
-    
-    # Initialize with lazy loading if enabled
-    if config.LAZY_LOAD_MODEL:
-        logger.info("Vector search engine initialized with lazy loading")
+# Initialize AI/ML components with error handling
+vector_engine = None
+deepseek_client = None
+
+try:
+    if config.API_CALLS_ENABLED:
+        # Import vector search engine using scikit-learn
+        from vector_search import VectorSearchEngine
+        from deepseek_client import DeepSeekClient
+        logger.info("Using scikit-learn vector search engine")
+        
+        vector_engine = VectorSearchEngine(config)
+        deepseek_client = DeepSeekClient(config)
+        
+        # Initialize with lazy loading if enabled
+        if config.LAZY_LOAD_MODEL:
+            logger.info("Vector search engine initialized with lazy loading")
+        else:
+            logger.info("Initializing vector search engine...")
+            vector_engine.initialize()
     else:
-        logger.info("Initializing vector search engine...")
-        vector_engine.initialize()
-else:
+        logger.info("API calls disabled - AI/ML components not initialized")
+except Exception as e:
+    logger.warning(f"Failed to initialize AI/ML components: {e}")
+    logger.info("Continuing without AI/ML functionality")
     vector_engine = None
     deepseek_client = None
 

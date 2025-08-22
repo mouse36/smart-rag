@@ -28,12 +28,10 @@ env_vars = {
     'VECTOR_DIMENSION': '384',
     'CHUNK_SIZE': '500',
     'CHUNK_OVERLAP': '50',
-
     'MAX_CONTEXT_LENGTH': '4000',
     'MAX_RESPONSE_LENGTH': '1000',
     'TEMPERATURE': '0.7',
     'TOP_P': '0.9',
-
     'API_CALLS_ENABLED': 'False'  # Set to 'False' for deployment safety
 }
 
@@ -42,22 +40,9 @@ for key, default_value in env_vars.items():
     if key not in os.environ:
         os.environ[key] = default_value
 
-def check_requirements():
-    """Check if required environment variables and dependencies are set"""
-    
-    # Check API calls configuration
-    api_enabled = os.environ.get('API_CALLS_ENABLED', 'False').lower() == 'true'
-    
-    if api_enabled:
-        # Check critical environment variables only if API calls are enabled
-        if os.environ.get('DEEPSEEK_API_KEY') == 'your_deepseek_api_key_here':
-            print("❌ ERROR: DEEPSEEK_API_KEY is not set!")
-            print("Please set your DeepSeek API key:")
-            print("export DEEPSEEK_API_KEY='your_actual_api_key'")
-            return False
-        print("✅ API calls are ENABLED - will use DeepSeek API")
-    else:
-        print("⚠️  API calls are DISABLED - will use placeholder responses")
+def check_basic_requirements():
+    """Check basic requirements without complex imports"""
+    print("🔍 Checking basic requirements...")
     
     # Check if knowledge base exists
     knowledge_base_path = Path(__file__).parent / 'knowledge_base'
@@ -73,25 +58,13 @@ def check_requirements():
     
     print(f"✅ Found {len(txt_files)} knowledge base files")
     
-    # Check Python dependencies
+    # Check basic Python dependencies
     try:
         import flask
         import requests
         print("✅ Core Python packages are installed")
-        
-        # Check AI/ML dependencies only if needed
-        from config import Config
-        config = Config()
-        if config.API_CALLS_ENABLED:
-            from sentence_transformers import SentenceTransformer
-            import numpy
-            print("✅ AI/ML packages are installed")
-        else:
-            print("⚠️  Skipping AI/ML package check - API calls disabled")
-            
     except ImportError as e:
         print(f"❌ ERROR: Missing required package: {e}")
-        print("Please install requirements: pip install -r requirements.txt")
         return False
     
     return True
@@ -105,84 +78,32 @@ def main():
     print(f"🚂 Railway Environment:")
     print(f"  PORT: {os.getenv('PORT', 'Not set')}")
     print(f"  RAILWAY_ENVIRONMENT: {os.getenv('RAILWAY_ENVIRONMENT', 'Not set')}")
-    print(f"  RAILWAY_PROJECT_ID: {os.getenv('RAILWAY_PROJECT_ID', 'Not set')}")
     
-    # Debug: Check if JSONBIN_API_KEY is available
-    jsonbin_key = os.getenv('JSONBIN_API_KEY')
-    if jsonbin_key:
-        print(f"✅ JSONBIN_API_KEY found: {jsonbin_key[:8]}...{jsonbin_key[-4:] if len(jsonbin_key) > 12 else '***'}")
-    else:
-        print("❌ JSONBIN_API_KEY not found in environment")
-        print("🔍 Available environment variables:")
-        for key in sorted(os.environ.keys()):
-            if 'JSONBIN' in key or 'API' in key or 'KEY' in key:
-                print(f"  {key}: {'*' * len(os.environ[key])}")
-    
-    # Set up deployment safeguards
-    try:
-        from deployment_safeguards import setup_deployment_safeguards
-        setup_deployment_safeguards()
-        print("✅ Deployment safeguards set up")
-    except ImportError:
-        print("⚠️  Deployment safeguards not available")
-    except Exception as e:
-        print(f"⚠️  Deployment safeguards failed: {e}")
-    
-    # Check requirements
-    print("🔍 Checking requirements...")
-    if not check_requirements():
+    # Check basic requirements
+    if not check_basic_requirements():
         print("\n❌ Startup failed due to missing requirements")
         sys.exit(1)
     
-    print("\n✅ All requirements satisfied")
+    print("\n✅ Basic requirements satisfied")
     print("🔄 Loading application...")
     
     try:
         # Import and run the Flask app
         print("📦 Importing Flask app...")
-        from app import app, config
+        from app import app
         print("✅ Flask app imported successfully")
         
-        # Conditionally import AI/ML components
-        if config.API_CALLS_ENABLED:
-            print("🤖 Importing AI/ML components...")
-            from app import vector_engine, deepseek_client
-            print("✅ AI/ML components imported")
-        
-        # Validate configuration
-        print("⚙️  Validating configuration...")
-        config_error = config.validate()
-        if config_error:
-            print(f"❌ Configuration error: {config_error}")
-            sys.exit(1)
-        print("✅ Configuration validated")
+        # Get configuration
+        from config import Config
+        config = Config()
         
         print("\n📊 Configuration:")
         print(f"  Host: {config.HOST}")
         print(f"  Port: {config.PORT}")
         print(f"  Debug: {config.DEBUG}")
-        print(f"  Model: {config.DEEPSEEK_MODEL}")
-        print(f"  Embeddings: {config.EMBEDDINGS_MODEL}")
+        print(f"  API Calls Enabled: {config.API_CALLS_ENABLED}")
         
-        # Initialize components
-        print("\n🔄 Initializing components...")
-        
-        if config.API_CALLS_ENABLED:
-            if config.LAZY_LOAD_MODEL:
-                print("  📚 Vector search engine initialized with lazy loading")
-                print("  🔍 Testing DeepSeek API connection...")
-            else:
-                print("  📚 Loading knowledge base and generating embeddings...")
-                vector_engine.initialize()
-                print("  🔍 Testing DeepSeek API connection...")
-            
-            if not deepseek_client.is_ready():
-                print("❌ DeepSeek API connection failed")
-                sys.exit(1)
-        else:
-            print("⚠️  Skipping AI/ML component initialization - API calls disabled")
-        
-        print("\n🎉 All components ready!")
+        print("\n🎉 Application ready!")
         print(f"🌐 Server starting at http://{config.HOST}:{config.PORT}")
         print("📝 Available endpoints:")
         print("  POST /chat - Main chat endpoint")

@@ -83,7 +83,7 @@ def check_requirements():
         from config import Config
         config = Config()
         if config.API_CALLS_ENABLED:
-            import sentence_transformers
+            from sentence_transformers import SentenceTransformer
             import numpy
             print("✅ AI/ML packages are installed")
         else:

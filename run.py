@@ -101,6 +101,17 @@ def main():
     print("🚀 Starting Backend...")
     print("=" * 50)
     
+    # Debug: Check if JSONBIN_API_KEY is available
+    jsonbin_key = os.getenv('JSONBIN_API_KEY')
+    if jsonbin_key:
+        print(f"✅ JSONBIN_API_KEY found: {jsonbin_key[:8]}...{jsonbin_key[-4:] if len(jsonbin_key) > 12 else '***'}")
+    else:
+        print("❌ JSONBIN_API_KEY not found in environment")
+        print("🔍 Available environment variables:")
+        for key in sorted(os.environ.keys()):
+            if 'JSONBIN' in key or 'API' in key or 'KEY' in key:
+                print(f"  {key}: {'*' * len(os.environ[key])}")
+    
     # Set up deployment safeguards
     try:
         from deployment_safeguards import setup_deployment_safeguards

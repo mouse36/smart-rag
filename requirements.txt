@@ -10,7 +10,6 @@ wheel>=0.38.0
 python-dotenv==1.1.1
 
 # Fallback packages (if not available in Nix)
-faiss-cpu>=1.7.4
 scipy>=1.10.0
 tqdm>=4.65.0
 regex>=2023.6.3

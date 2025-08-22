@@ -1,6 +1,6 @@
 """
 Vector Search Engine for Knowledge Base Retrieval
-Uses sentence-transformers for embeddings and FAISS for efficient similarity search
+Uses sentence-transformers for embeddings and scikit-learn for efficient similarity search
 """
 
 import os
@@ -9,7 +9,8 @@ import logging
 from typing import List, Dict, Any, Tuple, Optional
 import numpy as np
 from sentence_transformers import SentenceTransformer
-import faiss
+from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import normalize
 from dataclasses import dataclass
 import re
 
@@ -24,12 +25,12 @@ class DocumentChunk:
     metadata: Dict[str, Any]
 
 class VectorSearchEngine:
-    """Handles vector embeddings generation and similarity search"""
+    """Handles vector embeddings generation and similarity search using scikit-learn"""
     
     def __init__(self, config):
         self.config = config
         self.model = None
-        self.index = None
+        self.nearest_neighbors = None
         self.chunks = []
         self.embeddings = None
         self._ready = False
@@ -57,10 +58,10 @@ class VectorSearchEngine:
     
     def is_ready(self) -> bool:
         """Check if the vector search engine is ready"""
-        return self._ready and self.model is not None and self.index is not None
+        return self._ready and self.model is not None and self.nearest_neighbors is not None
     
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Search for relevant passages given a query"""
+        """Search for relevant passages given a query using scikit-learn"""
         if not self.is_ready():
             raise RuntimeError("Vector search engine not initialized")
         
@@ -68,21 +69,26 @@ class VectorSearchEngine:
             # Generate query embedding
             query_embedding = self.model.encode([query])
             
-            # Search using FAISS
-            scores, indices = self.index.search(query_embedding.astype(np.float32), top_k)
+            # Normalize query embedding for cosine similarity
+            query_embedding_normalized = normalize(query_embedding.reshape(1, -1))
+            
+            # Search using scikit-learn NearestNeighbors
+            distances, indices = self.nearest_neighbors.kneighbors(
+                query_embedding_normalized, 
+                n_neighbors=min(top_k, len(self.chunks))
+            )
             
             # Format results
             results = []
-            for i, (score, idx) in enumerate(zip(scores[0], indices[0])):
-                if idx == -1:  # FAISS returns -1 for invalid indices
-                    continue
-                
+            for i, (distance, idx) in enumerate(zip(distances[0], indices[0])):
                 chunk = self.chunks[idx]
+                # Convert distance to similarity score (1 - distance for cosine similarity)
+                similarity_score = 1.0 - distance
                 results.append({
                     'text': chunk.text,
                     'source_file': chunk.source_file,
                     'chunk_id': chunk.chunk_id,
-                    'similarity_score': float(score),
+                    'similarity_score': float(similarity_score),
                     'metadata': chunk.metadata
                 })
             
@@ -125,13 +131,19 @@ class VectorSearchEngine:
         logger.info(f"Generating embeddings for {len(all_texts)} chunks...")
         self.embeddings = self.model.encode(all_texts, show_progress_bar=True)
         
-        # Create FAISS index
-        logger.info("Creating FAISS index...")
-        self.index = faiss.IndexFlatIP(self.config.VECTOR_DIMENSION)  # Inner product (cosine similarity)
+        # Create scikit-learn NearestNeighbors index
+        logger.info("Creating scikit-learn NearestNeighbors index...")
         
         # Normalize embeddings for cosine similarity
-        faiss.normalize_L2(self.embeddings)
-        self.index.add(self.embeddings.astype(np.float32))
+        self.embeddings_normalized = normalize(self.embeddings)
+        
+        # Use NearestNeighbors with cosine metric
+        self.nearest_neighbors = NearestNeighbors(
+            n_neighbors=min(10, len(self.embeddings_normalized)),  # Default to 10, will be overridden in search
+            metric='cosine',
+            algorithm='brute'  # Brute force for cosine similarity
+        )
+        self.nearest_neighbors.fit(self.embeddings_normalized)
         
         logger.info(f"Successfully processed {len(self.chunks)} chunks from {len([f for f in os.listdir(knowledge_base_path) if f.endswith('.txt')])} files")
     
@@ -246,8 +258,9 @@ class VectorSearchEngine:
                     self.chunks = data['chunks']
                     self.embeddings = data['embeddings']
                 
-                # Load FAISS index
-                self.index = faiss.read_index(self.config.INDEX_CACHE_PATH)
+                # Load scikit-learn index
+                with open(self.config.INDEX_CACHE_PATH, 'rb') as f:
+                    self.nearest_neighbors = pickle.load(f)
                 
                 return True
             
@@ -266,8 +279,9 @@ class VectorSearchEngine:
                     'embeddings': self.embeddings
                 }, f)
             
-            # Save FAISS index
-            faiss.write_index(self.index, self.config.INDEX_CACHE_PATH)
+            # Save scikit-learn index
+            with open(self.config.INDEX_CACHE_PATH, 'wb') as f:
+                pickle.dump(self.nearest_neighbors, f)
             
             logger.info("Cached embeddings and index saved successfully")
             
@@ -285,5 +299,6 @@ class VectorSearchEngine:
             'vector_dimension': self.config.VECTOR_DIMENSION,
             'model_name': self.config.EMBEDDINGS_MODEL,
             'chunk_size': self.config.CHUNK_SIZE,
-            'chunk_overlap': self.config.CHUNK_OVERLAP
+            'chunk_overlap': self.config.CHUNK_OVERLAP,
+            'search_engine': 'scikit-learn NearestNeighbors'
         }

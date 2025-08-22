@@ -51,7 +51,7 @@ class Config:
         )
         self.INDEX_CACHE_PATH = os.getenv(
             'INDEX_CACHE_PATH',
-            os.path.join(os.path.dirname(__file__), 'cache', 'faiss_index.bin')
+            os.path.join(os.path.dirname(__file__), 'cache', 'sklearn_index.pkl')
         )
         
         # Response generation settings

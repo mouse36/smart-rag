@@ -265,7 +265,7 @@ curl -X POST http://localhost:5000/chat \
 
 - **Embeddings Caching**: Vector embeddings are cached to disk after first generation
 - **Response Caching**: Common queries are cached using Redis
-- **Efficient Search**: FAISS vector index for fast similarity search
+- **Efficient Search**: scikit-learn NearestNeighbors for fast similarity search
 - **Chunking Strategy**: Text is intelligently chunked with overlap for better context
 
 ## Troubleshooting

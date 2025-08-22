@@ -35,7 +35,7 @@ def check_pip_packages():
     packages = {
         'flask': 'Flask web framework',
         'sentence_transformers': 'Sentence transformers for embeddings',
-        'faiss': 'FAISS for vector search (faiss-cpu)',
+        'scikit-learn': 'scikit-learn for vector search',
         'numpy': 'NumPy for numerical operations',
         'requests': 'HTTP requests library',
     }

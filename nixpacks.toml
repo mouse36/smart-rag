@@ -18,7 +18,6 @@ nixPkgs = [
   "python311Packages.sentence-transformers",
   "python311Packages.transformers",
   "python311Packages.tokenizers",
-  "python311Packages.faiss-cpu",
   "python311Packages.scipy",
   "python311Packages.tqdm",
   "python311Packages.regex"

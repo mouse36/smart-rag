@@ -1,1 +1,1 @@
-web: python run.py
+web: /opt/venv/bin/python run.py

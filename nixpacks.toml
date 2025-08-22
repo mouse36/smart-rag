@@ -25,11 +25,12 @@ nixPkgs = [
 
 [phases.build]
 cmds = [
+  "pip install -r requirements.txt",
   "echo 'Build completed successfully'"
 ]
 
 [start]
-cmd = "source /opt/venv/bin/activate && python run.py"
+cmd = "python run.py"
 
 [variables]
 HOST = "0.0.0.0"

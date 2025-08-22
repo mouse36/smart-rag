@@ -3,6 +3,11 @@
 setuptools>=65.0.0
 wheel>=0.38.0
 
+# Core Flask dependencies
+Flask>=2.3.0
+Flask-CORS>=4.0.0
+requests>=2.31.0
+
 # Note: Most packages are now installed via Nix in nixpacks.toml
 # This file is kept for any additional packages not available in Nix
 

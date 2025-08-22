@@ -13,7 +13,13 @@ cmds = [
   "echo 'Dependencies installed successfully'",
   "python -c 'import flask; print(\"Flask imported successfully\")'",
   "python -c 'import requests; print(\"Requests imported successfully\")'",
+  "python -c 'import numpy; print(\"NumPy imported successfully\")'",
+  "python -c 'import sklearn; print(\"Scikit-learn imported successfully\")'",
   "python -c 'from app import app; print(\"Flask app imported successfully\")'",
+  "echo 'Testing health endpoint...'",
+  "python -c 'from app import app; client = app.test_client(); response = client.get(\"/health\"); print(f\"Health test: {response.status_code} - {response.data.decode()}\")'",
+  "echo 'Running deployment tests...'",
+  "python test_deployment.py",
   "echo 'Build completed successfully'"
 ]
 

@@ -16,6 +16,14 @@ except ImportError:
     # dotenv not available, will use system environment variables only
     pass
 
+# Import deployment safeguards
+try:
+    from deployment_safeguards import setup_deployment_safeguards
+    setup_deployment_safeguards()
+except ImportError:
+    # deployment_safeguards not available, continue without it
+    pass
+
 # Set up environment variables with defaults
 env_vars = {
     'DEEPSEEK_API_KEY': 'your_deepseek_api_key_here',  # MUST be set by user
@@ -78,22 +86,31 @@ def main():
     print(f"🚂 Railway Environment:")
     print(f"  PORT: {os.getenv('PORT', 'Not set')}")
     print(f"  RAILWAY_ENVIRONMENT: {os.getenv('RAILWAY_ENVIRONMENT', 'Not set')}")
+    print(f"  HOST: {os.getenv('HOST', 'Not set')}")
+    print(f"  DEBUG: {os.getenv('DEBUG', 'Not set')}")
+    print(f"  API_CALLS_ENABLED: {os.getenv('API_CALLS_ENABLED', 'Not set')}")
     
     # Check basic requirements
     if not check_basic_requirements():
         print("\n❌ Startup failed due to missing requirements")
         sys.exit(1)
     
-    print("\n✅ Basic requirements satisfied")
-    print("🔄 Loading application...")
-    
-    try:
-        # Import and run the Flask app
-        print("📦 Importing Flask app...")
-        from app import app
-        print("✅ Flask app imported successfully")
+            print("\n✅ Basic requirements satisfied")
+        print("🔄 Loading application...")
         
-        # Get configuration
+        try:
+            # Import and run the Flask app
+            print("📦 Importing Flask app...")
+            from app import app
+            print("✅ Flask app imported successfully")
+            
+            # Test health endpoint
+            print("🔍 Testing health endpoint...")
+            with app.test_client() as client:
+                response = client.get('/health')
+                print(f"✅ Health endpoint test: {response.status_code} - {response.data.decode()}")
+            
+            # Get configuration
         from config import Config
         config = Config()
         

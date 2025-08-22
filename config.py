@@ -73,8 +73,16 @@ class Config:
         self.STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
         self.STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
         self.STRIPE_CURRENCY = os.getenv('STRIPE_CURRENCY', 'usd')
-        self.DONATION_SUCCESS_URL = os.getenv('DONATION_SUCCESS_URL', 'http://127.0.0.1:5000/static/donation-success.html')
-        self.DONATION_CANCEL_URL = os.getenv('DONATION_CANCEL_URL', 'http://127.0.0.1:5000/static/donation-cancel.html')
+        
+        # Use environment variables for donation URLs, with fallback to relative paths
+        base_url = os.getenv('BASE_URL', '')
+        if base_url:
+            self.DONATION_SUCCESS_URL = os.getenv('DONATION_SUCCESS_URL', f'{base_url}/static/donation-success.html')
+            self.DONATION_CANCEL_URL = os.getenv('DONATION_CANCEL_URL', f'{base_url}/static/donation-cancel.html')
+        else:
+            # Fallback to relative paths for production
+            self.DONATION_SUCCESS_URL = os.getenv('DONATION_SUCCESS_URL', '/static/donation-success.html')
+            self.DONATION_CANCEL_URL = os.getenv('DONATION_CANCEL_URL', '/static/donation-cancel.html')
         
         # Create cache directory if it doesn't exist
         self._ensure_cache_directory()

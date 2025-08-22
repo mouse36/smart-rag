@@ -166,9 +166,40 @@ def health_check():
             health_status['components']['vector_engine'] = True
             health_status['components']['deepseek_client'] = True
         
-        return jsonify(health_status), 200
+        # Return simple text response for Railway health checks
+        return "OK", 200
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
+        return "ERROR", 500
+
+@app.route('/health/detailed', methods=['GET'])
+def detailed_health_check():
+    """Detailed health check endpoint for debugging"""
+    try:
+        # Basic health check that doesn't depend on external services
+        health_status = {
+            'status': 'healthy',
+            'timestamp': datetime.now().isoformat(),
+            'api_mode': {
+                'api_calls_enabled': config.API_CALLS_ENABLED,
+                'mode': 'live_api' if config.API_CALLS_ENABLED else 'placeholder'
+            },
+            'components': {
+                'vector_engine': vector_engine.is_ready() if vector_engine else True,  # True if not needed
+                'deepseek_client': deepseek_client.is_ready() if deepseek_client else True,  # True if not needed
+                'jsonbin_client': jsonbin_client.is_ready() if hasattr(jsonbin_client, 'is_ready') else True,
+                'stripe_configured': config.is_stripe_configured() if hasattr(config, 'is_stripe_configured') else False
+            }
+        }
+        
+        # If API calls are disabled, we don't need external services to be ready
+        if not config.API_CALLS_ENABLED:
+            health_status['components']['vector_engine'] = True
+            health_status['components']['deepseek_client'] = True
+        
+        return jsonify(health_status), 200
+    except Exception as e:
+        logger.error(f"Detailed health check failed: {str(e)}")
         return jsonify({
             'status': 'unhealthy',
             'error': str(e),

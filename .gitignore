@@ -35,6 +35,9 @@ venv.bak/
 .env.test.local
 .env.production.local
 
+# Firebase
+sunnymentor-firebase-adminsdk-fbsvc-24ab766c2d.json
+
 # IDE
 .vscode/
 .idea/

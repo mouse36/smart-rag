@@ -63,7 +63,11 @@ class Config:
         # Phone authentication settings (legacy)
         self.APPROVED_PHONE_NUMBERS = self._parse_phone_numbers(os.getenv('APPROVED_PHONE_NUMBERS', ''))
         
-        # JSONBin API settings
+        # Firebase settings
+        self.FIREBASE_SERVICE_ACCOUNT_KEY = os.getenv('FIREBASE_SERVICE_ACCOUNT_KEY')
+        self.FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID', 'sunnymentor')
+        
+        # JSONBin API settings (legacy - kept for backward compatibility)
         self.JSONBIN_API_KEY = os.getenv('JSONBIN_API_KEY')
         self.JSONBIN_BASE_URL = os.getenv('JSONBIN_BASE_URL', 'https://api.jsonbin.io/v3/b')
         self.JSONBIN_BIN_ID = os.getenv('JSONBIN_BIN_ID')
@@ -95,11 +99,16 @@ class Config:
         if self.API_CALLS_ENABLED and not self.DEEPSEEK_API_KEY:
             return "DEEPSEEK_API_KEY environment variable is required when API calls are enabled"
         
-        if not self.JSONBIN_API_KEY:
-            return "JSONBIN_API_KEY environment variable is required for user authentication"
+        # Check for Firebase configuration (primary authentication method)
+        if not self.FIREBASE_PROJECT_ID:
+            return "FIREBASE_PROJECT_ID environment variable is required for user authentication"
         
-        if not self.JSONBIN_BIN_ID:
-            return "JSONBIN_BIN_ID environment variable is required for user authentication"
+        # JSONBin validation is now optional (legacy support)
+        # if not self.JSONBIN_API_KEY:
+        #     return "JSONBIN_API_KEY environment variable is required for user authentication"
+        # 
+        # if not self.JSONBIN_BIN_ID:
+        #     return "JSONBIN_BIN_ID environment variable is required for user authentication"
         
         if not os.path.exists(self.KNOWLEDGE_BASE_PATH):
             return f"Knowledge base path does not exist: {self.KNOWLEDGE_BASE_PATH}"

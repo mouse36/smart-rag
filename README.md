@@ -7,7 +7,7 @@ This is the production deployment version of the SunnyMentor backend, optimized 
 - `app.py` - Main Flask application
 - `config.py` - Configuration settings
 - `deepseek_client.py` - DeepSeek API client
-- `jsonbin_client.py` - JSONBin API client for data storage
+- `firebase_client.py` - Firebase Firestore client for data storage
 - `vector_search.py` - Vector search functionality
 - `run.py` - Application runner
 - `setup_check.py` - Setup verification
@@ -27,9 +27,13 @@ This folder is designed to be deployed directly to Railway. The `main.py` file s
 
 Make sure to set the following environment variables in your Railway project:
 - `DEEPSEEK_API_KEY`
-- `JSONBIN_API_KEY`
-- `JSONBIN_BIN_ID`
+- `FIREBASE_PROJECT_ID`
+- `FIREBASE_SERVICE_ACCOUNT_KEY` (optional, for service account authentication)
 - `JWT_SECRET_KEY`
+
+## Firebase Setup
+
+This application now uses Firebase Firestore for user authentication and data storage. See `backend/FIREBASE_SETUP.md` for detailed setup instructions.
 
 ## Local Development
 

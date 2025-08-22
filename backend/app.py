@@ -23,7 +23,7 @@ from datetime import datetime
 import stripe
 
 # Import custom modules
-from jsonbin_client import JSONBinClient
+from firebase_client import FirebaseClient
 from config import Config
 
 # Configure logging first
@@ -56,7 +56,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend integration
 
 # Initialize components
-jsonbin_client = JSONBinClient(config)
+firebase_client = FirebaseClient(config)
 
 # Conditionally initialize AI/ML components
 if config.API_CALLS_ENABLED:
@@ -157,7 +157,7 @@ def health_check():
             'components': {
                 'vector_engine': vector_engine.is_ready() if vector_engine else False,
                 'deepseek_client': deepseek_client.is_ready() if deepseek_client else False,
-                'jsonbin_client': jsonbin_client.is_ready(),
+                'firebase_client': firebase_client.is_ready(),
                 'stripe_configured': config.is_stripe_configured()
             }
         }), 200
@@ -297,8 +297,8 @@ def register_user():
         if not email or not password:
             return jsonify({'error': 'Email and password are required'}), 400
         
-        # Register user using JSONBin client
-        success, result = jsonbin_client.register_user(email, password)
+        # Register user using Firebase client
+        success, result = firebase_client.register_user(email, password)
         
         if success:
             logger.info(f"User registered successfully: {email}")
@@ -355,8 +355,8 @@ def login_user():
         if not email or not password:
             return jsonify({'error': 'Email and password are required'}), 400
         
-        # Authenticate user using JSONBin client
-        success, result = jsonbin_client.login_user(email, password)
+        # Authenticate user using Firebase client
+        success, result = firebase_client.login_user(email, password)
         
         if success:
             logger.info(f"User logged in successfully: {email}")
@@ -423,9 +423,9 @@ def logout_user():
         blacklisted_tokens.add(token)
         logger.info(f"Token blacklisted for user: {request.user.get('email')}")
         
-        # Update user logout status using JSONBin client
+        # Update user logout status using Firebase client
         email = request.user.get('email')
-        success, result = jsonbin_client.logout_user(email)
+        success, result = firebase_client.logout_user(email)
         
         if success:
             logger.info(f"User logged out successfully: {email}")
@@ -462,8 +462,8 @@ def get_user_info(email):
         if not email or not email.strip():
             return jsonify({'error': 'Email is required'}), 400
         
-        # Get user info using JSONBin client
-        success, result = jsonbin_client.get_user_info(email.strip())
+        # Get user info using Firebase client
+        success, result = firebase_client.get_user_info(email.strip())
         
         if success:
             return jsonify({
@@ -503,8 +503,8 @@ def get_user_info(email):
 def list_users():
     """List all users (admin endpoint)"""
     try:
-        # List users using JSONBin client
-        success, result = jsonbin_client.list_users()
+        # List users using Firebase client
+        success, result = firebase_client.list_users()
         
         if success:
             return jsonify({
@@ -556,8 +556,8 @@ def change_password():
         if not email or not old_password or not new_password:
             return jsonify({'error': 'Email, old password, and new password are required'}), 400
         
-        # Change password using JSONBin client
-        success, result = jsonbin_client.change_password(email, old_password, new_password)
+        # Change password using Firebase client
+        success, result = firebase_client.change_password(email, old_password, new_password)
         
         if success:
             logger.info(f"Password changed successfully for user: {email}")
@@ -641,7 +641,7 @@ def validate_token():
 def test_auth_connection():
     """Test authentication service connection (admin endpoint)"""
     try:
-        success, result = jsonbin_client.test_connection()
+        success, result = firebase_client.test_connection()
         
         if success:
             return jsonify({
@@ -676,8 +676,8 @@ def get_chat_history():
         if not email:
             return jsonify({'error': 'User email not found in token'}), 401
         
-        # Get chat history using JSONBin client
-        success, result = jsonbin_client.get_user_chat_history(email)
+        # Get chat history using Firebase client
+        success, result = firebase_client.get_user_chat_history(email)
         
         if success:
             return jsonify({
@@ -740,8 +740,8 @@ def save_message():
         if message['from'] not in ['user', 'chatbot']:
             return jsonify({'error': 'Message "from" field must be "user" or "chatbot"'}), 400
         
-        # Save message using JSONBin client
-        success, result = jsonbin_client.save_message_to_chat(email, chat_id, message)
+        # Save message using Firebase client
+        success, result = firebase_client.save_message_to_chat(email, chat_id, message)
         
         if success:
             return jsonify({
@@ -804,8 +804,8 @@ def create_new_chat():
             if not isinstance(msg, dict) or 'from' not in msg or 'content' not in msg:
                 return jsonify({'error': f'{name} must be an object with "from" and "content" fields'}), 400
         
-        # Create new chat using JSONBin client
-        success, result = jsonbin_client.create_new_chat(email, initial_message, user_first_message)
+        # Create new chat using Firebase client
+        success, result = firebase_client.create_new_chat(email, initial_message, user_first_message)
         
         if success:
             return jsonify({
@@ -863,8 +863,8 @@ def update_chat_title():
         if chat_id is None or not new_title:
             return jsonify({'error': 'chat_id and new_title are required'}), 400
         
-        # Update chat title using JSONBin client
-        success, result = jsonbin_client.update_chat_title(email, chat_id, new_title)
+        # Update chat title using Firebase client
+        success, result = firebase_client.update_chat_title(email, chat_id, new_title)
         
         if success:
             return jsonify({
@@ -1155,8 +1155,8 @@ if __name__ == '__main__':
         else:
             logger.info("Skipping AI/ML component initialization - API calls disabled")
 
-        if not jsonbin_client.is_ready():
-            raise Exception("JSONBin client not ready - check JSONBIN_API_KEY and JSONBIN_BIN_ID")
+        if not firebase_client.is_ready():
+            raise Exception("Firebase client not ready - check Firebase configuration")
         
         logger.info("All components ready. Starting Flask server...")
         app.run(

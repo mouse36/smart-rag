@@ -60,3 +60,28 @@ README.md
 
 # Development files
 setup_check.py
+
+# Additional optimizations for Railway
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Jupyter notebooks
+*.ipynb
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+
+# Local development
+local/
+dev/

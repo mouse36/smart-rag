@@ -6,11 +6,15 @@ nixPkgs = [
 
 [phases.build]
 cmds = [
-  "pip install -r requirements.txt",
+  "pip install --no-cache-dir --compile -r requirements.txt",
   "echo 'Build completed successfully'"
 ]
 
 [start]
 cmd = "python run.py"
+
+[variables]
+PYTHONUNBUFFERED = "1"
+PYTHONDONTWRITEBYTECODE = "1"
 
 

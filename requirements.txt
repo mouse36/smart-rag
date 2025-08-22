@@ -1,34 +1,42 @@
-# Railway Deployment Requirements - Nix Optimized
-# Core Dependencies (always required)
-setuptools>=65.0.0
-wheel>=0.38.0
+# Railway Deployment Requirements - Ultra Optimized for Size
+# Core Dependencies (minimal versions)
+setuptools==68.2.2
+wheel==0.41.2
 
-# Core Flask dependencies
-Flask>=2.3.0
-Flask-CORS>=4.0.0
-requests>=2.31.0
+# Core Flask dependencies (minimal)
+Flask==2.3.3
+Flask-CORS==4.0.0
+requests==2.31.0
 
-# Authentication & Security
-PyJWT>=2.8.0
-bcrypt>=4.0.0
+# Authentication & Security (minimal)
+PyJWT==2.8.0
+bcrypt==4.0.1
 
 # Payment processing
-stripe>=7.0.0
+stripe==7.4.0
 
-# Data processing
-pandas>=2.0.0
-numpy>=1.24.0
+# Data processing (minimal - only what's actually used)
+numpy==1.24.3
 
-# AI/ML dependencies
-sentence-transformers>=2.2.0
-scikit-learn>=1.3.0
+# AI/ML dependencies (ultra-optimized)
+sentence-transformers==2.2.2
+scikit-learn==1.3.0
 
-# Development & Debugging
-python-dotenv==1.1.1
-psutil>=5.9.0
+# Development & Debugging (minimal)
+python-dotenv==1.0.0
 
-# Additional packages
-scipy>=1.10.0
-tqdm>=4.65.0
-regex>=2023.6.3
-gunicorn>=21.0.0
+# Additional packages (only what's actually imported)
+scipy==1.11.1
+gunicorn==21.2.0
+
+# Removed redundant packages:
+# - pandas (not actually used in the codebase)
+# - psutil (not imported anywhere)
+# - tqdm (not imported anywhere) 
+# - regex (not imported anywhere)
+
+# Size optimizations applied:
+# 1. Removed unused packages (pandas, psutil, tqdm, regex)
+# 2. Used exact versions to avoid pulling unnecessary dependencies
+# 3. Using minimal versions of all packages
+# 4. sentence-transformers will only download the lightweight all-MiniLM-L6-v2 model

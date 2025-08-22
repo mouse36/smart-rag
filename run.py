@@ -105,12 +105,14 @@ def main():
     try:
         from deployment_safeguards import setup_deployment_safeguards
         setup_deployment_safeguards()
+        print("✅ Deployment safeguards set up")
     except ImportError:
         print("⚠️  Deployment safeguards not available")
     except Exception as e:
         print(f"⚠️  Deployment safeguards failed: {e}")
     
     # Check requirements
+    print("🔍 Checking requirements...")
     if not check_requirements():
         print("\n❌ Startup failed due to missing requirements")
         sys.exit(1)
@@ -120,17 +122,23 @@ def main():
     
     try:
         # Import and run the Flask app
+        print("📦 Importing Flask app...")
         from app import app, config
+        print("✅ Flask app imported successfully")
         
         # Conditionally import AI/ML components
         if config.API_CALLS_ENABLED:
+            print("🤖 Importing AI/ML components...")
             from app import vector_engine, deepseek_client
+            print("✅ AI/ML components imported")
         
         # Validate configuration
+        print("⚙️  Validating configuration...")
         config_error = config.validate()
         if config_error:
             print(f"❌ Configuration error: {config_error}")
             sys.exit(1)
+        print("✅ Configuration validated")
         
         print("\n📊 Configuration:")
         print(f"  Host: {config.HOST}")
@@ -157,8 +165,6 @@ def main():
         else:
             print("⚠️  Skipping AI/ML component initialization - API calls disabled")
         
-
-        
         print("\n🎉 All components ready!")
         print(f"🌐 Server starting at http://{config.HOST}:{config.PORT}")
         print("📝 Available endpoints:")
@@ -167,6 +173,7 @@ def main():
         print("  POST /search - Direct knowledge base search")
 
         print("\n" + "=" * 50)
+        print("🚀 Starting Flask server...")
         
         # Start the Flask server
         app.run(
@@ -179,16 +186,9 @@ def main():
         print("\n\n👋 Server stopped by user")
     except Exception as e:
         print(f"\n❌ Server failed to start: {str(e)}")
-        # Only show traceback if we can access DEBUG setting
-        try:
-            from app import config
-            if config.DEBUG:
-                import traceback
-                traceback.print_exc()
-        except ImportError:
-            # If we can't import config, just show basic error info
-            import traceback
-            traceback.print_exc()
+        print("Full error details:")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 if __name__ == '__main__':

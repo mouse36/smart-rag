@@ -29,6 +29,9 @@ venv/
 env/
 ENV/
 
+# Firebase
+sunnymentor-firebase-adminsdk-fbsvc-24ab766c2d.json
+
 # IDE
 .vscode/
 .idea/

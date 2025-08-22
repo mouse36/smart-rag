@@ -1,23 +1,7 @@
 [phases.setup]
 nixPkgs = [
   "python311",
-  "python311Packages.pip",
-  "python311Packages.flask",
-  "python311Packages.flask-cors", 
-  "python311Packages.requests",
-  "python311Packages.pandas",
-  "python311Packages.python-dotenv",
-  "python311Packages.psutil",
-  "python311Packages.scikit-learn",
-  "python311Packages.numpy",
-  "python311Packages.gunicorn",
-  "python311Packages.pyjwt",
-  "python311Packages.bcrypt",
-  "python311Packages.stripe",
-  "python311Packages.sentence-transformers",
-  "python311Packages.scipy",
-  "python311Packages.tqdm",
-  "python311Packages.regex"
+  "python311Packages.pip"
 ]
 
 [phases.build]
@@ -29,10 +13,4 @@ cmds = [
 [start]
 cmd = "python run.py"
 
-[variables]
-HOST = "0.0.0.0"
-PORT = "5000"
-DEBUG = "False"
-API_CALLS_ENABLED = "True"
-LAZY_LOAD_MODEL = "True"
-USE_LIGHTWEIGHT_SEARCH = "True"
+

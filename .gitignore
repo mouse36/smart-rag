@@ -10,6 +10,9 @@
 *.pem
 *.key
 
+# Firebase
+sunnymentor-firebase-adminsdk-fbsvc-24ab766c2d.json
+
 # Python
 __pycache__/
 *.py[cod]

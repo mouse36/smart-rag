@@ -297,12 +297,15 @@
         </div>
     </div>
 
+    <!-- Configuration -->
+    <script src="js/config.js"></script>
+    
     <!-- Component loader -->
     <script src="js/components.js"></script>
     
     <script>
-        // API Configuration
-        const API_BASE_URL = 'http://127.0.0.1:5000';
+        // API Configuration - use global config
+        const API_BASE_URL = window.appConfig ? window.appConfig.getApiUrl('') : 'http://127.0.0.1:5000';
         
         // Global state
         let currentLanguage = 'EN'; // Fallback, will be overridden by languageManager

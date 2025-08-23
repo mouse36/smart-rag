@@ -2104,6 +2104,12 @@
     <!-- Stripe.js -->
     <script src="https://js.stripe.com/v3/"></script>
     
+    <!-- Configuration -->
+    <script src="js/config.js"></script>
+    
+    <!-- Railway Setup Utility -->
+    <script src="js/railway-setup.js"></script>
+    
     <!-- Component loader -->
     <script src="js/components.js"></script>
     
@@ -2597,8 +2603,8 @@
         let currentPhoneNumber = '';
         let generatedCode = '';
         
-        // Backend API base URL
-        const API_BASE_URL = 'http://127.0.0.1:5000';
+        // Backend API base URL - use global config
+        const API_BASE_URL = window.appConfig ? window.appConfig.getApiUrl('') : 'http://127.0.0.1:5000';
         
         function normalizePhoneNumber(phone) {
             // Remove all non-digit characters

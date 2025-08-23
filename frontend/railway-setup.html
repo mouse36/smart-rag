@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway Setup - SunnyMentor</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="graphics/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .setup-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .logo {
+            height: 60px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ff8900;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 105, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 105, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            color: #38a169;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #e53e3e;
+        }
+
+        .status.info {
+            background: #ebf8ff;
+            border: 1px solid #90cdf4;
+            color: #3182ce;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ff8900;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .test-results {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .test-result.success {
+            background: #f0fff4;
+            color: #38a169;
+        }
+
+        .test-result.error {
+            background: #fed7d7;
+            color: #e53e3e;
+        }
+
+        .instructions {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .instructions h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin: 8px 0;
+            color: #4a5568;
+        }
+
+        .code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <img src="graphics/logo.svg" alt="SunnyMentor" class="logo">
+        <h1>Railway Backend Setup</h1>
+        <p class="subtitle">Configure your Railway backend URL to connect the frontend and backend</p>
+
+        <div class="instructions">
+            <h3>Setup Instructions:</h3>
+            <ol>
+                <li>Deploy your backend to Railway (see <code>backend/deploy-railway.md</code>)</li>
+                <li>Get your Railway app URL (e.g., <code>https://your-app.railway.app</code>)</li>
+                <li>Enter the URL below and test the connection</li>
+                <li>Once connected, your frontend will automatically use the Railway backend</li>
+            </ol>
+        </div>
+
+        <form id="railway-setup-form">
+            <div class="form-group">
+                <label for="railway-url" class="form-label">Railway Backend URL:</label>
+                <input 
+                    type="url" 
+                    id="railway-url" 
+                    class="form-input" 
+                    placeholder="https://your-app.railway.app"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" id="test-btn">
+                    <span id="test-btn-text">Test Connection</span>
+                    <div id="test-loading" class="loading" style="display: none;"></div>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="testAllEndpoints()">
+                    Test All Endpoints
+                </button>
+            </div>
+        </form>
+
+        <div id="status" class="status" style="display: none;"></div>
+        <div id="test-results" class="test-results" style="display: none;"></div>
+
+        <div style="margin-top: 30px;">
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">
+                Back to Main App
+            </button>
+        </div>
+    </div>
+
+    <!-- Configuration -->
+    <script src="js/config.js"></script>
+    
+    <!-- Railway Setup Utility -->
+    <script src="js/railway-setup.js"></script>
+
+    <script>
+        let railwaySetup;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Railway setup
+            if (window.railwaySetup) {
+                railwaySetup = window.railwaySetup;
+                
+                // Load stored URL if available
+                const storedUrl = localStorage.getItem('railway_url');
+                if (storedUrl) {
+                    document.getElementById('railway-url').value = storedUrl;
+                }
+            }
+
+            // Form submission
+            document.getElementById('railway-setup-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await testConnection();
+            });
+        });
+
+        async function testConnection() {
+            const url = document.getElementById('railway-url').value.trim();
+            if (!url) {
+                showStatus('Please enter a Railway URL', 'error');
+                return;
+            }
+
+            // Show loading
+            const testBtn = document.getElementById('test-btn');
+            const testBtnText = document.getElementById('test-btn-text');
+            const testLoading = document.getElementById('test-loading');
+            
+            testBtn.disabled = true;
+            testBtnText.style.display = 'none';
+            testLoading.style.display = 'inline-block';
+
+            try {
+                // Update Railway URL
+                if (railwaySetup) {
+                    railwaySetup.updateUrl(url);
+                }
+
+                // Test connection
+                const result = await railwaySetup.testConnection(url);
+                
+                if (result.success) {
+                    showStatus('✅ Connection successful! Railway backend is ready.', 'success');
+                    showTestResults([{
+                        name: 'Health Check',
+                        success: true,
+                        status: result.status,
+                        data: result.data
+                    }]);
+                } else {
+                    showStatus('❌ Connection failed: ' + result.error, 'error');
+                    showTestResults([{
+                        name: 'Health Check',
+                        success: false,
+                        error: result.error
+                    }]);
+                }
+            } catch (error) {
+                showStatus('❌ Test failed: ' + error.message, 'error');
+            } finally {
+                // Hide loading
+                testBtn.disabled = false;
+                testBtnText.style.display = 'inline';
+                testLoading.style.display = 'none';
+            }
+        }
+
+        async function testAllEndpoints() {
+            const url = document.getElementById('railway-url').value.trim();
+            if (!url) {
+                showStatus('Please enter a Railway URL first', 'error');
+                return;
+            }
+
+            // Update Railway URL
+            if (railwaySetup) {
+                railwaySetup.updateUrl(url);
+            }
+
+            showStatus('Testing all endpoints...', 'info');
+
+            try {
+                const results = await railwaySetup.testAllEndpoints();
+                showTestResults(Object.entries(results).map(([name, result]) => ({
+                    name: name,
+                    success: result.success,
+                    status: result.status,
+                    error: result.error
+                })));
+                
+                const allSuccess = Object.values(results).every(r => r.success);
+                if (allSuccess) {
+                    showStatus('✅ All endpoints are working! Railway backend is fully configured.', 'success');
+                } else {
+                    showStatus('⚠️ Some endpoints failed. Check the results below.', 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Test failed: ' + error.message, 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function showTestResults(results) {
+            const resultsDiv = document.getElementById('test-results');
+            let html = '<h4>Test Results:</h4>';
+            
+            results.forEach(result => {
+                const resultClass = result.success ? 'success' : 'error';
+                const icon = result.success ? '✅' : '❌';
+                const status = result.success ? `(Status: ${result.status})` : `(Error: ${result.error})`;
+                
+                html += `<div class="test-result ${resultClass}">`;
+                html += `${icon} ${result.name}: ${status}`;
+                if (result.data) {
+                    html += `<br><small>Response: ${JSON.stringify(result.data)}</small>`;
+                }
+                html += '</div>';
+            });
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

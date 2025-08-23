@@ -2476,8 +2476,8 @@
             } catch (error) {
                 console.warn('Backend health check failed:', error);
                 
-                // Show backend error banner if not dismissed
-                if (shouldShowBackendErrorBanner()) {
+                // Only show backend error banner if this is a server connectivity issue
+                if (isBackendServerError(error) && shouldShowBackendErrorBanner()) {
                     showBackendErrorBanner();
                 }
                 
@@ -2654,8 +2654,8 @@
              } catch (error) {
                  console.error('Error validating phone number:', error);
                  
-                 // Show login backend error banner on connection failure
-                 if (shouldShowLoginBackendErrorBanner()) {
+                 // Only show login backend error banner if this is a server connectivity issue
+                 if (isBackendServerError(error) && shouldShowLoginBackendErrorBanner()) {
                      showLoginBackendErrorBanner();
                  }
                  
@@ -2956,13 +2956,20 @@
                         }
                      } catch (error) {
                          showPhoneLoading(false);
-                         showError('phone-error', 'Unable to verify phone number - backend server is not running. Please ensure the server is started and try again.');
-                         console.error('Phone validation error:', error);
                          
-                         // Show login backend error banner on connection failure
-                         if (shouldShowLoginBackendErrorBanner()) {
-                             showLoginBackendErrorBanner();
+                         // Check if this is a server connectivity issue
+                         if (isBackendServerError(error)) {
+                             showError('phone-error', 'Unable to verify phone number - backend server is not running. Please ensure the server is started and try again.');
+                             
+                             // Show login backend error banner on connection failure
+                             if (shouldShowLoginBackendErrorBanner()) {
+                                 showLoginBackendErrorBanner();
+                             }
+                         } else {
+                             showError('phone-error', 'Unable to verify phone number. Please try again.');
                          }
+                         
+                         console.error('Phone validation error:', error);
                      }
                 });
             }
@@ -3175,11 +3182,16 @@
                         console.error('Authentication error:', error);
                         showUsernameLoading(false);
                         
-                        showError('username-error', 'Unable to connect to authentication server. Please ensure the server is running and try again.');
-                        
-                        // Show login backend error banner on connection failure
-                        if (shouldShowLoginBackendErrorBanner()) {
-                            showLoginBackendErrorBanner();
+                        // Check if this is a server connectivity issue
+                        if (isBackendServerError(error)) {
+                            showError('username-error', 'Unable to connect to authentication server. Please ensure the server is running and try again.');
+                            
+                            // Show login backend error banner on connection failure
+                            if (shouldShowLoginBackendErrorBanner()) {
+                                showLoginBackendErrorBanner();
+                            }
+                        } else {
+                            showError('username-error', 'Authentication failed. Please try again.');
                         }
                     }
                 });
@@ -3312,8 +3324,8 @@
                 console.error('Error sending message:', error);
                 hideTypingIndicator();
                 
-                // Show backend error banner if not dismissed
-                if (shouldShowBackendErrorBanner()) {
+                // Only show backend error banner if this is a server connectivity issue
+                if (isBackendServerError(error) && shouldShowBackendErrorBanner()) {
                     showBackendErrorBanner();
                 }
                 
@@ -4092,6 +4104,32 @@ Error: ${error.message}
             return sessionStorage.getItem('backend-error-banner-dismissed') !== 'true';
         }
 
+        // Check if an error indicates the backend server is not running
+        function isBackendServerError(error) {
+            // Check for network connectivity issues
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                return true;
+            }
+            
+            // Check for connection refused or network errors
+            if (error.message && (
+                error.message.includes('Failed to fetch') ||
+                error.message.includes('NetworkError') ||
+                error.message.includes('ERR_CONNECTION_REFUSED') ||
+                error.message.includes('ERR_NETWORK') ||
+                error.message.includes('ERR_INTERNET_DISCONNECTED')
+            )) {
+                return true;
+            }
+            
+            // Check for timeout errors (server not responding)
+            if (error.name === 'AbortError' || error.message.includes('timeout')) {
+                return true;
+            }
+            
+            return false;
+        }
+
         // Login page backend error banner functions
         function showLoginBackendErrorBanner() {
             console.log('showLoginBackendErrorBanner called');
@@ -4171,12 +4209,12 @@ Error: ${error.message}
                 console.warn('Login page backend health check failed:', error);
                 console.log('Should show login banner?', shouldShowLoginBackendErrorBanner());
                 
-                // Show backend error banner if not dismissed
-                if (shouldShowLoginBackendErrorBanner()) {
+                // Only show backend error banner if this is a server connectivity issue
+                if (isBackendServerError(error) && shouldShowLoginBackendErrorBanner()) {
                     console.log('Calling showLoginBackendErrorBanner');
                     showLoginBackendErrorBanner();
                 } else {
-                    console.log('Login banner was dismissed, not showing');
+                    console.log('Login banner was dismissed or not a server error, not showing');
                 }
             }
         }

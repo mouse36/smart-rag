@@ -401,6 +401,32 @@
             return !document.getElementById('backend-error-banner').classList.contains('show');
         }
 
+        // Check if an error indicates the backend server is not running
+        function isBackendServerError(error) {
+            // Check for network connectivity issues
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                return true;
+            }
+            
+            // Check for connection refused or network errors
+            if (error.message && (
+                error.message.includes('Failed to fetch') ||
+                error.message.includes('NetworkError') ||
+                error.message.includes('ERR_CONNECTION_REFUSED') ||
+                error.message.includes('ERR_NETWORK') ||
+                error.message.includes('ERR_INTERNET_DISCONNECTED')
+            )) {
+                return true;
+            }
+            
+            // Check for timeout errors (server not responding)
+            if (error.name === 'AbortError' || error.message.includes('timeout')) {
+                return true;
+            }
+            
+            return false;
+        }
+
         // Error display functions
         function showError(elementId, message) {
             const errorElement = document.getElementById(elementId);
@@ -467,8 +493,8 @@
             } catch (error) {
                 console.error('Error validating phone number:', error);
                 
-                // Show backend error banner on connection failure
-                if (shouldShowBackendErrorBanner()) {
+                // Only show backend error banner if this is a server connectivity issue
+                if (isBackendServerError(error) && shouldShowBackendErrorBanner()) {
                     showBackendErrorBanner();
                 }
                 
@@ -603,8 +629,8 @@
                 }
             } catch (error) {
                 console.warn('Backend health check failed:', error);
-                // Only show banner if it should be shown
-                if (shouldShowBackendErrorBanner()) {
+                // Only show banner if this is a server connectivity issue
+                if (isBackendServerError(error) && shouldShowBackendErrorBanner()) {
                     showBackendErrorBanner();
                 }
                 return false;
@@ -667,13 +693,20 @@
                         }
                     } catch (error) {
                         showPhoneLoading(false);
-                        showError('phone-error', 'Unable to verify phone number - backend server is not running. Please ensure the server is started and try again.');
-                        console.error('Phone validation error:', error);
                         
-                        // Show backend error banner on connection failure
-                        if (shouldShowBackendErrorBanner()) {
-                            showBackendErrorBanner();
+                        // Check if this is a server connectivity issue
+                        if (isBackendServerError(error)) {
+                            showError('phone-error', 'Unable to verify phone number - backend server is not running. Please ensure the server is started and try again.');
+                            
+                            // Show backend error banner on connection failure
+                            if (shouldShowBackendErrorBanner()) {
+                                showBackendErrorBanner();
+                            }
+                        } else {
+                            showError('phone-error', 'Unable to verify phone number. Please try again.');
                         }
+                        
+                        console.error('Phone validation error:', error);
                     }
                 });
             }
@@ -804,11 +837,17 @@
                         }
                     } catch (error) {
                         console.error('Signup error:', error);
-                        showError('email-error', 'Unable to connect to server. Please check your connection and try again.');
                         
-                        // Show backend error banner on connection failure
-                        if (shouldShowBackendErrorBanner()) {
-                            showBackendErrorBanner();
+                        // Check if this is a server connectivity issue
+                        if (isBackendServerError(error)) {
+                            showError('email-error', 'Unable to connect to server. Please check your connection and try again.');
+                            
+                            // Show backend error banner on connection failure
+                            if (shouldShowBackendErrorBanner()) {
+                                showBackendErrorBanner();
+                            }
+                        } else {
+                            showError('email-error', 'Registration failed. Please try again.');
                         }
                     } finally {
                         showEmailLoading(false);

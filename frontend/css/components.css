@@ -42,6 +42,33 @@ body {
     align-items: center;
 }
 
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.railway-setup-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.railway-setup-btn:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.railway-setup-btn svg {
+    flex-shrink: 0;
+}
+
 .logo {
     height: 80px;
 }

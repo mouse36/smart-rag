@@ -74,9 +74,113 @@
             border-color: #ff8900;
         }
 
-        .error-message {
+        /* Error Banner Styles */
+        .error-banner {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .banner-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .banner-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .banner-text strong {
+            font-weight: 600;
+        }
+
+        .banner-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .banner-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Error Text Styles */
+        .error-text {
             color: #e53e3e;
             font-size: 14px;
+            margin-top: 8px;
+            text-align: left;
+        }
+
+        .error-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .error-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(229, 62, 62, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #e53e3e;
+        }
+
+        .error-item-icon {
+            color: #e53e3e;
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .error-item-text {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        /* Error Text Container */
+        #error-text-container {
+            margin-top: 5px;
+        }
             margin-top: 8px;
             text-align: left;
         }
@@ -116,45 +220,14 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Backend Error Banner */
-        .backend-error-banner {
-            display: none;
+        /* Error Banner Container */
+        #error-banner-container {
             position: fixed;
             top: 100px;
             left: 0;
             right: 0;
-            background: #fed7d7;
-            border: 1px solid #feb2b2;
-            color: #9b2c2c;
-            padding: 12px 20px;
             z-index: 999;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .backend-error-banner.show {
-            display: flex;
-        }
-
-        .banner-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .banner-icon {
-            font-size: 18px;
-        }
-
-        .banner-close {
-            background: none;
-            border: none;
-            color: #9b2c2c;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            width: 24px;
-            height: 24px;
+            width: 100%;
         }
 
         /* Responsive Design */
@@ -174,16 +247,17 @@
     </style>
 </head>
 <body>
-    <!-- Backend Error Banner -->
-    <div class="backend-error-banner" id="backend-error-banner">
-        <div class="banner-content">
-            <div class="banner-icon">⚠️</div>
-            <div class="banner-text">
-                <strong data-en="Backend Server Error:" data-zh="后端服务器错误：">Backend Server Error:</strong> 
-                <span data-en="Unable to connect to the authentication server. Please ensure the server is running to complete signup." data-zh="无法连接到认证服务器。请确保服务器正在运行以完成注册。">Unable to connect to the authentication server. Please ensure the server is running to complete signup.</span>
+    <!-- Error Banner Container -->
+    <div id="error-banner-container">
+        <div class="error-banner" id="signup-error-banner">
+            <div class="banner-content">
+                <div class="banner-icon">⚠️</div>
+                <div class="banner-text" data-en="Error: Something went wrong. Please try again or contact support if the problem persists." data-zh="错误：出现了一些问题。请重试，如果问题持续存在请联系支持。">
+                    <strong data-en="Error:" data-zh="错误：">Error:</strong> <span data-en="Something went wrong. Please try again or contact support if the problem persists." data-zh="出现了一些问题。请重试，如果问题持续存在请联系支持。">Something went wrong. Please try again or contact support if the problem persists.</span>
+                </div>
             </div>
+            <button class="banner-close" onclick="closeErrorBannerFromButton(this)" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
         </div>
-        <button class="banner-close" onclick="closeBackendErrorBanner()" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
     </div>
 
     <!-- Navigation -->
@@ -226,7 +300,11 @@
                     <form id="phone-form">
                         <div class="form-group">
                             <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" data-placeholder-en="Enter your phone number" data-placeholder-zh="请输入您的手机号码" required>
-                            <div id="phone-error" class="error-message"></div>
+                            <div id="phone-error-container">
+                                <div class="error-text" id="phone-error-text">
+                                    <div class="error-list"></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
@@ -245,12 +323,20 @@
                     <form id="email-form">
                         <div class="form-group">
                             <input type="email" id="email" class="form-input" placeholder="Enter your email address" data-placeholder-en="Enter your email address" data-placeholder-zh="请输入您的邮箱地址" required>
-                            <div id="email-error" class="error-message"></div>
+                            <div id="email-error-container">
+                                <div class="error-text" id="email-error-text">
+                                    <div class="error-list"></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="form-group">
                             <input type="password" id="password" class="form-input" placeholder="Enter a password" data-placeholder-en="Enter a password" data-placeholder-zh="请输入您的密码" required>
-                            <div id="password-error" class="error-message"></div>
+                            <div id="password-error-container">
+                                <div class="error-text" id="password-error-text">
+                                    <div class="error-list"></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
@@ -275,7 +361,11 @@
                     <form id="verification-form">
                         <div class="form-group">
                             <input type="text" id="verification-code" class="form-input" placeholder="Enter 6-digit code" data-placeholder-en="Enter 6-digit code" data-placeholder-zh="请输入6位验证码" maxlength="6" pattern="[0-9]{6}" required>
-                            <div id="verification-error" class="error-message"></div>
+                            <div id="verification-error-container">
+                                <div class="error-text" id="verification-error-text">
+                                    <div class="error-list"></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
@@ -311,7 +401,7 @@
     <script src="js/config.js"></script>
     
     <!-- Component loader -->
-    <script src="js/components.js"></script>
+
     
     <script>
         // API Configuration - use global config
@@ -388,17 +478,29 @@
             window.location.href = 'index.html';
         }
 
-        // Backend error banner functions
-        function showBackendErrorBanner() {
-            document.getElementById('backend-error-banner').classList.add('show');
+        // Error banner functions
+        function showErrorBanner(message = null) {
+            if (typeof window.showErrorBanner === 'function') {
+                window.showErrorBanner(message, 'error-banner-container');
+            } else {
+                console.warn('Error banner component not loaded');
+            }
         }
 
-        function closeBackendErrorBanner() {
-            document.getElementById('backend-error-banner').classList.remove('show');
+        function closeErrorBanner() {
+            if (typeof window.closeErrorBanner === 'function') {
+                window.closeErrorBanner('error-banner-container');
+            } else {
+                console.warn('Error banner component not loaded');
+            }
         }
 
-        function shouldShowBackendErrorBanner() {
-            return !document.getElementById('backend-error-banner').classList.contains('show');
+        function shouldShowErrorBanner() {
+            if (typeof window.shouldShowErrorBanner === 'function') {
+                return window.shouldShowErrorBanner('error-banner-container');
+            } else {
+                return true; // Default to showing if component not loaded
+            }
         }
 
         // Check if an error indicates the backend server is not running
@@ -429,18 +531,28 @@
 
         // Error display functions
         function showError(elementId, message) {
-            const errorElement = document.getElementById(elementId);
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
+            const containerId = elementId + '-container';
+            if (typeof window.showErrorText === 'function') {
+                window.showErrorText(containerId, message);
+            } else {
+                // Fallback: set text content directly
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = message;
+                }
             }
         }
 
         function clearErrors() {
-            const errorElements = document.querySelectorAll('.error-message');
-            errorElements.forEach(el => {
-                el.textContent = '';
-                el.style.display = 'none';
+            // Clear error text components
+            const errorContainers = document.querySelectorAll('[id$="-error-container"]');
+            errorContainers.forEach(container => {
+                if (typeof window.clearErrorText === 'function') {
+                    window.clearErrorText(container.id);
+                } else {
+                    // Fallback: clear the container content
+                    container.innerHTML = '';
+                }
             });
         }
 
@@ -476,9 +588,9 @@
                 if (!response.ok) {
                     console.error('Failed to validate phone number:', response.statusText);
                     
-                    // Show backend error banner if this is a connection issue
-                    if (shouldShowBackendErrorBanner()) {
-                        showBackendErrorBanner();
+                    // Show error banner if this is a connection issue
+                    if (shouldShowErrorBanner()) {
+                        showErrorBanner();
                     }
                     
                     return { approved: false, error: 'backend_error' };
@@ -493,9 +605,9 @@
             } catch (error) {
                 console.error('Error validating phone number:', error);
                 
-                // Only show backend error banner if this is a server connectivity issue
-                if (isBackendServerError(error) && shouldShowBackendErrorBanner()) {
-                    showBackendErrorBanner();
+                // Only show error banner if this is a server connectivity issue
+                if (isBackendServerError(error) && shouldShowErrorBanner()) {
+                    showErrorBanner();
                 }
                 
                 return { approved: false, error: 'backend_error' };
@@ -630,15 +742,17 @@
             } catch (error) {
                 console.warn('Backend health check failed:', error);
                 // Only show banner if this is a server connectivity issue
-                if (isBackendServerError(error) && shouldShowBackendErrorBanner()) {
-                    showBackendErrorBanner();
+                if (isBackendServerError(error) && shouldShowErrorBanner()) {
+                    showErrorBanner();
                 }
                 return false;
             }
         }
 
         // Form submission handlers
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Error components are now embedded directly in the HTML
+            
             // Sync with global language manager
             if (window.languageManager) {
                 currentLanguage = window.languageManager.getCurrentLanguage();
@@ -698,9 +812,9 @@
                         if (isBackendServerError(error)) {
                             showError('phone-error', 'Unable to verify phone number - backend server is not running. Please ensure the server is started and try again.');
                             
-                            // Show backend error banner on connection failure
-                            if (shouldShowBackendErrorBanner()) {
-                                showBackendErrorBanner();
+                            // Show error banner on connection failure
+                            if (shouldShowErrorBanner()) {
+                                showErrorBanner();
                             }
                         } else {
                             showError('phone-error', 'Unable to verify phone number. Please try again.');
@@ -828,10 +942,10 @@
                                 showError('email-error', errorMessage);
                             }
                             
-                            // Show backend error banner if connection issues
+                            // Show error banner if connection issues
                             if (!response.ok && response.status >= 500) {
-                                if (shouldShowBackendErrorBanner()) {
-                                    showBackendErrorBanner();
+                                if (shouldShowErrorBanner()) {
+                                    showErrorBanner();
                                 }
                             }
                         }
@@ -842,9 +956,9 @@
                         if (isBackendServerError(error)) {
                             showError('email-error', 'Unable to connect to server. Please check your connection and try again.');
                             
-                            // Show backend error banner on connection failure
-                            if (shouldShowBackendErrorBanner()) {
-                                showBackendErrorBanner();
+                            // Show error banner on connection failure
+                            if (shouldShowErrorBanner()) {
+                                showErrorBanner();
                             }
                         } else {
                             showError('email-error', 'Registration failed. Please try again.');
@@ -854,6 +968,126 @@
                     }
                 });
             }
+
+            // Error Banner Functions - Embedded directly
+            function showErrorBanner(message = null, containerId = null) {
+                let banner;
+                if (containerId) {
+                    const container = document.getElementById(containerId);
+                    banner = container ? container.querySelector('.error-banner') : null;
+                } else {
+                    banner = document.querySelector('.error-banner');
+                }
+                
+                if (banner) {
+                    if (message) {
+                        const bannerText = banner.querySelector('.banner-text');
+                        if (bannerText) {
+                            bannerText.innerHTML = `<strong data-en="Error:" data-zh="错误：">Error:</strong> <span>${message}</span>`;
+                        }
+                    }
+                    banner.style.display = 'flex';
+                }
+            }
+
+            function closeErrorBanner(containerId = null) {
+                let banner;
+                if (containerId) {
+                    const container = document.getElementById(containerId);
+                    banner = container ? container.querySelector('.error-banner') : null;
+                } else {
+                    banner = document.querySelector('.error-banner');
+                }
+                
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+            }
+
+            function closeErrorBannerFromButton(button) {
+                const banner = button.closest('.error-banner');
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+            }
+
+            function shouldShowErrorBanner(containerId = null) {
+                let banner;
+                if (containerId) {
+                    const container = document.getElementById(containerId);
+                    banner = container ? container.querySelector('.error-banner') : null;
+                } else {
+                    banner = document.querySelector('.error-banner');
+                }
+                
+                return banner && banner.style.display !== 'none';
+            }
+
+            // Error Text Functions - Embedded directly
+            function showErrorText(containerId, errors) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const errorText = container.querySelector('.error-text');
+                if (!errorText) return;
+                
+                const errorList = errorText.querySelector('.error-list');
+                if (!errorList) return;
+                
+                // Clear existing errors
+                errorList.innerHTML = '';
+                
+                // Convert single error to array
+                const errorArray = Array.isArray(errors) ? errors : [errors];
+                
+                // Add each error
+                errorArray.forEach(error => {
+                    if (error && error.trim()) {
+                        const errorItem = document.createElement('div');
+                        errorItem.className = 'error-item';
+                        errorItem.innerHTML = `
+                            <div class="error-item-icon">⚠️</div>
+                            <div class="error-item-text">${error}</div>
+                        `;
+                        errorList.appendChild(errorItem);
+                    }
+                });
+                
+                // Show the error text
+                errorText.style.display = 'block';
+            }
+
+            function clearErrorText(containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const errorText = container.querySelector('.error-text');
+                if (errorText) {
+                    errorText.style.display = 'none';
+                    const errorList = errorText.querySelector('.error-list');
+                    if (errorList) {
+                        errorList.innerHTML = '';
+                    }
+                }
+            }
+
+            function hideErrorText(containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const errorText = container.querySelector('.error-text');
+                if (errorText) {
+                    errorText.style.display = 'none';
+                }
+            }
+
+            // Make functions globally available
+            window.showErrorBanner = showErrorBanner;
+            window.closeErrorBanner = closeErrorBanner;
+            window.shouldShowErrorBanner = shouldShowErrorBanner;
+            window.showErrorText = showErrorText;
+            window.clearErrorText = clearErrorText;
+            window.hideErrorText = hideErrorText;
         });
     </script>
 </body>

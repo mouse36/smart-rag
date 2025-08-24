@@ -1,0 +1,170 @@
+<!-- Error Banner Component -->
+<div class="error-banner">
+    <div class="banner-content">
+        <div class="banner-icon">⚠️</div>
+        <div class="banner-text" data-en="Error: Something went wrong. Please try again or contact support if the problem persists." data-zh="错误：出现了一些问题。请重试，如果问题持续存在请联系支持。">
+            <strong data-en="Error:" data-zh="错误：">Error:</strong> <span data-en="Something went wrong. Please try again or contact support if the problem persists." data-zh="出现了一些问题。请重试，如果问题持续存在请联系支持。">Something went wrong. Please try again or contact support if the problem persists.</span>
+        </div>
+    </div>
+    <button class="banner-close" onclick="closeErrorBannerFromButton(this)" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
+</div>
+
+<style>
+    /* Error Banner Styles */
+    .error-banner {
+        background: linear-gradient(135deg, #e53e3e 0%, #fc8181 100%);
+        color: white;
+        padding: 12px 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 14px;
+        font-weight: 500;
+        animation: slideDown 0.3s ease-out;
+        width: 100%;
+    }
+
+    .error-banner.show {
+        display: flex;
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .banner-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .banner-icon {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        font-size: 12px;
+    }
+
+    .banner-text {
+        flex: 1;
+    }
+
+    .banner-close {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background 0.3s ease;
+        font-size: 16px;
+    }
+
+    .banner-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+</style>
+
+<script>
+    // Error Banner Functions - Make them globally available
+    window.showErrorBanner = function(message = null, containerId = null) {
+        let banner;
+        if (containerId) {
+            // Find the error banner within the specific container
+            const container = document.getElementById(containerId);
+            banner = container ? container.querySelector('.error-banner') : null;
+        } else {
+            // Fallback to first error banner found
+            banner = document.querySelector('.error-banner');
+        }
+        
+        if (banner) {
+            if (message) {
+                const textElement = banner.querySelector('.banner-text span');
+                if (textElement) {
+                    textElement.textContent = message;
+                }
+            }
+            banner.classList.add('show');
+        }
+    };
+
+    window.closeErrorBanner = function(containerId = null) {
+        let banner;
+        if (containerId) {
+            const container = document.getElementById(containerId);
+            banner = container ? container.querySelector('.error-banner') : null;
+        } else {
+            banner = document.querySelector('.error-banner');
+        }
+        if (banner) {
+            banner.classList.remove('show');
+        }
+    };
+
+    window.shouldShowErrorBanner = function(containerId = null) {
+        let banner;
+        if (containerId) {
+            const container = document.getElementById(containerId);
+            banner = container ? container.querySelector('.error-banner') : null;
+        } else {
+            banner = document.querySelector('.error-banner');
+        }
+        return banner ? !banner.classList.contains('show') : true;
+    };
+
+    // Function to close error banner from button click
+    window.closeErrorBannerFromButton = function(button) {
+        const banner = button.closest('.error-banner');
+        if (banner) {
+            banner.classList.remove('show');
+        }
+    };
+
+    // Function to show specific error types
+    window.showBackendServerError = function() {
+        const message = getCurrentLanguage() === 'zh' 
+            ? '无法连接到服务器。请确保服务器正在运行。'
+            : 'Unable to connect to the server. Please ensure the server is running.';
+        window.showErrorBanner(message);
+    };
+
+    window.showApiError = function() {
+        const message = getCurrentLanguage() === 'zh'
+            ? 'API调用失败。请检查您的网络连接并重试。'
+            : 'API call failed. Please check your network connection and try again.';
+        window.showErrorBanner(message);
+    };
+
+    window.showAuthenticationError = function() {
+        const message = getCurrentLanguage() === 'zh'
+            ? '认证失败。请检查您的凭据并重试。'
+            : 'Authentication failed. Please check your credentials and try again.';
+        window.showErrorBanner(message);
+    };
+
+    window.showNetworkError = function() {
+        const message = getCurrentLanguage() === 'zh'
+            ? '网络连接错误。请检查您的互联网连接。'
+            : 'Network connection error. Please check your internet connection.';
+        window.showErrorBanner(message);
+    };
+
+    // Helper function to get current language (you may need to adjust this based on your language system)
+    function getCurrentLanguage() {
+        // This should match your existing language detection logic
+        return document.documentElement.lang || 'en';
+    }
+</script>

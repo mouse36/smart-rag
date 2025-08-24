@@ -1,0 +1,162 @@
+<!-- Error Text Component -->
+<div class="error-text">
+    <div class="error-list"></div>
+</div>
+
+<style>
+    /* Error Text Styles */
+    .error-text {
+        color: #e53e3e;
+        font-size: 14px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .error-text.show {
+        display: block;
+    }
+
+    .error-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .error-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 4px 0;
+    }
+
+    .error-icon {
+        color: #e53e3e;
+        font-size: 12px;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .error-message {
+        flex: 1;
+        line-height: 1.4;
+    }
+
+    .error-details {
+        font-size: 12px;
+        color: #c53030;
+        margin-top: 2px;
+        font-style: italic;
+    }
+</style>
+
+<script>
+    // Error Text Functions - Make them globally available
+    window.showErrorText = function(errors = [], containerId = null) {
+        let errorText;
+        if (containerId) {
+            // Find the error text within the specific container
+            const container = document.getElementById(containerId);
+            errorText = container ? container.querySelector('.error-text') : null;
+        } else {
+            // Fallback to first error text found
+            errorText = document.querySelector('.error-text');
+        }
+        
+        if (errorText) {
+            const errorList = errorText.querySelector('.error-list');
+            if (errorList) {
+                // Clear existing errors
+                errorList.innerHTML = '';
+                
+                if (errors.length === 0) {
+                    errorText.classList.remove('show');
+                    return;
+                }
+                
+                // Add each error to the list
+                errors.forEach(error => {
+                    const errorItem = document.createElement('div');
+                    errorItem.className = 'error-item';
+                    
+                    const errorIcon = document.createElement('span');
+                    errorIcon.className = 'error-icon';
+                    errorIcon.textContent = '•';
+                    
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'error-message';
+                    errorMessage.textContent = error.message || error;
+                    
+                    errorItem.appendChild(errorIcon);
+                    errorItem.appendChild(errorMessage);
+                    
+                    // Add error details if available
+                    if (error.details) {
+                        const errorDetails = document.createElement('div');
+                        errorDetails.className = 'error-details';
+                        errorDetails.textContent = error.details;
+                        errorMessage.appendChild(errorDetails);
+                    }
+                    
+                    errorList.appendChild(errorItem);
+                });
+                
+                errorText.classList.add('show');
+            }
+        }
+    };
+
+    window.hideErrorText = function(containerId = null) {
+        let errorText;
+        if (containerId) {
+            const container = document.getElementById(containerId);
+            errorText = container ? container.querySelector('.error-text') : null;
+        } else {
+            errorText = document.querySelector('.error-text');
+        }
+        if (errorText) {
+            errorText.classList.remove('show');
+        }
+    };
+
+    window.clearErrorText = function(containerId = null) {
+        let errorText;
+        if (containerId) {
+            const container = document.getElementById(containerId);
+            errorText = container ? container.querySelector('.error-text') : null;
+        } else {
+            errorText = document.querySelector('.error-text');
+        }
+        if (errorText) {
+            const errorList = errorText.querySelector('.error-list');
+            if (errorList) {
+                errorList.innerHTML = '';
+            }
+            errorText.classList.remove('show');
+        }
+    };
+
+    // Helper function to create error objects
+    window.createError = function(message, details = null) {
+        return {
+            message: message,
+            details: details
+        };
+    };
+
+    // Common error types
+    window.createValidationError = function(field, message) {
+        return window.createError(`${field}: ${message}`);
+    };
+
+    window.createNetworkError = function(message = 'Network connection failed') {
+        return window.createError(message, 'Please check your internet connection and try again.');
+    };
+
+    window.createServerError = function(message = 'Server error occurred') {
+        return window.createError(message, 'Please try again later or contact support if the problem persists.');
+    };
+
+    window.createAuthenticationError = function(message = 'Authentication failed') {
+        return window.createError(message, 'Please check your credentials and try again.');
+    };
+</script>

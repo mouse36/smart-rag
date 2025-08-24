@@ -409,10 +409,48 @@
             border-color: #ff8900;
         }
 
-        .error-message {
+        /* Error Text Styles */
+        .error-text {
             color: #e53e3e;
             font-size: 14px;
             margin-top: 5px;
+            display: none;
+        }
+
+        .error-text.show {
+            display: block;
+        }
+
+        .error-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .error-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            padding: 4px 0;
+        }
+
+        .error-icon {
+            color: #e53e3e;
+            font-size: 12px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .error-message {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .error-details {
+            font-size: 12px;
+            color: #c53030;
+            margin-top: 2px;
+            font-style: italic;
         }
 
         .success-message {
@@ -1119,8 +1157,8 @@
             display: flex;
         }
 
-        /* Backend Error Banner */
-        .backend-error-banner {
+        /* Error Banner Styles */
+        .error-banner {
             background: linear-gradient(135deg, #e53e3e 0%, #fc8181 100%);
             color: white;
             padding: 12px 30px;
@@ -1131,31 +1169,11 @@
             font-size: 14px;
             font-weight: 500;
             animation: slideDown 0.3s ease-out;
-        }
-
-        .backend-error-banner.show {
-            display: flex;
-        }
-
-        /* Login page specific backend error banner positioning */
-        #login-backend-error-banner {
-            position: fixed;
-            top: 100px; /* Position right below the navbar */
-            left: 0;
-            right: 0;
-            z-index: 1001; /* Higher than navbar to ensure visibility */
             width: 100%;
         }
 
-        @keyframes slideDown {
-            from {
-                transform: translateY(-100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        .error-banner.show {
+            display: flex;
         }
 
         .banner-content {
@@ -1193,6 +1211,29 @@
         .banner-close:hover {
             background: rgba(255, 255, 255, 0.2);
         }
+
+        /* Error Banner Container */
+        #error-banner-container {
+            position: fixed;
+            top: 100px;
+            left: 0;
+            right: 0;
+            z-index: 1001;
+            width: 100%;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+
 
         .typing-indicator {
             display: flex;
@@ -1730,15 +1771,17 @@
     <div id="login-page">
         <div class="navbar-container"></div>
 
-        <!-- Backend Error Banner for Login -->
-        <div class="backend-error-banner" id="login-backend-error-banner">
-            <div class="banner-content">
-                <div class="banner-icon">⚠️</div>
-                <div class="banner-text" data-en="Backend Server Error: Unable to connect to the authentication server. Please ensure the server is running to complete login/signup." data-zh="后端服务器错误：无法连接到认证服务器。请确保服务器正在运行以完成登录/注册。">
-                    <strong>Backend Server Error:</strong> Unable to connect to the authentication server. Please ensure the server is running to complete login/signup.
+        <!-- Error Banner Container for Login -->
+        <div id="error-banner-container">
+            <div class="error-banner" id="login-error-banner">
+                <div class="banner-content">
+                    <div class="banner-icon">⚠️</div>
+                    <div class="banner-text" data-en="Error: Something went wrong. Please try again or contact support if the problem persists." data-zh="错误：出现了一些问题。请重试，如果问题持续存在请联系支持。">
+                        <strong data-en="Error:" data-zh="错误：">Error:</strong> <span data-en="Something went wrong. Please try again or contact support if the problem persists." data-zh="出现了一些问题。请重试，如果问题持续存在请联系支持。">Something went wrong. Please try again or contact support if the problem persists.</span>
+                    </div>
                 </div>
+                <button class="banner-close" onclick="closeErrorBannerFromButton(this)" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
             </div>
-            <button class="banner-close" onclick="closeLoginBackendErrorBanner()" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
         </div>
 
         <div class="login-page">
@@ -1750,7 +1793,11 @@
                     <form id="phone-form">
                         <div class="form-group">
                             <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" data-placeholder-en="Enter your phone number" data-placeholder-zh="请输入您的手机号码" required>
-                            <div id="phone-error" class="error-message"></div>
+                            <div id="phone-error-container">
+                                <div class="error-text" id="phone-error-text">
+                                    <div class="error-list"></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
@@ -1769,12 +1816,20 @@
                     <form id="username-form">
                         <div class="form-group">
                             <input type="text" id="username" class="form-input" placeholder="Enter your username" data-placeholder-en="Enter your username" data-placeholder-zh="请输入您的用户名" required>
-                            <div id="username-error" class="error-message"></div>
+                            <div id="username-error-container">
+                                <div class="error-text" id="username-error-text">
+                                    <div class="error-list"></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="form-group">
                             <input type="password" id="password" class="form-input" placeholder="Enter your password" data-placeholder-en="Enter your password" data-placeholder-zh="请输入您的密码" required>
-                            <div id="password-error" class="error-message"></div>
+                            <div id="password-error-container">
+                                <div class="error-text" id="password-error-text">
+                                    <div class="error-list"></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
@@ -1799,7 +1854,11 @@
                     <form id="verification-form">
                         <div class="form-group">
                             <input type="text" id="verification-code" class="form-input" placeholder="Enter 6-digit code" data-placeholder-en="Enter 6-digit code" data-placeholder-zh="请输入6位验证码" maxlength="6" pattern="[0-9]{6}" required>
-                            <div id="verification-error" class="error-message"></div>
+                            <div id="verification-error-container">
+                                <div class="error-text" id="verification-error-text">
+                                    <div class="error-list"></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-bottom: 20px;">
@@ -1898,15 +1957,17 @@
                     </div>
                 </div>
                 
-                <!-- Backend Error Banner -->
-                <div class="backend-error-banner" id="backend-error-banner">
-                    <div class="banner-content">
-                        <div class="banner-icon">⚠️</div>
-                        <div class="banner-text">
-                            <strong data-en="Backend Server Error:" data-zh="后端服务器错误：">Backend Server Error:</strong> <span data-en="Unable to connect to the backend server. Please ensure the server is running to access the knowledge base and AI features." data-zh="无法连接到后端服务器。请确保服务器正在运行以访问知识库和AI功能。">Unable to connect to the backend server. Please ensure the server is running to access the knowledge base and AI features.</span>
+                <!-- Error Banner Container for Chat -->
+                <div id="chat-error-banner-container">
+                    <div class="error-banner" id="chat-error-banner">
+                        <div class="banner-content">
+                            <div class="banner-icon">⚠️</div>
+                            <div class="banner-text" data-en="Error: Something went wrong. Please try again or contact support if the problem persists." data-zh="错误：出现了一些问题。请重试，如果问题持续存在请联系支持。">
+                                <strong data-en="Error:" data-zh="错误：">Error:</strong> <span data-en="Something went wrong. Please try again or contact support if the problem persists." data-zh="出现了一些问题。请重试，如果问题持续存在请联系支持。">Something went wrong. Please try again or contact support if the problem persists.</span>
+                            </div>
                         </div>
+                        <button class="banner-close" onclick="closeErrorBannerFromButton(this)" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
                     </div>
-                    <button class="banner-close" onclick="closeBackendErrorBanner()" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
                 </div>
 
                 <!-- API Mode Banner -->
@@ -2110,8 +2171,7 @@
     <!-- Railway Setup Utility -->
     <script src="js/railway-setup.js"></script>
     
-    <!-- Component loader -->
-    <script src="js/components.js"></script>
+
     
     <!-- Authentication Service -->
     <script src="js/auth-service.js"></script>
@@ -2455,7 +2515,7 @@
                     console.log('Backend health check:', data);
                     
                     // Hide backend error banner since server is responding
-                    hideBackendErrorBanner();
+                    hideErrorBanner('chat-error-banner-container');
                     
                     // Clear any existing backend warnings in chat
                     clearBackendWarnings();
@@ -2476,9 +2536,9 @@
             } catch (error) {
                 console.warn('Backend health check failed:', error);
                 
-                // Only show backend error banner if this is a server connectivity issue
-                if (isBackendServerError(error) && shouldShowBackendErrorBanner()) {
-                    showBackendErrorBanner();
+                // Only show error banner if this is a server connectivity issue
+                if (isBackendServerError(error) && shouldShowErrorBanner('chat-error-banner-container')) {
+                    showErrorBanner(null, 'chat-error-banner-container');
                 }
                 
                 // Hide API banner on error since we can't determine the mode
@@ -2637,9 +2697,9 @@
                  if (!response.ok) {
                      console.error('Failed to validate phone number:', response.statusText);
                      
-                     // Show login backend error banner if this is a connection issue
-                     if (shouldShowLoginBackendErrorBanner()) {
-                         showLoginBackendErrorBanner();
+                     // Show login error banner if this is a connection issue
+                     if (shouldShowLoginErrorBanner()) {
+                         showLoginErrorBanner();
                      }
                      
                      return { approved: false, error: 'backend_error' };
@@ -2647,16 +2707,16 @@
                  
                  const result = await response.json();
                  
-                 // Hide login backend error banner since we successfully connected
-                 hideLoginBackendErrorBanner();
+                 // Hide login error banner since we successfully connected
+                 hideLoginErrorBanner();
                  
                  return { approved: result.is_approved, error: result.is_approved ? null : 'not_approved' };
              } catch (error) {
                  console.error('Error validating phone number:', error);
                  
-                 // Only show login backend error banner if this is a server connectivity issue
-                 if (isBackendServerError(error) && shouldShowLoginBackendErrorBanner()) {
-                     showLoginBackendErrorBanner();
+                 // Only show login error banner if this is a server connectivity issue
+                 if (isBackendServerError(error) && shouldShowLoginErrorBanner()) {
+                     showLoginErrorBanner();
                  }
                  
                  return { approved: false, error: 'backend_error' };
@@ -2961,9 +3021,9 @@
                          if (isBackendServerError(error)) {
                              showError('phone-error', 'Unable to verify phone number - backend server is not running. Please ensure the server is started and try again.');
                              
-                             // Show login backend error banner on connection failure
-                             if (shouldShowLoginBackendErrorBanner()) {
-                                 showLoginBackendErrorBanner();
+                             // Show login error banner on connection failure
+                             if (shouldShowLoginErrorBanner()) {
+                                 showLoginErrorBanner();
                              }
                          } else {
                              showError('phone-error', 'Unable to verify phone number. Please try again.');
@@ -3149,7 +3209,7 @@
                                 console.log('Stored currentUserEmail:', localStorage.getItem('currentUserEmail'));
                                 
                                 showSuccessPhase();
-                                hideLoginBackendErrorBanner();
+                                hideLoginErrorBanner();
                             } else {
                                 // Login failed
                                 const errorMessage = result.message || 'Login failed';
@@ -3186,9 +3246,9 @@
                         if (isBackendServerError(error)) {
                             showError('username-error', 'Unable to connect to authentication server. Please ensure the server is running and try again.');
                             
-                            // Show login backend error banner on connection failure
-                            if (shouldShowLoginBackendErrorBanner()) {
-                                showLoginBackendErrorBanner();
+                            // Show login error banner on connection failure
+                            if (shouldShowLoginErrorBanner()) {
+                                showLoginErrorBanner();
                             }
                         } else {
                             showError('username-error', 'Authentication failed. Please try again.');
@@ -3199,14 +3259,29 @@
         });
         
         function clearErrors() {
-            const errorElements = document.querySelectorAll('.error-message');
-            errorElements.forEach(el => el.textContent = '');
+            // Clear error text components
+            const errorContainers = document.querySelectorAll('[id$="-error-container"]');
+            errorContainers.forEach(container => {
+                const errorText = container.querySelector('.error-text');
+                if (errorText) {
+                    clearErrorText(container.id);
+                } else {
+                    // Fallback: clear the container content
+                    container.innerHTML = '';
+                }
+            });
         }
         
         function showError(elementId, message) {
             const element = document.getElementById(elementId);
             if (element) {
-                element.textContent = message;
+                const errorText = element.querySelector('.error-text');
+                if (errorText) {
+                    showErrorText([message], elementId);
+                } else {
+                    // Fallback: set text content directly
+                    element.textContent = message;
+                }
             }
         }
         
@@ -3324,9 +3399,9 @@
                 console.error('Error sending message:', error);
                 hideTypingIndicator();
                 
-                // Only show backend error banner if this is a server connectivity issue
-                if (isBackendServerError(error) && shouldShowBackendErrorBanner()) {
-                    showBackendErrorBanner();
+                // Only show error banner if this is a server connectivity issue
+                if (isBackendServerError(error) && shouldShowErrorBanner('chat-error-banner-container')) {
+                    showErrorBanner(null, 'chat-error-banner-container');
                 }
                 
                 // Show error message with fallback content
@@ -4078,36 +4153,35 @@ Error: ${error.message}
             return localStorage.getItem('api-banner-dismissed') !== 'true';
         }
 
-        // Backend Error Banner Functions
-        function showBackendErrorBanner() {
-            const banner = document.getElementById('backend-error-banner');
-            if (banner) {
-                banner.classList.add('show');
-            }
+        // Error Banner Functions - Now using embedded functions
+        function hideErrorBanner(containerId = null) {
+            closeErrorBanner(containerId);
         }
 
-        function hideBackendErrorBanner() {
-            const banner = document.getElementById('backend-error-banner');
+        function closeErrorBanner(containerId = null) {
+            // Use the embedded closeErrorBanner function
+            const banner = containerId ? 
+                document.getElementById(containerId)?.querySelector('.error-banner') : 
+                document.querySelector('.error-banner');
             if (banner) {
                 banner.classList.remove('show');
             }
+            // Store in sessionStorage to remember user preference for this session
+            sessionStorage.setItem('error-banner-dismissed', 'true');
         }
 
-        function closeBackendErrorBanner() {
-            hideBackendErrorBanner();
-            // Optionally store in localStorage to remember user preference for this session
-            sessionStorage.setItem('backend-error-banner-dismissed', 'true');
-        }
-
-        // Check if backend error banner was previously dismissed in this session
-        function shouldShowBackendErrorBanner() {
-            return sessionStorage.getItem('backend-error-banner-dismissed') !== 'true';
+        // Check if error banner was previously dismissed in this session
+        function shouldShowErrorBanner(containerId = null) {
+            return sessionStorage.getItem('error-banner-dismissed') !== 'true';
         }
 
         // Check if an error indicates the backend server is not running
         function isBackendServerError(error) {
+            console.log('Checking if error is backend server error:', error);
+            
             // Check for network connectivity issues
             if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                console.log('Error is TypeError with fetch');
                 return true;
             }
             
@@ -4119,60 +4193,181 @@ Error: ${error.message}
                 error.message.includes('ERR_NETWORK') ||
                 error.message.includes('ERR_INTERNET_DISCONNECTED')
             )) {
+                console.log('Error is network/connection error');
                 return true;
             }
             
             // Check for timeout errors (server not responding)
             if (error.name === 'AbortError' || error.message.includes('timeout')) {
+                console.log('Error is timeout error');
                 return true;
             }
             
+            console.log('Error is not a backend server error');
             return false;
         }
 
-        // Login page backend error banner functions
-        function showLoginBackendErrorBanner() {
-            console.log('showLoginBackendErrorBanner called');
-            const banner = document.getElementById('login-backend-error-banner');
-            console.log('Login banner element:', banner);
-            if (banner) {
-                console.log('Adding show class to login banner');
-                banner.classList.add('show');
-                adjustPageLayoutForBanner();
+        // Error Banner Functions - Embedded directly
+        function showErrorBanner(message = null, containerId = null) {
+            let banner;
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                banner = container ? container.querySelector('.error-banner') : null;
             } else {
-                console.log('Login banner element not found!');
+                banner = document.querySelector('.error-banner');
+            }
+            
+            if (banner) {
+                if (message) {
+                    const textElement = banner.querySelector('.banner-text span');
+                    if (textElement) {
+                        textElement.textContent = message;
+                    }
+                }
+                banner.classList.add('show');
             }
         }
 
-        function hideLoginBackendErrorBanner() {
-            const banner = document.getElementById('login-backend-error-banner');
+        function closeErrorBanner(containerId = null) {
+            let banner;
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                banner = container ? container.querySelector('.error-banner') : null;
+            } else {
+                banner = document.querySelector('.error-banner');
+            }
             if (banner) {
                 banner.classList.remove('show');
-                adjustPageLayoutForBanner();
             }
         }
 
-        function closeLoginBackendErrorBanner() {
-            hideLoginBackendErrorBanner();
-            // Store in sessionStorage to remember user preference for this session
-            sessionStorage.setItem('login-backend-error-banner-dismissed', 'true');
+        function shouldShowErrorBanner(containerId = null) {
+            let banner;
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                banner = container ? container.querySelector('.error-banner') : null;
+            } else {
+                banner = document.querySelector('.error-banner');
+            }
+            return banner ? !banner.classList.contains('show') : true;
         }
 
-        // Check if login backend error banner was previously dismissed in this session
-        function shouldShowLoginBackendErrorBanner() {
-            return sessionStorage.getItem('login-backend-error-banner-dismissed') !== 'true';
+        // Function to close error banner from button click
+        function closeErrorBannerFromButton(button) {
+            const banner = button.closest('.error-banner');
+            if (banner) {
+                banner.classList.remove('show');
+            }
+        }
+
+        // Error Text Functions - Embedded directly
+        function showErrorText(errors = [], containerId = null) {
+            let errorText;
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                errorText = container ? container.querySelector('.error-text') : null;
+            } else {
+                errorText = document.querySelector('.error-text');
+            }
+            
+            if (errorText) {
+                const errorList = errorText.querySelector('.error-list');
+                if (errorList) {
+                    // Clear existing errors
+                    errorList.innerHTML = '';
+                    
+                    if (errors.length === 0) {
+                        errorText.classList.remove('show');
+                        return;
+                    }
+                    
+                    // Add each error to the list
+                    errors.forEach(error => {
+                        const errorItem = document.createElement('div');
+                        errorItem.className = 'error-item';
+                        
+                        const errorIcon = document.createElement('span');
+                        errorIcon.className = 'error-icon';
+                        errorIcon.textContent = '•';
+                        
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'error-message';
+                        errorMessage.textContent = error.message || error;
+                        
+                        errorItem.appendChild(errorIcon);
+                        errorItem.appendChild(errorMessage);
+                        
+                        // Add error details if available
+                        if (error.details) {
+                            const errorDetails = document.createElement('div');
+                            errorDetails.className = 'error-details';
+                            errorDetails.textContent = error.details;
+                            errorMessage.appendChild(errorDetails);
+                        }
+                        
+                        errorList.appendChild(errorItem);
+                    });
+                    
+                    errorText.classList.add('show');
+                }
+            }
+        }
+
+        function clearErrorText(containerId = null) {
+            let errorText;
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                errorText = container ? container.querySelector('.error-text') : null;
+            } else {
+                errorText = document.querySelector('.error-text');
+            }
+            if (errorText) {
+                const errorList = errorText.querySelector('.error-list');
+                if (errorList) {
+                    errorList.innerHTML = '';
+                }
+                errorText.classList.remove('show');
+            }
+        }
+
+        // Test function to manually trigger error banner (for debugging)
+        function testErrorBanner() {
+            console.log('Testing error banner manually...');
+            showErrorBanner('This is a test error message', 'error-banner-container');
+        }
+
+        // Login page error banner functions
+        function showLoginErrorBanner(message = null) {
+            showErrorBanner(message, 'error-banner-container');
+            adjustPageLayoutForBanner();
+        }
+
+        function hideLoginErrorBanner() {
+            hideErrorBanner('error-banner-container');
+            adjustPageLayoutForBanner();
+        }
+
+        function closeLoginErrorBanner() {
+            closeErrorBanner('error-banner-container');
+            // Store in sessionStorage to remember user preference for this session
+            sessionStorage.setItem('login-error-banner-dismissed', 'true');
+        }
+
+        // Check if login error banner was previously dismissed in this session
+        function shouldShowLoginErrorBanner() {
+            return sessionStorage.getItem('login-error-banner-dismissed') !== 'true';
         }
 
         // Adjust page layout when banners are shown/hidden
         function adjustPageLayoutForBanner() {
             // Only adjust layout for login page since chat page banners are positioned normally
             if (currentPage === 'login') {
-                const loginBanner = document.getElementById('login-backend-error-banner');
+                const errorBanner = document.getElementById('error-banner');
                 const bannerHeight = 46; // Standard banner height
                 let totalBannerHeight = 0;
                 
                 // Calculate total height of visible banners on login page
-                if (loginBanner && loginBanner.classList.contains('show')) {
+                if (errorBanner && errorBanner.classList.contains('show')) {
                     totalBannerHeight += bannerHeight;
                 }
                 
@@ -4200,19 +4395,19 @@ Error: ${error.message}
                     const data = await response.json();
                     console.log('Login page backend health check:', data);
                     
-                    // Hide backend error banner since server is responding
-                    hideLoginBackendErrorBanner();
+                    // Hide error banner since server is responding
+                    hideLoginErrorBanner();
                 } else {
                     throw new Error('Health check failed');
                 }
             } catch (error) {
                 console.warn('Login page backend health check failed:', error);
-                console.log('Should show login banner?', shouldShowLoginBackendErrorBanner());
+                console.log('Should show login banner?', shouldShowLoginErrorBanner());
                 
-                // Only show backend error banner if this is a server connectivity issue
-                if (isBackendServerError(error) && shouldShowLoginBackendErrorBanner()) {
-                    console.log('Calling showLoginBackendErrorBanner');
-                    showLoginBackendErrorBanner();
+                // Only show error banner if this is a server connectivity issue
+                if (isBackendServerError(error) && shouldShowLoginErrorBanner()) {
+                    console.log('Calling showLoginErrorBanner');
+                    showLoginErrorBanner();
                 } else {
                     console.log('Login banner was dismissed or not a server error, not showing');
                 }
@@ -4550,6 +4745,9 @@ Error: ${error.message}
 
         // Initialize page functionality when DOM is loaded
         document.addEventListener('DOMContentLoaded', async function() {
+            // Error components are now embedded directly in the HTML
+            console.log('Error components ready');
+            
             // Check authentication status using JWT tokens
             const isAuth = await checkAuthenticationStatus();
             if (isAuth) {

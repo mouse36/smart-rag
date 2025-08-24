@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Components Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        /* Error Banner Styles */
+        .error-banner {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .banner-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .banner-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .banner-text strong {
+            font-weight: 600;
+        }
+
+        .banner-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .banner-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Error Text Styles */
+        .error-text {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 8px;
+            text-align: left;
+        }
+
+        .error-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .error-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(229, 62, 62, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #e53e3e;
+        }
+
+        .error-item-icon {
+            color: #e53e3e;
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .error-item-text {
+            flex: 1;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Error Components Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Error Banner Tests</h2>
+        <div id="error-banner-container">
+            <div class="error-banner" id="test-error-banner">
+                <div class="banner-content">
+                    <div class="banner-icon">⚠️</div>
+                    <div class="banner-text" data-en="Error: Something went wrong. Please try again or contact support if the problem persists." data-zh="错误：出现了一些问题。请重试，如果问题持续存在请联系支持。">
+                        <strong data-en="Error:" data-zh="错误：">Error:</strong> <span data-en="Something went wrong. Please try again or contact support if the problem persists." data-zh="出现了一些问题。请重试，如果问题持续存在请联系支持。">Something went wrong. Please try again or contact support if the problem persists.</span>
+                    </div>
+                </div>
+                <button class="banner-close" onclick="closeErrorBannerFromButton(this)" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
+            </div>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="btn-primary" onclick="showErrorBanner()">Show Error Banner</button>
+            <button class="btn-secondary" onclick="showErrorBanner('Custom error message')">Show Custom Error</button>
+            <button class="btn-danger" onclick="closeErrorBanner()">Close Error Banner</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Error Text Tests</h2>
+        <div id="error-text-container">
+            <div class="error-text" id="test-error-text">
+                <div class="error-list"></div>
+            </div>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="btn-primary" onclick="showErrorText('error-text-container', 'Single error message')">Show Single Error</button>
+            <button class="btn-secondary" onclick="showErrorText('error-text-container', ['First error', 'Second error', 'Third error'])">Show Multiple Errors</button>
+            <button class="btn-danger" onclick="clearErrorText('error-text-container')">Clear Errors</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Form Error Tests</h2>
+        <div style="max-width: 400px;">
+            <div style="margin-bottom: 15px;">
+                <label>Email:</label>
+                <input type="email" placeholder="Enter email" style="width: 100%; padding: 8px; margin-top: 5px;">
+                <div id="email-error-container">
+                    <div class="error-text" id="email-error-text">
+                        <div class="error-list"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label>Password:</label>
+                <input type="password" placeholder="Enter password" style="width: 100%; padding: 8px; margin-top: 5px;">
+                <div id="password-error-container">
+                    <div class="error-text" id="password-error-text">
+                        <div class="error-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="btn-primary" onclick="showErrorText('email-error-container', 'Invalid email format')">Show Email Error</button>
+            <button class="btn-secondary" onclick="showErrorText('password-error-container', 'Password too short')">Show Password Error</button>
+            <button class="btn-danger" onclick="clearErrorText('email-error-container'); clearErrorText('password-error-container')">Clear Form Errors</button>
+        </div>
+    </div>
+
+    <script>
+        // Error Banner Functions - Embedded directly
+        function showErrorBanner(message = null, containerId = null) {
+            let banner;
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                banner = container ? container.querySelector('.error-banner') : null;
+            } else {
+                banner = document.querySelector('.error-banner');
+            }
+            
+            if (banner) {
+                if (message) {
+                    const bannerText = banner.querySelector('.banner-text');
+                    if (bannerText) {
+                        bannerText.innerHTML = `<strong data-en="Error:" data-zh="错误：">Error:</strong> <span>${message}</span>`;
+                    }
+                }
+                banner.style.display = 'flex';
+            }
+        }
+
+        function closeErrorBanner(containerId = null) {
+            let banner;
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                banner = container ? container.querySelector('.error-banner') : null;
+            } else {
+                banner = document.querySelector('.error-banner');
+            }
+            
+            if (banner) {
+                banner.style.display = 'none';
+            }
+        }
+
+        function closeErrorBannerFromButton(button) {
+            const banner = button.closest('.error-banner');
+            if (banner) {
+                banner.style.display = 'none';
+            }
+        }
+
+        function shouldShowErrorBanner(containerId = null) {
+            let banner;
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                banner = container ? container.querySelector('.error-banner') : null;
+            } else {
+                banner = document.querySelector('.error-banner');
+            }
+            
+            return banner && banner.style.display !== 'none';
+        }
+
+        // Error Text Functions - Embedded directly
+        function showErrorText(containerId, errors) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const errorText = container.querySelector('.error-text');
+            if (!errorText) return;
+            
+            const errorList = errorText.querySelector('.error-list');
+            if (!errorList) return;
+            
+            // Clear existing errors
+            errorList.innerHTML = '';
+            
+            // Convert single error to array
+            const errorArray = Array.isArray(errors) ? errors : [errors];
+            
+            // Add each error
+            errorArray.forEach(error => {
+                if (error && error.trim()) {
+                    const errorItem = document.createElement('div');
+                    errorItem.className = 'error-item';
+                    errorItem.innerHTML = `
+                        <div class="error-item-icon">⚠️</div>
+                        <div class="error-item-text">${error}</div>
+                    `;
+                    errorList.appendChild(errorItem);
+                }
+            });
+            
+            // Show the error text
+            errorText.style.display = 'block';
+        }
+
+        function clearErrorText(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const errorText = container.querySelector('.error-text');
+            if (errorText) {
+                errorText.style.display = 'none';
+                const errorList = errorText.querySelector('.error-list');
+                if (errorList) {
+                    errorList.innerHTML = '';
+                }
+            }
+        }
+
+        function hideErrorText(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const errorText = container.querySelector('.error-text');
+            if (errorText) {
+                errorText.style.display = 'none';
+            }
+        }
+
+        // Make functions globally available
+        window.showErrorBanner = showErrorBanner;
+        window.closeErrorBanner = closeErrorBanner;
+        window.shouldShowErrorBanner = shouldShowErrorBanner;
+        window.showErrorText = showErrorText;
+        window.clearErrorText = clearErrorText;
+        window.hideErrorText = hideErrorText;
+
+        console.log('Error components test page loaded successfully!');
+    </script>
+</body>
+</html>
+
+

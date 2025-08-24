@@ -109,17 +109,46 @@ window.languageManager = new LanguageManager();
 
 async function loadComponent(elementId, componentPath) {
     try {
+        console.log('Loading component:', componentPath, 'into element:', elementId);
         const response = await fetch(componentPath);
+        console.log('Response status:', response.status, response.statusText);
+        
         if (!response.ok) {
-            throw new Error(`Failed to load component: ${response.status}`);
+            throw new Error(`Failed to load component: ${response.status} ${response.statusText}`);
         }
+        
         const html = await response.text();
+        console.log('Component HTML loaded, length:', html.length);
+        
         const element = document.getElementById(elementId);
         if (element) {
             element.innerHTML = html;
+            console.log('Component loaded successfully into:', elementId);
+            
+            // Execute any scripts in the loaded component
+            const scripts = element.querySelectorAll('script');
+            scripts.forEach(script => {
+                if (script.textContent) {
+                    console.log('Executing script from component');
+                    eval(script.textContent);
+                }
+            });
+            
+        } else {
+            console.error('Element not found:', elementId);
         }
     } catch (error) {
         console.error('Component loading error:', error);
+        // Fallback: create a simple error banner if loading fails
+        const element = document.getElementById(elementId);
+        if (element && elementId.includes('error-banner')) {
+            element.innerHTML = `
+                <div class="error-banner" style="background: #e53e3e; color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between;">
+                    <div>Error: Component failed to load</div>
+                    <button onclick="this.parentElement.style.display='none'" style="background: none; border: none; color: white; cursor: pointer;">×</button>
+                </div>
+            `;
+        }
     }
 }
 
@@ -310,4 +339,36 @@ async function setupNavbar(pageType = 'landing', containerId = 'navbar-container
             window.languageManager.initializeLanguage();
         }
     }, 100);
+}
+
+/**
+ * Load error banner component
+ */
+async function loadErrorBanner(containerId = 'error-banner-container') {
+    await loadComponent(containerId, 'components/error-banner.html');
+}
+
+/**
+ * Load error text component
+ */
+async function loadErrorText(containerId = 'error-text-container') {
+    await loadComponent(containerId, 'components/error-text.html');
+}
+
+/**
+ * Setup error components for a page
+ */
+async function setupErrorComponents(bannerContainerId = 'error-banner-container', textContainerId = 'error-text-container') {
+    await loadErrorBanner(bannerContainerId);
+    await loadErrorText(textContainerId);
+}
+
+/**
+ * Setup error text components for all error containers on a page
+ */
+async function setupErrorTextComponents() {
+    const errorContainers = document.querySelectorAll('[id$="-error-container"]');
+    for (const container of errorContainers) {
+        await loadComponent(container.id, 'components/error-text.html');
+    }
 }

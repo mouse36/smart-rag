@@ -8,7 +8,7 @@ class AuthService {
         this.tokenKey = 'sunnymentor_jwt_token';
         this.userKey = 'sunnymentor_user_data';
         // Use global config for API base URL
-        this.apiBaseUrl = window.appConfig ? window.appConfig.getApiUrl('') : 'http://127.0.0.1:5000';
+        this.apiBaseUrl = window.appConfig ? window.appConfig.getApiUrl('') : 'https://sunnymentor-production.up.railway.app';
     }
 
     /**

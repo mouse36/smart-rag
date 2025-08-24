@@ -23,7 +23,7 @@ from datetime import datetime
 import stripe
 
 # Import custom modules
-from firebase_client import FirebaseClient
+from jsonbin_client import JSONBinClient
 from config import Config
 
 # Configure logging first
@@ -56,7 +56,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend integration
 
 # Initialize components
-firebase_client = FirebaseClient(config)
+jsonbin_client = JSONBinClient(config)
 
 # Conditionally initialize AI/ML components
 if config.API_CALLS_ENABLED:
@@ -157,7 +157,7 @@ def health_check():
             'components': {
                 'vector_engine': vector_engine.is_ready() if vector_engine else False,
                 'deepseek_client': deepseek_client.is_ready() if deepseek_client else False,
-                'firebase_client': firebase_client.is_ready(),
+                'jsonbin_client': jsonbin_client.is_ready(),
                 'stripe_configured': config.is_stripe_configured()
             }
         }), 200

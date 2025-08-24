@@ -94,31 +94,85 @@ class RailwaySetup {
      */
     async testAllEndpoints() {
         const endpoints = [
-            { name: 'Health Check', path: 'health' },
-            { name: 'Authentication', path: 'auth/validate-phone' },
-            { name: 'Chat', path: 'chat' }
+            { name: 'Health Check', path: 'health', method: 'GET' },
+            { name: 'Authentication', path: 'auth/login', method: 'POST', data: { email: 'mrfuncomputer@sprunki.com', password: 'hello!' } },
+            { name: 'Chat History', path: 'chat/history', method: 'GET', requiresAuth: true },
+            { name: 'Chat', path: 'chat', method: 'POST', data: { message: 'Hello, this is a test message.' }, requiresAuth: true }
         ];
         
         const results = {};
+        let authToken = null;
         
         for (const endpoint of endpoints) {
             const url = this.config.getApiUrl(endpoint.path);
             console.log(`Testing ${endpoint.name}:`, url);
             
             try {
-                const response = await fetch(url, {
-                    method: 'GET',
+                const requestOptions = {
+                    method: endpoint.method,
                     headers: {
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     },
                     timeout: 10000
-                });
+                };
+                
+                // Add authentication header if required and we have a token
+                if (endpoint.requiresAuth && authToken) {
+                    requestOptions.headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                // Add body for POST requests
+                if (endpoint.method === 'POST' && endpoint.data) {
+                    requestOptions.body = JSON.stringify(endpoint.data);
+                }
+                
+                const response = await fetch(url, requestOptions);
+                
+                let responseData = null;
+                try {
+                    responseData = await response.json();
+                } catch (e) {
+                    // Response might not be JSON
+                }
                 
                 results[endpoint.name] = {
                     success: response.ok,
                     status: response.status,
-                    url: url
+                    url: url,
+                    data: responseData
                 };
+                
+                // For authentication test, check if we got a token and store it
+                if (endpoint.name === 'Authentication' && response.ok && responseData && responseData.token) {
+                    authToken = responseData.token;
+                    results[endpoint.name].message = 'Login successful - token received';
+                } else if (endpoint.name === 'Authentication' && !response.ok) {
+                    results[endpoint.name].message = `Login failed: ${responseData?.message || response.statusText}`;
+                }
+                
+                // For chat history test, check if we got chat history
+                if (endpoint.name === 'Chat History' && response.ok && responseData && responseData.chat_history) {
+                    results[endpoint.name].message = `Chat history loaded - ${responseData.total_chats || 0} chats found`;
+                } else if (endpoint.name === 'Chat History' && !response.ok) {
+                    if (response.status === 401) {
+                        results[endpoint.name].message = 'Chat history failed: Authentication required (no valid token)';
+                    } else {
+                        results[endpoint.name].message = `Chat history failed: ${responseData?.message || response.statusText}`;
+                    }
+                }
+                
+                // For chat test, check if we got a response
+                if (endpoint.name === 'Chat' && response.ok && responseData && responseData.response) {
+                    results[endpoint.name].message = 'Chat working - response received';
+                } else if (endpoint.name === 'Chat' && !response.ok) {
+                    if (response.status === 401) {
+                        results[endpoint.name].message = 'Chat failed: Authentication required (no valid token)';
+                    } else {
+                        results[endpoint.name].message = `Chat failed: ${responseData?.error || response.statusText}`;
+                    }
+                }
+                
             } catch (error) {
                 results[endpoint.name] = {
                     success: false,
@@ -173,14 +227,20 @@ class RailwaySetup {
             }
             html += `<div>URL: ${results.url}</div>`;
         } else {
-            // Multiple endpoints test
-            for (const [name, result] of Object.entries(results)) {
-                if (result.success) {
-                    html += `<div style="color: green;">✅ ${name}: OK (${result.status})</div>`;
-                } else {
-                    html += `<div style="color: red;">❌ ${name}: Failed - ${result.error || result.status}</div>`;
+                    // Multiple endpoints test
+        for (const [name, result] of Object.entries(results)) {
+            if (result.success) {
+                html += `<div style="color: green;">✅ ${name}: OK (${result.status})</div>`;
+                if (result.message) {
+                    html += `<div style="font-size: 12px; color: #666; margin-left: 20px;">${result.message}</div>`;
+                }
+            } else {
+                html += `<div style="color: red;">❌ ${name}: Failed - ${result.error || result.status}</div>`;
+                if (result.message) {
+                    html += `<div style="font-size: 12px; color: #666; margin-left: 20px;">${result.message}</div>`;
                 }
             }
+        }
         }
         
         html += '<br><button onclick="this.parentElement.remove()">Close</button>';

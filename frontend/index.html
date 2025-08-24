@@ -2505,7 +2505,7 @@
         
         async function checkBackendHealth() {
             try {
-                const response = await fetch('http://127.0.0.1:5000/health', {
+                const response = await fetch(window.appConfig.getApiUrl('health'), {
                     method: 'GET',
                     timeout: 5000
                 });
@@ -2664,7 +2664,7 @@
         let generatedCode = '';
         
         // Backend API base URL - use global config
-        const API_BASE_URL = window.appConfig ? window.appConfig.getApiUrl('') : 'http://127.0.0.1:5000';
+        const API_BASE_URL = window.appConfig ? window.appConfig.getApiUrl('') : 'https://sunnymentor-production.up.railway.app';
         
         function normalizePhoneNumber(phone) {
             // Remove all non-digit characters
@@ -3341,7 +3341,7 @@
             
             try {
                 // Send message to backend API using authenticated request
-                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat', {
+                const response = await window.authService.authenticatedRequest(window.appConfig.getApiUrl('chat'), {
                     method: 'POST',
                     body: JSON.stringify({ message: message })
                 });
@@ -3688,7 +3688,7 @@ Error: ${error.message}
                     sidebarMenu.appendChild(loadingItem);
                 }
                 
-                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat/history', {
+                const response = await window.authService.authenticatedRequest(window.appConfig.getApiUrl('chat/history'), {
                     method: 'GET'
                 });
                 
@@ -3722,20 +3722,20 @@ Error: ${error.message}
                     updateChatTitleDisplay();
                 }
                 
-                            } catch (error) {
-                    console.error('Error loading chat history:', error);
-                    localChatHistory = [];
-                    
-                    // Remove loading placeholder immediately on error
-                    if (loadingItem) {
-                        loadingItem.remove();
-                    }
-                    
-                    updateChatHistorySidebar(); // Still update to remove loading
-                    
-                    // Update the chat title display even on error
-                    updateChatTitleDisplay();
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                localChatHistory = [];
+                
+                // Remove loading placeholder immediately on error
+                if (loadingItem) {
+                    loadingItem.remove();
                 }
+                
+                updateChatHistorySidebar(); // Still update to remove loading
+                
+                // Update the chat title display even on error
+                updateChatTitleDisplay();
+            }
         }
         
         function updateChatHistorySidebar() {
@@ -3874,7 +3874,7 @@ Error: ${error.message}
                 }
                 
                 // Use authenticated request instead of passing email manually
-                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat/save-message', {
+                const response = await window.authService.authenticatedRequest(window.appConfig.getApiUrl('chat/save-message'), {
                     method: 'POST',
                     body: JSON.stringify({
                         chat_id: currentChatId,
@@ -3913,7 +3913,7 @@ Error: ${error.message}
                 };
                 
                 // Use authenticated request instead of passing email manually
-                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat/create-new-chat', {
+                const response = await window.authService.authenticatedRequest(window.appConfig.getApiUrl('chat/create-new-chat'), {
                     method: 'POST',
                     body: JSON.stringify({
                         initial_message: initialMessage,
@@ -4018,7 +4018,7 @@ Error: ${error.message}
         async function updateChatTitle(chatId, newTitle) {
             try {
                 // Use authenticated request instead of passing email manually
-                const response = await window.authService.authenticatedRequest('http://127.0.0.1:5000/chat/update-title', {
+                const response = await window.authService.authenticatedRequest(window.appConfig.getApiUrl('chat/update-title'), {
                     method: 'PUT',
                     body: JSON.stringify({
                         chat_id: chatId,
@@ -4450,7 +4450,7 @@ Error: ${error.message}
             
             try {
                 // Get Stripe publishable key from backend
-                const response = await fetch('http://127.0.0.1:5000/donate/config');
+                const response = await fetch(window.appConfig.getApiUrl('donate/config'));
                 if (!response.ok) {
                     throw new Error('Failed to get Stripe configuration');
                 }
@@ -4627,7 +4627,7 @@ Error: ${error.message}
             
             try {
                 // Create payment intent on the server
-                const response = await fetch('http://127.0.0.1:5000/donate/create-payment-intent', {
+                const response = await fetch(window.appConfig.getApiUrl('donate/create-payment-intent'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

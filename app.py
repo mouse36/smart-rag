@@ -66,7 +66,9 @@ try:
     else:
         logger.info("API calls disabled - AI/ML components not initialized")
 except Exception as e:
-    logger.warning(f"Failed to initialize AI/ML components: {e}")
+    logger.error(f"Failed to initialize AI/ML components: {e}")
+    import traceback
+    logger.error(f"Full traceback: {traceback.format_exc()}")
     logger.info("Continuing without AI/ML functionality")
     vector_engine = None
     deepseek_client = None
@@ -228,6 +230,14 @@ def chat():
                 'timestamp': datetime.now().isoformat()
             }), 200
         
+        # Check if AI components are available
+        if vector_engine is None or deepseek_client is None:
+            return jsonify({
+                'response': 'AI components are not available. Please check the backend configuration.',
+                'context_sources': 0,
+                'timestamp': datetime.now().isoformat()
+            }), 503
+        
         # Retrieve relevant context from knowledge base
         relevant_passages = vector_engine.search(user_message, top_k=7)
         
@@ -273,6 +283,16 @@ def search_knowledge_base():
                 'message': 'API calls are currently disabled. Search functionality is not available.',
                 'timestamp': datetime.now().isoformat()
             }), 200
+        
+        # Check if AI components are available
+        if vector_engine is None:
+            return jsonify({
+                'query': query,
+                'results': [],
+                'count': 0,
+                'message': 'AI components are not available. Please check the backend configuration.',
+                'timestamp': datetime.now().isoformat()
+            }), 503
         
         results = vector_engine.search(query, top_k=top_k)
         

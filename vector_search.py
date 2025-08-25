@@ -38,12 +38,27 @@ class VectorSearchEngine:
     def initialize(self):
         """Initialize the vector search engine"""
         try:
+            logger.info(f"Starting vector search engine initialization...")
+            logger.info(f"Model: {self.config.EMBEDDINGS_MODEL}")
+            logger.info(f"Knowledge base path: {self.config.KNOWLEDGE_BASE_PATH}")
+            logger.info(f"Cache path: {self.config.EMBEDDINGS_CACHE_PATH}")
+            
+            # Check if knowledge base exists
+            if not os.path.exists(self.config.KNOWLEDGE_BASE_PATH):
+                raise FileNotFoundError(f"Knowledge base path not found: {self.config.KNOWLEDGE_BASE_PATH}")
+            
             logger.info("Loading sentence transformer model...")
-            self.model = SentenceTransformer(self.config.EMBEDDINGS_MODEL)
+            try:
+                self.model = SentenceTransformer(self.config.EMBEDDINGS_MODEL)
+                logger.info(f"Successfully loaded model: {self.config.EMBEDDINGS_MODEL}")
+            except Exception as e:
+                logger.error(f"Failed to load sentence transformer model: {str(e)}")
+                raise RuntimeError(f"Model loading failed: {str(e)}")
             
             # Try to load cached embeddings and index
+            logger.info("Attempting to load cached data...")
             if self._load_cached_data():
-                logger.info("Loaded cached embeddings and index")
+                logger.info("Successfully loaded cached embeddings and index")
             else:
                 logger.info("No cached data found. Processing knowledge base...")
                 self._process_knowledge_base()
@@ -54,6 +69,8 @@ class VectorSearchEngine:
             
         except Exception as e:
             logger.error(f"Failed to initialize vector search engine: {str(e)}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             raise
     
     def is_ready(self) -> bool:
@@ -129,21 +146,39 @@ class VectorSearchEngine:
         
         # Generate embeddings
         logger.info(f"Generating embeddings for {len(all_texts)} chunks...")
-        self.embeddings = self.model.encode(all_texts, show_progress_bar=True)
+        logger.info(f"Total text length: {sum(len(text) for text in all_texts)} characters")
+        try:
+            self.embeddings = self.model.encode(all_texts, show_progress_bar=True)
+            logger.info(f"Successfully generated embeddings of shape: {self.embeddings.shape}")
+        except Exception as e:
+            logger.error(f"Failed to generate embeddings: {str(e)}")
+            raise RuntimeError(f"Embedding generation failed: {str(e)}")
         
         # Create scikit-learn NearestNeighbors index
         logger.info("Creating scikit-learn NearestNeighbors index...")
         
         # Normalize embeddings for cosine similarity
-        self.embeddings_normalized = normalize(self.embeddings)
+        logger.info("Normalizing embeddings for cosine similarity...")
+        try:
+            self.embeddings_normalized = normalize(self.embeddings)
+            logger.info(f"Normalized embeddings shape: {self.embeddings_normalized.shape}")
+        except Exception as e:
+            logger.error(f"Failed to normalize embeddings: {str(e)}")
+            raise RuntimeError(f"Embedding normalization failed: {str(e)}")
         
         # Use NearestNeighbors with cosine metric
-        self.nearest_neighbors = NearestNeighbors(
-            n_neighbors=min(10, len(self.embeddings_normalized)),  # Default to 10, will be overridden in search
-            metric='cosine',
-            algorithm='brute'  # Brute force for cosine similarity
-        )
-        self.nearest_neighbors.fit(self.embeddings_normalized)
+        logger.info("Creating NearestNeighbors index...")
+        try:
+            self.nearest_neighbors = NearestNeighbors(
+                n_neighbors=min(10, len(self.embeddings_normalized)),  # Default to 10, will be overridden in search
+                metric='cosine',
+                algorithm='brute'  # Brute force for cosine similarity
+            )
+            self.nearest_neighbors.fit(self.embeddings_normalized)
+            logger.info("Successfully created and fitted NearestNeighbors index")
+        except Exception as e:
+            logger.error(f"Failed to create NearestNeighbors index: {str(e)}")
+            raise RuntimeError(f"Index creation failed: {str(e)}")
         
         logger.info(f"Successfully processed {len(self.chunks)} chunks from {len([f for f in os.listdir(knowledge_base_path) if f.endswith('.txt')])} files")
     
@@ -249,25 +284,47 @@ class VectorSearchEngine:
     def _load_cached_data(self) -> bool:
         """Load cached embeddings and index"""
         try:
-            if (os.path.exists(self.config.EMBEDDINGS_CACHE_PATH) and 
-                os.path.exists(self.config.INDEX_CACHE_PATH)):
+            logger.info(f"Checking for cached data...")
+            logger.info(f"Embeddings cache path: {self.config.EMBEDDINGS_CACHE_PATH}")
+            logger.info(f"Index cache path: {self.config.INDEX_CACHE_PATH}")
+            
+            embeddings_exists = os.path.exists(self.config.EMBEDDINGS_CACHE_PATH)
+            index_exists = os.path.exists(self.config.INDEX_CACHE_PATH)
+            
+            logger.info(f"Embeddings cache exists: {embeddings_exists}")
+            logger.info(f"Index cache exists: {index_exists}")
+            
+            if embeddings_exists and index_exists:
+                logger.info("Loading embeddings and chunks from cache...")
+                try:
+                    with open(self.config.EMBEDDINGS_CACHE_PATH, 'rb') as f:
+                        data = pickle.load(f)
+                        self.chunks = data['chunks']
+                        self.embeddings = data['embeddings']
+                    logger.info(f"Loaded {len(self.chunks)} chunks and embeddings of shape {self.embeddings.shape}")
+                except Exception as e:
+                    logger.error(f"Failed to load embeddings cache: {str(e)}")
+                    raise
                 
-                # Load embeddings and chunks
-                with open(self.config.EMBEDDINGS_CACHE_PATH, 'rb') as f:
-                    data = pickle.load(f)
-                    self.chunks = data['chunks']
-                    self.embeddings = data['embeddings']
-                
-                # Load scikit-learn index
-                with open(self.config.INDEX_CACHE_PATH, 'rb') as f:
-                    self.nearest_neighbors = pickle.load(f)
+                logger.info("Loading scikit-learn index from cache...")
+                try:
+                    with open(self.config.INDEX_CACHE_PATH, 'rb') as f:
+                        self.nearest_neighbors = pickle.load(f)
+                    logger.info("Successfully loaded scikit-learn index")
+                except Exception as e:
+                    logger.error(f"Failed to load index cache: {str(e)}")
+                    raise
                 
                 return True
+            else:
+                logger.info("Cache files not found, will process knowledge base")
+                return False
             
         except Exception as e:
             logger.warning(f"Failed to load cached data: {str(e)}")
-        
-        return False
+            import traceback
+            logger.warning(f"Cache loading traceback: {traceback.format_exc()}")
+            return False
     
     def _save_cached_data(self):
         """Save embeddings and index to cache"""

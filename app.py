@@ -238,6 +238,20 @@ def chat():
                 'timestamp': datetime.now().isoformat()
             }), 503
         
+        # Lazy initialize vector engine if needed
+        if not vector_engine.is_ready():
+            logger.info("Initializing vector search engine on first use...")
+            try:
+                vector_engine.initialize()
+                logger.info("Vector search engine initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize vector search engine: {str(e)}")
+                return jsonify({
+                    'response': 'Failed to initialize AI components. Please try again later.',
+                    'context_sources': 0,
+                    'timestamp': datetime.now().isoformat()
+                }), 503
+        
         # Retrieve relevant context from knowledge base
         relevant_passages = vector_engine.search(user_message, top_k=7)
         
@@ -293,6 +307,22 @@ def search_knowledge_base():
                 'message': 'AI components are not available. Please check the backend configuration.',
                 'timestamp': datetime.now().isoformat()
             }), 503
+        
+        # Lazy initialize vector engine if needed
+        if not vector_engine.is_ready():
+            logger.info("Initializing vector search engine on first use...")
+            try:
+                vector_engine.initialize()
+                logger.info("Vector search engine initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize vector search engine: {str(e)}")
+                return jsonify({
+                    'query': query,
+                    'results': [],
+                    'count': 0,
+                    'message': 'Failed to initialize AI components. Please try again later.',
+                    'timestamp': datetime.now().isoformat()
+                }), 503
         
         results = vector_engine.search(query, top_k=top_k)
         

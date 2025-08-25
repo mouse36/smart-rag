@@ -2175,6 +2175,9 @@
     
     <!-- Authentication Service -->
     <script src="js/auth-service.js"></script>
+    
+    <!-- Components -->
+    <script src="js/components.js"></script>
 
     <script>
         // Global state
@@ -3661,6 +3664,12 @@ Error: ${error.message}
         async function loadChatHistory() {
             if (hasLoadedChatHistory) return; // Prevent multiple loads
             
+            // Ensure we have the required dependencies
+            if (!window.appConfig || !window.authService) {
+                console.error('Required dependencies not available for loadChatHistory');
+                return;
+            }
+            
             try {
                 // Try to get user data from JWT first, fall back to localStorage
                 const userData = window.authService ? window.authService.getUserData() : null;
@@ -3698,7 +3707,7 @@ Error: ${error.message}
                     hasLoadedChatHistory = true;
                     
                     // Remove loading placeholder immediately when data is received
-                    if (loadingItem) {
+                    if (typeof loadingItem !== 'undefined' && loadingItem) {
                         loadingItem.remove();
                     }
                     
@@ -3712,7 +3721,7 @@ Error: ${error.message}
                     localChatHistory = [];
                     
                     // Remove loading placeholder immediately on error
-                    if (loadingItem) {
+                    if (typeof loadingItem !== 'undefined' && loadingItem) {
                         loadingItem.remove();
                     }
                     
@@ -3727,7 +3736,7 @@ Error: ${error.message}
                 localChatHistory = [];
                 
                 // Remove loading placeholder immediately on error
-                if (loadingItem) {
+                if (typeof loadingItem !== 'undefined' && loadingItem) {
                     loadingItem.remove();
                 }
                 

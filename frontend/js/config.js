@@ -5,9 +5,9 @@
 
 class Config {
     constructor() {
-        // Environment detection
+        // Environment detection - check if we're on a production domain
         this.isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        this.isProduction = !this.isDevelopment;
+        this.isProduction = !this.isDevelopment || window.location.hostname === 'ai.sunnyminded.com';
         
         // API Configuration
         this.apiConfig = this.getApiConfig();

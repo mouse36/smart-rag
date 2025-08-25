@@ -53,7 +53,8 @@ if config.API_CALLS_ENABLED:
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend integration
+# Configure CORS for frontend integration
+CORS(app, origins=['https://ai.sunnyminded.com', 'http://localhost:3000', 'http://127.0.0.1:5000'])
 
 # Initialize components
 jsonbin_client = JSONBinClient(config)
@@ -124,18 +125,24 @@ def require_auth(f):
         auth_header = request.headers.get('Authorization')
         
         if not auth_header:
+            logger.warning("No Authorization header provided")
             return jsonify({'error': 'Authorization header required'}), 401
         
         try:
             # Extract token from "Bearer <token>" format
             token = auth_header.split(' ')[1]
+            logger.info(f"Token extracted: {token[:20]}...")
         except IndexError:
+            logger.warning("Invalid authorization header format")
             return jsonify({'error': 'Invalid authorization header format'}), 401
         
         # Verify token
         payload = verify_jwt_token(token)
         if not payload:
+            logger.warning("Token verification failed")
             return jsonify({'error': 'Invalid or expired token'}), 401
+        
+        logger.info(f"Token verified for user: {payload.get('email', 'unknown')}")
         
         # Add user info to request context
         request.user = payload
@@ -147,6 +154,28 @@ def require_auth(f):
 def health_check():
     """Health check endpoint to verify backend status"""
     try:
+        # Safely check component readiness
+        vector_ready = False
+        deepseek_ready = False
+        jsonbin_ready = False
+        
+        try:
+            if vector_engine:
+                vector_ready = vector_engine.is_ready()
+        except Exception as e:
+            logger.warning(f"Vector engine readiness check failed: {str(e)}")
+        
+        try:
+            if deepseek_client:
+                deepseek_ready = deepseek_client.is_ready()
+        except Exception as e:
+            logger.warning(f"DeepSeek client readiness check failed: {str(e)}")
+        
+        try:
+            jsonbin_ready = jsonbin_client.is_ready()
+        except Exception as e:
+            logger.warning(f"JSONBin client readiness check failed: {str(e)}")
+        
         return jsonify({
             'status': 'healthy',
             'timestamp': datetime.now().isoformat(),
@@ -155,9 +184,9 @@ def health_check():
                 'mode': 'live_api' if config.API_CALLS_ENABLED else 'placeholder'
             },
             'components': {
-                'vector_engine': vector_engine.is_ready() if vector_engine else False,
-                'deepseek_client': deepseek_client.is_ready() if deepseek_client else False,
-                'jsonbin_client': jsonbin_client.is_ready(),
+                'vector_engine': vector_ready,
+                'deepseek_client': deepseek_ready,
+                'jsonbin_client': jsonbin_ready,
                 'stripe_configured': config.is_stripe_configured()
             }
         }), 200
@@ -174,6 +203,10 @@ def health_check():
 def chat():
     """Main chat endpoint for processing user messages - requires authentication"""
     try:
+        # Debug: Log authentication info
+        logger.info(f"Chat endpoint called by user: {request.user.get('email', 'unknown')}")
+        logger.info(f"Request headers: {dict(request.headers)}")
+        logger.info(f"Request data: {request.get_data()}")
         # Parse request data
         data = request.get_json()
         if not data or 'message' not in data:
@@ -191,14 +224,59 @@ def chat():
                 'timestamp': datetime.now().isoformat()
             }), 200
         
+        # Check if AI components are available
+        if vector_engine is None or deepseek_client is None:
+            return jsonify({
+                'response': 'AI components are not available. Please check the backend configuration.',
+                'context_sources': 0,
+                'timestamp': datetime.now().isoformat()
+            }), 503
+        
+        # Check if DeepSeek API key is configured
+        if not config.DEEPSEEK_API_KEY:
+            return jsonify({
+                'response': 'DeepSeek API key is not configured. Please set the DEEPSEEK_API_KEY environment variable.',
+                'context_sources': 0,
+                'timestamp': datetime.now().isoformat()
+            }), 503
+        
+        # Initialize vector engine if using lazy loading
+        if not vector_engine.is_ready():
+            logger.info("Initializing vector engine (lazy loading)...")
+            try:
+                vector_engine.initialize()
+            except Exception as e:
+                logger.error(f"Failed to initialize vector engine: {str(e)}")
+                return jsonify({
+                    'response': f'Failed to initialize AI components: {str(e)}',
+                    'context_sources': 0,
+                    'timestamp': datetime.now().isoformat()
+                }), 503
+        
         # Retrieve relevant context from knowledge base
-        relevant_passages = vector_engine.search(user_message, top_k=7)
+        try:
+            relevant_passages = vector_engine.search(user_message, top_k=7)
+        except Exception as e:
+            logger.error(f"Failed to search knowledge base: {str(e)}")
+            return jsonify({
+                'response': f'Failed to search knowledge base: {str(e)}',
+                'context_sources': 0,
+                'timestamp': datetime.now().isoformat()
+            }), 503
         
         # Generate response using DeepSeek API
-        response = deepseek_client.generate_response(
-            user_message=user_message,
-            context_passages=relevant_passages
-        )
+        try:
+            response = deepseek_client.generate_response(
+                user_message=user_message,
+                context_passages=relevant_passages
+            )
+        except Exception as e:
+            logger.error(f"Failed to generate response: {str(e)}")
+            return jsonify({
+                'response': f'Failed to generate response: {str(e)}',
+                'context_sources': len(relevant_passages),
+                'timestamp': datetime.now().isoformat()
+            }), 503
         
         # Log the interaction with user info
         user_email = request.user.get('email', 'unknown')
@@ -212,9 +290,77 @@ def chat():
         
     except Exception as e:
         logger.error(f"Error in chat endpoint: {str(e)}")
-        return jsonify({'error': 'Failed to process message'}), 500
+        logger.error(f"Error details: {type(e).__name__}: {str(e)}")
+        logger.error(f"Vector engine ready: {vector_engine.is_ready() if vector_engine else 'None'}")
+        logger.error(f"DeepSeek client ready: {deepseek_client.is_ready() if deepseek_client else 'None'}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        return jsonify({'error': 'Failed to process message', 'details': str(e)}), 500
 
 
+
+@app.route('/test-components', methods=['GET'])
+def test_components():
+    """Test endpoint to debug component initialization issues"""
+    try:
+        results = {
+            'config': {
+                'api_calls_enabled': config.API_CALLS_ENABLED,
+                'deepseek_api_key_set': bool(config.DEEPSEEK_API_KEY),
+                'embeddings_model': config.EMBEDDINGS_MODEL,
+                'lazy_load_model': config.LAZY_LOAD_MODEL
+            },
+            'components': {
+                'vector_engine_exists': vector_engine is not None,
+                'deepseek_client_exists': deepseek_client is not None
+            }
+        }
+        
+        # Test vector engine if it exists
+        if vector_engine:
+            try:
+                vector_ready = vector_engine.is_ready()
+                results['vector_engine'] = {
+                    'ready': vector_ready,
+                    'model_loaded': vector_engine.model is not None,
+                    'index_loaded': vector_engine.index is not None,
+                    'chunks_count': len(vector_engine.chunks) if hasattr(vector_engine, 'chunks') else 0
+                }
+                
+                # Try to initialize if not ready
+                if not vector_ready:
+                    logger.info("Attempting to initialize vector engine...")
+                    vector_engine.initialize()
+                    results['vector_engine']['initialization_success'] = True
+                    results['vector_engine']['ready_after_init'] = vector_engine.is_ready()
+                
+            except Exception as e:
+                results['vector_engine'] = {
+                    'error': str(e),
+                    'error_type': type(e).__name__
+                }
+        
+        # Test DeepSeek client if it exists
+        if deepseek_client:
+            try:
+                deepseek_ready = deepseek_client.is_ready()
+                results['deepseek_client'] = {
+                    'ready': deepseek_ready,
+                    'api_key_set': bool(deepseek_client.api_key)
+                }
+            except Exception as e:
+                results['deepseek_client'] = {
+                    'error': str(e),
+                    'error_type': type(e).__name__
+                }
+        
+        return jsonify(results), 200
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'error_type': type(e).__name__
+        }), 500
 
 @app.route('/search', methods=['POST'])
 def search_knowledge_base():

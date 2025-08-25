@@ -38,7 +38,12 @@ class VectorSearchEngine:
         """Initialize the vector search engine"""
         try:
             logger.info("Loading sentence transformer model...")
-            self.model = SentenceTransformer(self.config.EMBEDDINGS_MODEL)
+            try:
+                self.model = SentenceTransformer(self.config.EMBEDDINGS_MODEL)
+                logger.info(f"Successfully loaded model: {self.config.EMBEDDINGS_MODEL}")
+            except Exception as e:
+                logger.error(f"Failed to load sentence transformer model: {str(e)}")
+                raise RuntimeError(f"Model loading failed: {str(e)}")
             
             # Try to load cached embeddings and index
             if self._load_cached_data():
@@ -53,6 +58,8 @@ class VectorSearchEngine:
             
         except Exception as e:
             logger.error(f"Failed to initialize vector search engine: {str(e)}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             raise
     
     def is_ready(self) -> bool:

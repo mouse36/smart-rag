@@ -257,6 +257,12 @@ class RailwaySetup {
             this.updateRailwayUrl(storedUrl);
         }
         
+        // Also check if we're on a production domain and update accordingly
+        if (this.config.isProduction && !storedUrl) {
+            // If we're on production but no stored URL, use the default Railway URL
+            this.updateRailwayUrl('https://sunnymentor-production.up.railway.app');
+        }
+        
         // Add setup functions to window for easy access
         window.railwaySetup = {
             updateUrl: (url) => this.updateRailwayUrl(url),

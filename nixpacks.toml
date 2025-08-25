@@ -1,24 +1,9 @@
 [phases.setup]
-nixPkgs = [
-  "python311",
-  "python311Packages.pip"
-]
+nixPkgs = ["python311", "python311Packages.pip"]
 
 [phases.build]
 cmds = [
-  "echo '=== RAILWAY BUILD START ==='",
-  "echo 'Starting Railway build process...'",
-  "python --version",
-  "pip --version",
-  "echo 'Installing dependencies...'",
-  "pip install --no-cache-dir -r requirements.txt",
-  "echo 'Dependencies installed successfully'",
-  "echo 'Testing basic imports...'",
-  "python -c 'import flask; print(\"Flask imported successfully\")'",
-  "python -c 'import requests; print(\"Requests imported successfully\")'",
-  "echo 'Basic imports successful'",
-  "echo '=== RAILWAY BUILD END ==='",
-  "echo 'Build completed successfully'"
+  "pip install -r requirements.txt"
 ]
 
 [start]
@@ -26,7 +11,5 @@ cmd = "python run.py"
 
 [variables]
 PYTHONUNBUFFERED = "1"
-PYTHONDONTWRITEBYTECODE = "1"
-CI = "false"
 
 

@@ -181,9 +181,6 @@
         #error-text-container {
             margin-top: 5px;
         }
-            margin-top: 8px;
-            text-align: left;
-        }
 
         .verification-message {
             background: #e6f3ff;
@@ -247,18 +244,7 @@
     </style>
 </head>
 <body>
-    <!-- Error Banner Container -->
-    <div id="error-banner-container">
-        <div class="error-banner" id="signup-error-banner">
-            <div class="banner-content">
-                <div class="banner-icon">⚠️</div>
-                <div class="banner-text" data-en="Error: Something went wrong. Please try again or contact support if the problem persists." data-zh="错误：出现了一些问题。请重试，如果问题持续存在请联系支持。">
-                    <strong data-en="Error:" data-zh="错误：">Error:</strong> <span data-en="Something went wrong. Please try again or contact support if the problem persists." data-zh="出现了一些问题。请重试，如果问题持续存在请联系支持。">Something went wrong. Please try again or contact support if the problem persists.</span>
-                </div>
-            </div>
-            <button class="banner-close" onclick="closeErrorBannerFromButton(this)" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
-        </div>
-    </div>
+
 
     <!-- Navigation -->
     <nav class="navbar">
@@ -301,9 +287,7 @@
                         <div class="form-group">
                             <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" data-placeholder-en="Enter your phone number" data-placeholder-zh="请输入您的手机号码" required>
                             <div id="phone-error-container">
-                                <div class="error-text" id="phone-error-text">
-                                    <div class="error-list"></div>
-                                </div>
+                                
                             </div>
                         </div>
                         
@@ -324,18 +308,14 @@
                         <div class="form-group">
                             <input type="email" id="email" class="form-input" placeholder="Enter your email address" data-placeholder-en="Enter your email address" data-placeholder-zh="请输入您的邮箱地址" required>
                             <div id="email-error-container">
-                                <div class="error-text" id="email-error-text">
-                                    <div class="error-list"></div>
-                                </div>
+                                
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <input type="password" id="password" class="form-input" placeholder="Enter a password" data-placeholder-en="Enter a password" data-placeholder-zh="请输入您的密码" required>
                             <div id="password-error-container">
-                                <div class="error-text" id="password-error-text">
-                                    <div class="error-list"></div>
-                                </div>
+                                
                             </div>
                         </div>
                         
@@ -362,9 +342,7 @@
                         <div class="form-group">
                             <input type="text" id="verification-code" class="form-input" placeholder="Enter 6-digit code" data-placeholder-en="Enter 6-digit code" data-placeholder-zh="请输入6位验证码" maxlength="6" pattern="[0-9]{6}" required>
                             <div id="verification-error-container">
-                                <div class="error-text" id="verification-error-text">
-                                    <div class="error-list"></div>
-                                </div>
+                                
                             </div>
                         </div>
                         
@@ -480,27 +458,18 @@
 
         // Error banner functions
         function showErrorBanner(message = null) {
-            if (typeof window.showErrorBanner === 'function') {
-                window.showErrorBanner(message, 'error-banner-container');
-            } else {
-                console.warn('Error banner component not loaded');
-            }
+            // Error banners disabled - no-op function
+            return;
         }
 
         function closeErrorBanner() {
-            if (typeof window.closeErrorBanner === 'function') {
-                window.closeErrorBanner('error-banner-container');
-            } else {
-                console.warn('Error banner component not loaded');
-            }
+            // Error banners disabled - no-op function
+            return;
         }
 
         function shouldShowErrorBanner() {
-            if (typeof window.shouldShowErrorBanner === 'function') {
-                return window.shouldShowErrorBanner('error-banner-container');
-            } else {
-                return true; // Default to showing if component not loaded
-            }
+            // Error banners disabled - always return false
+            return false;
         }
 
         // Check if an error indicates the backend server is not running
@@ -531,29 +500,13 @@
 
         // Error display functions
         function showError(elementId, message) {
-            const containerId = elementId + '-container';
-            if (typeof window.showErrorText === 'function') {
-                window.showErrorText(containerId, message);
-            } else {
-                // Fallback: set text content directly
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.textContent = message;
-                }
-            }
+            // Error text disabled - no-op function
+            return;
         }
 
         function clearErrors() {
-            // Clear error text components
-            const errorContainers = document.querySelectorAll('[id$="-error-container"]');
-            errorContainers.forEach(container => {
-                if (typeof window.clearErrorText === 'function') {
-                    window.clearErrorText(container.id);
-                } else {
-                    // Fallback: clear the container content
-                    container.innerHTML = '';
-                }
-            });
+            // Error text disabled - no-op function
+            return;
         }
 
         // Phone number utilities
@@ -971,37 +924,13 @@
 
             // Error Banner Functions - Embedded directly
             function showErrorBanner(message = null, containerId = null) {
-                let banner;
-                if (containerId) {
-                    const container = document.getElementById(containerId);
-                    banner = container ? container.querySelector('.error-banner') : null;
-                } else {
-                    banner = document.querySelector('.error-banner');
-                }
-                
-                if (banner) {
-                    if (message) {
-                        const bannerText = banner.querySelector('.banner-text');
-                        if (bannerText) {
-                            bannerText.innerHTML = `<strong data-en="Error:" data-zh="错误：">Error:</strong> <span>${message}</span>`;
-                        }
-                    }
-                    banner.style.display = 'flex';
-                }
+                // Error banners disabled - no-op function
+                return;
             }
 
             function closeErrorBanner(containerId = null) {
-                let banner;
-                if (containerId) {
-                    const container = document.getElementById(containerId);
-                    banner = container ? container.querySelector('.error-banner') : null;
-                } else {
-                    banner = document.querySelector('.error-banner');
-                }
-                
-                if (banner) {
-                    banner.style.display = 'none';
-                }
+                // Error banners disabled - no-op function
+                return;
             }
 
             function closeErrorBannerFromButton(button) {
@@ -1012,73 +941,24 @@
             }
 
             function shouldShowErrorBanner(containerId = null) {
-                let banner;
-                if (containerId) {
-                    const container = document.getElementById(containerId);
-                    banner = container ? container.querySelector('.error-banner') : null;
-                } else {
-                    banner = document.querySelector('.error-banner');
-                }
-                
-                return banner && banner.style.display !== 'none';
+                // Error banners disabled - always return false
+                return false;
             }
 
             // Error Text Functions - Embedded directly
             function showErrorText(containerId, errors) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                
-                const errorText = container.querySelector('.error-text');
-                if (!errorText) return;
-                
-                const errorList = errorText.querySelector('.error-list');
-                if (!errorList) return;
-                
-                // Clear existing errors
-                errorList.innerHTML = '';
-                
-                // Convert single error to array
-                const errorArray = Array.isArray(errors) ? errors : [errors];
-                
-                // Add each error
-                errorArray.forEach(error => {
-                    if (error && error.trim()) {
-                        const errorItem = document.createElement('div');
-                        errorItem.className = 'error-item';
-                        errorItem.innerHTML = `
-                            <div class="error-item-icon">⚠️</div>
-                            <div class="error-item-text">${error}</div>
-                        `;
-                        errorList.appendChild(errorItem);
-                    }
-                });
-                
-                // Show the error text
-                errorText.style.display = 'block';
+                // Error text disabled - no-op function
+                return;
             }
 
             function clearErrorText(containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                
-                const errorText = container.querySelector('.error-text');
-                if (errorText) {
-                    errorText.style.display = 'none';
-                    const errorList = errorText.querySelector('.error-list');
-                    if (errorList) {
-                        errorList.innerHTML = '';
-                    }
-                }
+                // Error text disabled - no-op function
+                return;
             }
 
             function hideErrorText(containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                
-                const errorText = container.querySelector('.error-text');
-                if (errorText) {
-                    errorText.style.display = 'none';
-                }
+                // Error text disabled - no-op function
+                return;
             }
 
             // Make functions globally available

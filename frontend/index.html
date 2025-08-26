@@ -1772,17 +1772,7 @@
         <div class="navbar-container"></div>
 
         <!-- Error Banner Container for Login -->
-        <div id="error-banner-container">
-            <div class="error-banner" id="login-error-banner">
-                <div class="banner-content">
-                    <div class="banner-icon">⚠️</div>
-                    <div class="banner-text" data-en="Error: Something went wrong. Please try again or contact support if the problem persists." data-zh="错误：出现了一些问题。请重试，如果问题持续存在请联系支持。">
-                        <strong data-en="Error:" data-zh="错误：">Error:</strong> <span data-en="Something went wrong. Please try again or contact support if the problem persists." data-zh="出现了一些问题。请重试，如果问题持续存在请联系支持。">Something went wrong. Please try again or contact support if the problem persists.</span>
-                    </div>
-                </div>
-                <button class="banner-close" onclick="closeErrorBannerFromButton(this)" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
-            </div>
-        </div>
+
 
         <div class="login-page">
             <div class="login-form">
@@ -1794,9 +1784,7 @@
                         <div class="form-group">
                             <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" data-placeholder-en="Enter your phone number" data-placeholder-zh="请输入您的手机号码" required>
                             <div id="phone-error-container">
-                                <div class="error-text" id="phone-error-text">
-                                    <div class="error-list"></div>
-                                </div>
+                                
                             </div>
                         </div>
                         
@@ -1817,18 +1805,14 @@
                         <div class="form-group">
                             <input type="text" id="username" class="form-input" placeholder="Enter your username" data-placeholder-en="Enter your username" data-placeholder-zh="请输入您的用户名" required>
                             <div id="username-error-container">
-                                <div class="error-text" id="username-error-text">
-                                    <div class="error-list"></div>
-                                </div>
+                                
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <input type="password" id="password" class="form-input" placeholder="Enter your password" data-placeholder-en="Enter your password" data-placeholder-zh="请输入您的密码" required>
                             <div id="password-error-container">
-                                <div class="error-text" id="password-error-text">
-                                    <div class="error-list"></div>
-                                </div>
+                                
                             </div>
                         </div>
                         
@@ -1855,9 +1839,7 @@
                         <div class="form-group">
                             <input type="text" id="verification-code" class="form-input" placeholder="Enter 6-digit code" data-placeholder-en="Enter 6-digit code" data-placeholder-zh="请输入6位验证码" maxlength="6" pattern="[0-9]{6}" required>
                             <div id="verification-error-container">
-                                <div class="error-text" id="verification-error-text">
-                                    <div class="error-list"></div>
-                                </div>
+                                
                             </div>
                         </div>
                         
@@ -1957,18 +1939,7 @@
                     </div>
                 </div>
                 
-                <!-- Error Banner Container for Chat -->
-                <div id="chat-error-banner-container">
-                    <div class="error-banner" id="chat-error-banner">
-                        <div class="banner-content">
-                            <div class="banner-icon">⚠️</div>
-                            <div class="banner-text" data-en="Error: Something went wrong. Please try again or contact support if the problem persists." data-zh="错误：出现了一些问题。请重试，如果问题持续存在请联系支持。">
-                                <strong data-en="Error:" data-zh="错误：">Error:</strong> <span data-en="Something went wrong. Please try again or contact support if the problem persists." data-zh="出现了一些问题。请重试，如果问题持续存在请联系支持。">Something went wrong. Please try again or contact support if the problem persists.</span>
-                            </div>
-                        </div>
-                        <button class="banner-close" onclick="closeErrorBannerFromButton(this)" title="Close banner" data-title-en="Close banner" data-title-zh="关闭横幅">&times;</button>
-                    </div>
-                </div>
+
 
                 <!-- API Mode Banner -->
                 <div class="api-mode-banner" id="api-mode-banner">
@@ -2493,7 +2464,19 @@
             // Initialize with welcome message if no messages exist and start a new chat
             const messagesArea = document.getElementById('messages');
             if (messagesArea && messagesArea.children.length === 0) {
+                // Start a new chat immediately and ensure title is set correctly
                 startNewChat(); // This will show the welcome message and set currentChatId to 0
+                
+                // Force update the chat title display to ensure it shows "New Chat"
+                updateChatTitleDisplay();
+                
+                // Double-check that we have the welcome message
+                setTimeout(() => {
+                    if (messagesArea.children.length === 0) {
+                        console.log('No messages found after startNewChat, adding welcome message');
+                        addMessage(getTranslation('welcomeMessage'), 'assistant');
+                    }
+                }, 100);
                 
                 // Check backend health
                 await checkBackendHealth();
@@ -2502,7 +2485,7 @@
             // Start periodic health monitoring when entering chat
             startBackendHealthMonitoring();
             
-            // Update the chat title display
+            // Final update of the chat title display
             updateChatTitleDisplay();
         }
         
@@ -2553,47 +2536,13 @@
         }
         
         function showBackendWarning(message) {
-            const messagesArea = document.getElementById('messages');
-            if (!messagesArea) return;
-            
-            // Check if a backend warning already exists and remove it to prevent stacking
-            const existingWarning = messagesArea.querySelector('.backend-warning');
-            if (existingWarning) {
-                existingWarning.remove();
-            }
-            
-            const warningDiv = document.createElement('div');
-            warningDiv.className = 'backend-warning'; // Add class for identification
-            warningDiv.style.cssText = `
-                background: rgba(255, 193, 7, 0.2);
-                border: 1px solid rgba(255, 193, 7, 0.5);
-                color: #856404;
-                padding: 12px;
-                margin: 10px 0;
-                border-radius: 8px;
-                font-size: 14px;
-                text-align: center;
-            `;
-            warningDiv.innerHTML = `⚠️ ${message}`;
-            
-            messagesArea.appendChild(warningDiv);
-            messagesArea.scrollTop = messagesArea.scrollHeight;
-            
-            // Remove warning after 10 seconds
-            setTimeout(() => {
-                if (warningDiv.parentNode) {
-                    warningDiv.remove();
-                }
-            }, 10000);
+            // Backend warnings disabled - no-op function
+            return;
         }
         
         function clearBackendWarnings() {
-            const messagesArea = document.getElementById('messages');
-            if (!messagesArea) return;
-            
-            // Remove all existing backend warnings
-            const warnings = messagesArea.querySelectorAll('.backend-warning');
-            warnings.forEach(warning => warning.remove());
+            // Backend warnings disabled - no-op function
+            return;
         }
         
         async function showSettings() {
@@ -3830,6 +3779,11 @@ Error: ${error.message}
         function startNewChat() {
             currentChatId = 0; // Set to new chat mode
             
+            // Ensure language is initialized before getting translations
+            if (window.languageManager) {
+                window.languageManager.initializeLanguage();
+            }
+            
             const messagesArea = document.getElementById('messages');
             if (messagesArea) {
                 messagesArea.innerHTML = '';
@@ -3844,7 +3798,13 @@ Error: ${error.message}
                 newChatButton.classList.add('active');
             }
             
-            // Update the chat title display in the header
+            // Immediately update the chat title display to ensure it shows "New Chat"
+            const titleDisplay = document.getElementById('chat-title-display');
+            if (titleDisplay) {
+                titleDisplay.textContent = getTranslation('newChatTitle') || 'New Chat';
+            }
+            
+            // Also call the update function for consistency
             updateChatTitleDisplay();
         }
         
@@ -4065,11 +4025,16 @@ Error: ${error.message}
         // Function to update the chat title display in the header
         function updateChatTitleDisplay() {
             const titleDisplay = document.getElementById('chat-title-display');
-            if (!titleDisplay) return;
+            if (!titleDisplay) {
+                console.warn('Chat title display element not found');
+                return;
+            }
             
             if (currentChatId === 0) {
                 // New chat - show default text
-                titleDisplay.textContent = getTranslation('newChatTitle') || 'New Chat';
+                const newChatTitle = getTranslation('newChatTitle') || 'New Chat';
+                titleDisplay.textContent = newChatTitle;
+                console.log('Updated chat title to:', newChatTitle);
             } else if (currentChatId > 0 && localChatHistory.length > 0) {
                 // Existing chat - show the chat title
                 const chatIndex = currentChatId - 1;
@@ -4080,8 +4045,12 @@ Error: ${error.message}
                     titleDisplay.textContent = `Chat ${currentChatId}`;
                 }
             } else {
-                // Fallback
-                titleDisplay.textContent = '';
+                // Fallback - ensure we don't show "Loading..." for new chats
+                if (currentChatId === 0) {
+                    titleDisplay.textContent = getTranslation('newChatTitle') || 'New Chat';
+                } else {
+                    titleDisplay.textContent = '';
+                }
             }
         }
         
@@ -4164,24 +4133,19 @@ Error: ${error.message}
 
         // Error Banner Functions - Now using embedded functions
         function hideErrorBanner(containerId = null) {
-            closeErrorBanner(containerId);
+            // Error banners disabled - no-op function
+            return;
         }
 
         function closeErrorBanner(containerId = null) {
-            // Use the embedded closeErrorBanner function
-            const banner = containerId ? 
-                document.getElementById(containerId)?.querySelector('.error-banner') : 
-                document.querySelector('.error-banner');
-            if (banner) {
-                banner.classList.remove('show');
-            }
-            // Store in sessionStorage to remember user preference for this session
-            sessionStorage.setItem('error-banner-dismissed', 'true');
+            // Error banners disabled - no-op function
+            return;
         }
 
         // Check if error banner was previously dismissed in this session
         function shouldShowErrorBanner(containerId = null) {
-            return sessionStorage.getItem('error-banner-dismissed') !== 'true';
+            // Error banners disabled - always return false
+            return false;
         }
 
         // Check if an error indicates the backend server is not running
@@ -4218,47 +4182,18 @@ Error: ${error.message}
 
         // Error Banner Functions - Embedded directly
         function showErrorBanner(message = null, containerId = null) {
-            let banner;
-            if (containerId) {
-                const container = document.getElementById(containerId);
-                banner = container ? container.querySelector('.error-banner') : null;
-            } else {
-                banner = document.querySelector('.error-banner');
-            }
-            
-            if (banner) {
-                if (message) {
-                    const textElement = banner.querySelector('.banner-text span');
-                    if (textElement) {
-                        textElement.textContent = message;
-                    }
-                }
-                banner.classList.add('show');
-            }
+            // Error banners disabled - no-op function
+            return;
         }
 
         function closeErrorBanner(containerId = null) {
-            let banner;
-            if (containerId) {
-                const container = document.getElementById(containerId);
-                banner = container ? container.querySelector('.error-banner') : null;
-            } else {
-                banner = document.querySelector('.error-banner');
-            }
-            if (banner) {
-                banner.classList.remove('show');
-            }
+            // Error banners disabled - no-op function
+            return;
         }
 
         function shouldShowErrorBanner(containerId = null) {
-            let banner;
-            if (containerId) {
-                const container = document.getElementById(containerId);
-                banner = container ? container.querySelector('.error-banner') : null;
-            } else {
-                banner = document.querySelector('.error-banner');
-            }
-            return banner ? !banner.classList.contains('show') : true;
+            // Error banners disabled - always return false
+            return false;
         }
 
         // Function to close error banner from button click

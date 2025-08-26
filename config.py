@@ -24,7 +24,7 @@ class Config:
         # DeepSeek API settings
         self.DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
         self.DEEPSEEK_BASE_URL = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
-        self.DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat')
+        self.DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'DeepSeek-V3.1')
         
         # Vector search settings
         self.EMBEDDINGS_MODEL = os.getenv('EMBEDDINGS_MODEL', 'all-MiniLM-L6-v2')

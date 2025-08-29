@@ -1198,6 +1198,73 @@
             padding: 8px 12px;
             border-radius: 16px;
             font-size: 14px;
+        }
+
+        /* Streaming message styles */
+        .streaming-message .message-content {
+            position: relative;
+            background: linear-gradient(135deg, #fff8f0 0%, #fff 100%);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        .streaming-message .message-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 18px;
+            padding: 2px;
+            background: linear-gradient(45deg, #ff8900, #ffdf38, #ff8900);
+            background-size: 200% 200%;
+            animation: gradient-flow 2s ease-in-out infinite;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+        }
+
+        @keyframes gradient-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .streaming-text {
+            position: relative;
+            min-height: 20px;
+        }
+
+        .streaming-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: linear-gradient(45deg, #ff8900, #ffdf38);
+            animation: cursor-blink 1s infinite;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes cursor-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .streaming-logo {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            animation: logo-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes logo-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .recommendation {
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -2045,13 +2112,13 @@
                                 // Get user data from authentication service
                                 var userData = window.authService ? window.authService.getUserData() : null;
                                 var currentUser = userData ? (userData.username || userData.email) : '';
-                                var currentUserProfilePic = userData ? (userData.profile_picture || 'default') : 'default';
+                                var currentUserProfilePic = userData ? (userData.profile_picture || 'default.svg') : 'default.svg';
                                 
                                 document.getElementById('current-user-display').textContent = currentUser;
                                 
                                 // Update profile picture
                                 var profilePicContainer = document.getElementById('profile-pic-container');
-                                if (currentUserProfilePic === 'default') {
+                                if (currentUserProfilePic === 'default.svg') {
                                     // Use the default profile picture svg
                                     profilePicContainer.innerHTML = '<img src="graphics/user-icons/default.svg" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
                                 }
@@ -2995,11 +3062,11 @@
                 // For now, let's check if this is the known test user
                 if (currentUsername === 'clukr' || currentPhoneNumber === '+447400000000') {
                     localStorage.setItem('currentUserEmail', 'clukr@sprunki.com');
-                    localStorage.setItem('currentUserProfilePic', 'silver');
+                    localStorage.setItem('currentUserProfilePic', 'silver.png');
                     console.log('DEBUG: Set email for clukr user');
                 } else if (currentUsername === 'Mr. Fun Computer' || currentPhoneNumber === '+447400000001') {
                     localStorage.setItem('currentUserEmail', 'mrfuncomputer@sprunki.com');
-                    localStorage.setItem('currentUserProfilePic', 'default');
+                    localStorage.setItem('currentUserProfilePic', 'default.svg');
                     console.log('DEBUG: Set email for mrfuncomputer user');
                 } else {
                     console.log('DEBUG: Unknown user, no email mapping available');
@@ -3322,7 +3389,7 @@
                                 const displayName = userEmail.split('@')[0];  // Use part before @ as username
                                 localStorage.setItem('currentUser', displayName);  // For display
                                 localStorage.setItem('currentUserEmail', userEmail);  // For API calls
-                                localStorage.setItem('currentUserProfilePic', 'default');
+                                localStorage.setItem('currentUserProfilePic', 'default.svg');
                                 
                                 showSuccessPhase();
                                 hideLoginBackendErrorBanner();
@@ -3376,7 +3443,7 @@
                                 // Store user information: username for display, email for API calls
                                 localStorage.setItem('currentUser', result.username);  // For display
                                 localStorage.setItem('currentUserEmail', result.email);  // For API calls
-                                localStorage.setItem('currentUserProfilePic', result.profile_picture || 'default');
+                                localStorage.setItem('currentUserProfilePic', result.profile_picture || 'default.svg');
                                 
                                 console.log('Stored currentUser:', localStorage.getItem('currentUser'));
                                 console.log('Stored currentUserEmail:', localStorage.getItem('currentUserEmail'));
@@ -3513,8 +3580,29 @@
             showTypingIndicator();
             
             try {
-                // Send message to backend API using authenticated request
-                const response = await window.authService.authenticatedRequest(window.appConfig.getApiUrl('chat'), {
+                // Create streaming message container
+                const messagesArea = document.getElementById('messages');
+                const streamingMessageDiv = document.createElement('div');
+                streamingMessageDiv.className = 'message assistant streaming-message';
+                streamingMessageDiv.innerHTML = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="streaming-text">
+                            <span class="streaming-cursor"></span>
+                        </div>
+                        <div class="streaming-logo">
+                            <img src="graphics/logo.svg" alt="AI" style="width: 16px; height: 16px; opacity: 0.7;">
+                        </div>
+                    </div>
+                `;
+                messagesArea.appendChild(streamingMessageDiv);
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+                
+                // Hide typing indicator since we're showing streaming
+                hideTypingIndicator();
+                
+                // Start streaming request
+                const response = await window.authService.authenticatedRequest(window.appConfig.getApiUrl('chat/stream'), {
                     method: 'POST',
                     body: JSON.stringify({ message: message })
                 });
@@ -3523,25 +3611,73 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const data = await response.json();
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullResponse = '';
+                let contextSources = 0;
                 
-                hideTypingIndicator();
-                
-                if (data.error) {
-                    addMessage(`${getTranslation('errorMessage')} ${data.error}`, 'assistant');
-                    return;
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+                                    
+                                    if (data.content) {
+                                        fullResponse += data.content;
+                                        
+                                        // Update streaming text with gradient animation
+                                        const streamingText = streamingMessageDiv.querySelector('.streaming-text');
+                                        streamingText.innerHTML = marked.parse(fullResponse) + '<span class="streaming-cursor"></span>';
+                                        
+                                        // Scroll to bottom
+                                        messagesArea.scrollTop = messagesArea.scrollHeight;
+                                    }
+                                    
+                                    if (data.done) {
+                                        contextSources = data.context_sources || 0;
+                                        break;
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing SSE data:', e);
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    reader.releaseLock();
                 }
-
-                // Add response with context information
-                let responseText = data.response;
+                
+                // Remove streaming class and add final content
+                streamingMessageDiv.classList.remove('streaming-message');
+                const messageContent = streamingMessageDiv.querySelector('.message-content');
                 
                 // Add context information if available
-                if (data.context_passages_count > 0) {
-                    const contextText = getTranslation('contextInfo').replace('{count}', data.context_passages_count);
-                    responseText += `<div style="font-size: 0.8em; color: rgba(100,100,100,0.7); margin-top: 8px; font-style: italic;">📚 ${contextText}</div>`;
+                if (contextSources > 0) {
+                    const contextText = getTranslation('contextInfo').replace('{count}', contextSources);
+                    fullResponse += `<div style="font-size: 0.8em; color: rgba(100,100,100,0.7); margin-top: 8px; font-style: italic;">📚 ${contextText}</div>`;
                 }
                 
-                addMessage(responseText, 'assistant');
+                // Add timestamp and recommendations
+                const time = new Date().toLocaleTimeString();
+                const recommendations = generateRecommendations(fullResponse);
+                const recommendationsHtml = `
+                    <div class="recommendations">
+                        ${recommendations.map(rec => `<div class="recommendation" onclick="sendRecommendation('${rec.replace(/'/g, "\\'")}')">${rec}</div>`).join('')}
+                    </div>
+                `;
+                
+                messageContent.innerHTML = `
+                    ${marked.parse(fullResponse)}
+                    <div class="message-meta">${time}</div>
+                    ${recommendationsHtml}
+                `;
                 
                 // Handle chat history saving
                 if (currentChatId === 0) {
@@ -3553,17 +3689,17 @@
                     }
                     
                     // This is a new chat, create it with the first message exchange
-                    await createNewChatAfterFirstMessage(message, responseText);
+                    await createNewChatAfterFirstMessage(message, fullResponse);
                     
                     // Restore new chat button text
                     if (newChatButton && originalText) {
                         newChatButton.textContent = originalText;
                     }
                 } else {
-                    // Save assistant message to existing chat (this is usually fast, no loading needed)
+                    // Save assistant message to existing chat
                     const assistantMessage = {
                         from: 'chatbot',
-                        content: responseText
+                        content: fullResponse
                     };
                     await saveMessageToHistory(assistantMessage);
                 }
@@ -3612,10 +3748,10 @@ Error: ${error.message}
             // Set avatar based on type
             let avatar;
             if (type === 'user') {
-                const currentUserProfilePic = localStorage.getItem('currentUserProfilePic') || 'default';
+                const currentUserProfilePic = localStorage.getItem('currentUserProfilePic') || 'default.svg';
                 const currentUser = localStorage.getItem('currentUser') || 'User';
-                if (currentUserProfilePic && currentUserProfilePic !== 'default') {
-                    avatar = `<img src="graphics/user-icons/${currentUserProfilePic}.png" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                if (currentUserProfilePic && currentUserProfilePic !== 'default.svg') {
+                    avatar = `<img src="graphics/user-icons/${currentUserProfilePic}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                 } else {
                     avatar = currentUser.charAt(0).toUpperCase();
                 }

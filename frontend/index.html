@@ -1876,7 +1876,7 @@
         <div class="chat-layout">
             <div class="sidebar">
                 <!-- Black text logo for the chat page -->
-                <span style="font-size: 24px; padding: 8px;">SunnyMentor</span>
+                <span style="font-size: 24px; padding: 8px;" data-en="SunnyMentor" data-zh="阳光教练">SunnyMentor</span>
 
                 <!-- Chat history header -->
                 <div class="sidebar-header" style="margin: 0 0 20px 0; padding: 8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e9ecef;">
@@ -1905,7 +1905,7 @@
                     
                     <!-- Language switcher and user account menu on the right -->
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <div id="language-switcher-container" style="min-width: 60px; min-height: 20px;"></div>
+                        <div id="chat-language-switcher-container" style="min-width: 60px; min-height: 20px;"></div>
                         <div class="user-profile" onclick="toggleProfileMenu()">
                         <div class="profile-pic" id="profile-pic-container">U</div>
                         <span id="current-user-display">User</span>
@@ -2261,26 +2261,30 @@
                             <button class="label" data-en="Contact" data-zh="联系我们">Contact</button>
                             <button class="btn btn-white" onclick="goToLogin()" data-en="Log In" data-zh="登录">Log In</button>
                             <button class="btn btn-primary" onclick="goToSignup()" data-en="Get Full Access" data-zh="获取完整功能">Get Full Access</button>
-                            <div class="language-switcher" onclick="toggleLanguage()" title="Switch Language">
-                                <img src="graphics/language-switcher.svg" alt="Language Switcher" class="globe-icon" />
-                                <span class="language-code">${langCode}</span>
-                            </div>
+                            <div id="landing-language-switcher-container"></div>
                         </div>
                     </div>
                 </nav>`;
         }
         
         // Function to initialize navbar for a page
-        function initializeNavbar(pageId) {
+        async function initializeNavbar(pageId) {
             const pageElement = document.getElementById(pageId);
             if (pageElement) {
                 const navbarContainer = pageElement.querySelector('.navbar-container');
                 if (navbarContainer) {
                     navbarContainer.innerHTML = generateNavbar();
+                    
+                    // Load language switcher component
+                    const langContainer = navbarContainer.querySelector('#landing-language-switcher-container');
+                    if (langContainer) {
+                        await loadComponent('landing-language-switcher-container', 'components/language-switcher.html');
+                    }
+                    
                     // Update language content in the newly created navbar
                     setTimeout(() => {
                         initializeLanguage();
-                    }, 10);
+                    }, 100);
                 }
             }
         }
@@ -2443,10 +2447,10 @@
             }
             
             // Load language switcher component
-            await loadComponent('language-switcher-container', 'components/language-switcher.html');
+            await loadComponent('chat-language-switcher-container', 'components/language-switcher.html');
             
             // Debug: Check if language switcher loaded
-            const langContainer = document.getElementById('language-switcher-container');
+            const langContainer = document.getElementById('chat-language-switcher-container');
             if (langContainer && langContainer.innerHTML.trim() === '') {
                 console.log('Language switcher container is empty, trying fallback...');
                 // Fallback: load the component directly
@@ -4699,7 +4703,7 @@ Error: ${error.message}
             } else {
                 showLanding();
             }
-            initializeLanguage();
+            initializeLanguage(); 
             
             // Auto-resize textarea
             const messageInput = document.getElementById('message-input');

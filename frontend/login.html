@@ -274,10 +274,7 @@
             </div>
             <div class="nav-auth">
                 <button class="btn btn-secondary" onclick="goToSignup()" data-en="Don't have an account? Sign up" data-zh="还没有账户？注册">Don't have an account? Sign up</button>
-                <div class="language-switcher" onclick="toggleLanguage()" title="Switch Language">
-                    <img src="graphics/language-switcher.svg" alt="Language Switcher" class="globe-icon" />
-                    <span class="language-code">EN</span>
-                </div>
+                <div id="login-language-switcher-container"></div>
             </div>
         </div>
     </nav>
@@ -383,6 +380,7 @@
 
     <!-- Configuration -->
     <script src="js/config.js"></script>
+    <script src="js/components.js"></script>
     
     <!-- Authentication Service -->
     <script src="js/auth-service.js"></script>
@@ -403,12 +401,20 @@
             if (window.languageManager) {
                 window.languageManager.toggleLanguage();
                 currentLanguage = window.languageManager.getCurrentLanguage(); // Keep local var in sync
-                document.querySelector('.language-code').textContent = currentLanguage;
+                // Update all language codes on the page
+                const languageCodes = document.querySelectorAll('.language-code');
+                languageCodes.forEach(code => {
+                    code.textContent = currentLanguage;
+                });
                 updateLanguageContent();
             } else {
                 // Fallback
                 currentLanguage = currentLanguage === 'EN' ? 'ZH' : 'EN';
-                document.querySelector('.language-code').textContent = currentLanguage;
+                // Update all language codes on the page
+                const languageCodes = document.querySelectorAll('.language-code');
+                languageCodes.forEach(code => {
+                    code.textContent = currentLanguage;
+                });
                 updateLanguageContent();
             }
         }
@@ -727,10 +733,19 @@
         document.addEventListener('DOMContentLoaded', async function() {
             // Error components are now embedded directly in the HTML
             
+            // Load language switcher component
+            await loadComponent('login-language-switcher-container', 'components/language-switcher.html');
+            
             // Sync with global language manager
             if (window.languageManager) {
                 currentLanguage = window.languageManager.getCurrentLanguage();
-                document.querySelector('.language-code').textContent = currentLanguage;
+                // Update language display after component is loaded
+                setTimeout(() => {
+                    const langCode = document.querySelector('.language-code');
+                    if (langCode) {
+                        langCode.textContent = currentLanguage;
+                    }
+                }, 100);
             }
             updateLanguageContent();
             checkBackendHealth();

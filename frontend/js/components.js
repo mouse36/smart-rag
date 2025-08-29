@@ -118,12 +118,13 @@ async function loadComponent(elementId, componentPath) {
         }
         
         const html = await response.text();
-        console.log('Component HTML loaded, length:', html.length);
+        console.log('Component HTML loaded, length:', html.length, 'Content:', html);
         
         const element = document.getElementById(elementId);
         if (element) {
+            console.log('Found element:', elementId, 'Current innerHTML:', element.innerHTML);
             element.innerHTML = html;
-            console.log('Component loaded successfully into:', elementId);
+            console.log('Component loaded successfully into:', elementId, 'New innerHTML:', element.innerHTML);
             
             // Execute any scripts in the loaded component
             const scripts = element.querySelectorAll('script');
@@ -136,6 +137,10 @@ async function loadComponent(elementId, componentPath) {
             
         } else {
             console.error('Element not found:', elementId);
+            console.log('Available elements with similar IDs:');
+            document.querySelectorAll('[id*="language"]').forEach(el => {
+                console.log('  -', el.id, el.tagName);
+            });
         }
     } catch (error) {
         console.error('Component loading error:', error);

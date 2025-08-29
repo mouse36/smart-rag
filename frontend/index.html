@@ -95,7 +95,7 @@
         }
 
         .language-switcher {
-            display: flex;
+            display: flex !important;
             align-items: center;
             gap: 8px;
             cursor: pointer;
@@ -103,6 +103,8 @@
             border-radius: 8px;
             transition: all 0.3s ease;
             color: #4a5568;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .language-switcher:hover {
@@ -285,10 +287,7 @@
             border-color: rgba(255, 255, 255, 0.5);
         }
 
-        .features {
-            padding: 100px 0;
-            background: white;
-        }
+
 
         .container {
             max-width: 1200px;
@@ -315,63 +314,184 @@
             margin: 0 auto;
         }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 40px;
+
+
+
+
+        /* About Section */
+        .about {
+            background: white;
         }
 
-        .feature-card {
+        .about-intro {
+            background: white;
+            padding: 60px 0 50px;
+        }
+
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .about-text h2 {
+            font-size: 42px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 30px;
+        }
+
+        .about-text p {
+            font-size: 18px;
+            color: #4a5568;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .about-knowledge {
+            background: #f8f9fa;
+            padding: 50px 0;
+        }
+
+        .knowledge-header {
+            text-align: left;
+            margin-bottom: 50px;
+        }
+
+        .knowledge-header h3 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .knowledge-items {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .knowledge-item {
+            margin-bottom: 50px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .knowledge-item.left {
+            justify-content: flex-start;
+        }
+
+        .knowledge-item.right {
+            justify-content: flex-end;
+        }
+
+        .knowledge-card {
             background: white;
             padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-            border: 1px solid #f1f5f9;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            max-width: 500px;
             transition: all 0.3s ease;
-            text-align: center;
         }
 
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 60px rgba(255, 105, 0, 0.15);
+        .knowledge-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(255, 137, 0, 0.15);
             border-color: #ff8900;
         }
 
-        .feature-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 25px;
-            background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: white;
-        }
-
-        .feature-title {
-            font-size: 24px;
+        .knowledge-card h4 {
+            font-size: 22px;
             font-weight: 600;
             color: #2d3748;
             margin-bottom: 15px;
         }
 
-        .feature-description {
+        .knowledge-card p {
             color: #718096;
             line-height: 1.6;
+            font-size: 17px;
+        }
+
+        .knowledge-footer {
+            text-align: left;
+            margin-top: 50px;
+        }
+
+        .knowledge-footer p {
+            font-size: 18px;
+            color: #4a5568;
+            line-height: 1.6;
+            max-width: 700px;
+        }
+
+        .about-conclusion {
+            background: white;
+            padding: 50px 0 70px;
+        }
+
+        .conclusion-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .conclusion-content h3 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 25px;
+        }
+
+        .conclusion-content p {
+            font-size: 18px;
+            color: #4a5568;
+            line-height: 1.7;
+        }
+
+        /* Responsive design for about section */
+        @media (max-width: 768px) {
+            .about-text h2 {
+                font-size: 32px;
+            }
+
+            .knowledge-header h3,
+            .conclusion-content h3 {
+                font-size: 28px;
+            }
+
+            .knowledge-item.left,
+            .knowledge-item.right {
+                justify-content: center;
+            }
+
+            .knowledge-card {
+                max-width: 100%;
+                margin: 0 20px;
+                padding: 30px;
+            }
+
+            .about-content,
+            .conclusion-content {
+                max-width: 100%;
+                padding: 0 20px;
+            }
+
+            .knowledge-items {
+                max-width: 100%;
+                padding: 0 20px;
+            }
         }
 
         /* Login Page */
         .login-page {
             background: linear-gradient(135deg, #ff8900 0%, #ffdf38 100%);
-            height: calc(100vh - 100px); /* Use height instead of min-height to prevent over-scrolling */
+            min-height: calc(100vh - 100px); /* Use min-height to allow content to expand */
             margin-top: 100px; /* Push content below the fixed navbar */
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            overflow: hidden; /* Prevent scrolling past the background */
+            overflow: visible; /* Allow overflow for bottom bar */
         }
 
         .login-form {
@@ -1529,9 +1649,7 @@
                 align-items: center;
             }
             
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
+
             
             .chat-layout, .settings-layout, .admin-layout {
                 grid-template-columns: 1fr;
@@ -1757,8 +1875,8 @@
         <div class="landing-main">
             <section class="hero">
                 <div class="hero-content">
-                    <h1 data-en="Your 24/7 Virtual Coach for Selective Mutism Support" data-zh="您的24/7选择性缄默症虚拟教练">
-                                        <span class="hero-title-line1" data-en="Your 24/7 Virtual Coach" data-zh="您的24/7虚拟教练">Your 24/7 Virtual Coach</span>
+                    <h1 data-en="Your AI Assistant for Selective Mutism Support" data-zh="您的选择性缄默症AI助手">
+                                        <span class="hero-title-line1" data-en="Your AI Assistant" data-zh="您的AI助手">Your AI Assistant</span>
                 <span class="hero-title-line2" data-en="for Selective Mutism Support" data-zh="为选择性缄默症提供支持">for Selective Mutism Support</span>
                     </h1>
                     <p class="hero-subtitle" data-en="Evidence-based, compassionate answers for parents — anytime you need them." data-zh="基于科学证据的温暖解答，为家长提供随时随地的支持。">
@@ -1771,67 +1889,80 @@
                 </div>
             </section>
 
-            <section id="features" class="features">
-                <div class="container">
-                    <div class="section-header">
-                        <h2 class="section-title" data-en="Intelligent Content Processing" data-zh="智能内容处理">Intelligent Content Processing</h2>
-                        <p class="section-subtitle">
-                            Turn your existing video and audio content into a powerful, searchable knowledge base
-                        </p>
+            <section id="about" class="about">
+                <!-- Starting section with white background -->
+                <div class="about-intro">
+                    <div class="container">
+                        <div class="about-content">
+                            <div class="about-text">
+                                <h2 data-en="About SunnyMentor" data-zh="关于晴心知道">About SunnyMentor</h2>
+                                <p data-en="SunnyMentor is an AI-powered assistant developed by SunnyMindED to support parents of children with Selective Mutism (SM). It draws on trusted professional resources and real-world intervention experience to provide science-based, practical, and empathetic guidance." data-zh="「晴心知道」是由晴心咨询（SunnyMindED）开发的人工智能问答助手，专为选择性缄默症（Selective Mutism, SM）孩子的家长设计。它基于权威专业资料与真实干预案例，为您提供科学、系统、贴近实际的育儿指导建议。">
+                                    SunnyMentor is an AI-powered assistant developed by SunnyMindED to support parents of children with Selective Mutism (SM). 
+                                    It draws on trusted professional resources and real-world intervention experience to provide science-based, practical, and empathetic guidance.
+                                </p>
+                                <p data-en="Whether you are just beginning to learn about selective mutism or actively supporting your child, this assistant is here to help—anytime, anywhere." data-zh="无论您是刚刚接触选择性缄默的新手家长，还是正在带孩子上岸路上的陪伴者，「晴心知道」都能成为您随时随地的支持伙伴。">
+                                    Whether you are just beginning to learn about selective mutism or actively supporting your child, 
+                                    this assistant is here to help—anytime, anywhere.
+                                </p>
+                                <p data-en="From strategies to real-life challenges, school collaboration to emotional support, SunnyMentor provides AI-generated responses grounded in proven methods and practical experience." data-zh="从策略到现实挑战，从学校合作到情感支持，晴心知道提供基于验证方法和实际经验的AI生成回复。">
+                                    From strategies to real-life challenges, school collaboration to emotional support, 
+                                    SunnyMentor provides AI-generated responses grounded in proven methods and practical experience.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="features-grid">
-                        <div class="feature-card">
-                            <div class="feature-icon">🎥</div>
-                            <h3 class="feature-title" data-en="Video Transcription" data-zh="视频转录">Video Transcription</h3>
-                            <p class="feature-description" data-en="Automatically extract and process content from your training videos, webinars, and recorded meetings with high accuracy." data-zh="自动提取和处理您的培训视频、网络研讨会和录制会议的内容，准确率极高。">
-                                Automatically extract and process content from your training videos, 
-                                webinars, and recorded meetings with high accuracy.
+                </div>
+
+                <!-- Knowledge base section with light grey background -->
+                <div class="about-knowledge">
+                    <div class="container">
+                        <div class="knowledge-header">
+                            <h3 data-en="🔍 Professional Knowledge Base" data-zh="🔍 数据来源与专业背景">🔍 Professional Knowledge Base</h3>
+                        </div>
+                        <div class="knowledge-items">
+                            <div class="knowledge-item left">
+                                <div class="knowledge-card">
+                                    <h4 data-en="Global Research & Theory" data-zh="全球前沿的选择性缄默干预理论与实务">Global Research & Theory</h4>
+                                    <p data-en="Globally recognized theories and frameworks on selective mutism intervention" data-zh="全球前沿的选择性缄默干预理论与实务">Globally recognized theories and frameworks on selective mutism intervention</p>
+                                </div>
+                            </div>
+                            <div class="knowledge-item right">
+                                <div class="knowledge-card">
+                                    <h4 data-en="Real-World Experience" data-zh="晴心团队多年一线督导与家长咨询经验">Real-World Experience</h4>
+                                    <p data-en="Case-based insights from SunnyMindED's extensive parent consultation experience" data-zh="晴心团队多年一线督导与家长咨询经验">Case-based insights from SunnyMindED's extensive parent consultation experience</p>
+                                </div>
+                            </div>
+                            <div class="knowledge-item left">
+                                <div class="knowledge-card">
+                                    <h4 data-en="Practical Guidance" data-zh="系统整理的家长常见问题与操作建议">Practical Guidance</h4>
+                                    <p data-en="A structured library of frequently asked questions and real-life scenarios" data-zh="系统整理的家长常见问题与操作建议">A structured library of frequently asked questions and real-life scenarios</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="knowledge-footer">
+                            <p data-en="The assistant is designed to offer clear, warm, and non-judgmental support—just when you need it." data-zh="AI助手的语气温和、内容聚焦实际，让您在任何时间都能获得支持与方向感。">
+                                The assistant is designed to offer <strong>clear, warm, and non-judgmental</strong> support—just when you need it.
                             </p>
                         </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">🎙️</div>
-                            <h3 class="feature-title" data-en="Audio Processing" data-zh="音频处理">Audio Processing</h3>
-                            <p class="feature-description" data-en="Convert podcasts, conference calls, and audio recordings into structured, searchable knowledge for instant retrieval." data-zh="将播客、电话会议和音频录制转换为结构化、可搜索的知识，实现即时检索。">
-                                Convert podcasts, conference calls, and audio recordings into 
-                                structured, searchable knowledge for instant retrieval.
-                            </p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">🤖</div>
-                            <h3 class="feature-title" data-en="Custom AI Training" data-zh="自定义AI训练">Custom AI Training</h3>
-                            <p class="feature-description" data-en="Fine-tune advanced language models on your specific domain data for accurate, contextual responses tailored to your business." data-zh="在您的特定领域数据上微调高级语言模型，为您的业务提供准确、上下文的响应。">
-                                Fine-tune advanced language models on your specific domain data 
-                                for accurate, contextual responses tailored to your business.
-                            </p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">💬</div>
-                            <h3 class="feature-title" data-en="Intelligent Chat Interface" data-zh="智能聊天界面">Intelligent Chat Interface</h3>
-                            <p class="feature-description" data-en="Interact naturally with your knowledge base through an intuitive chat interface that understands context and provides source references." data-zh="通过直观的聊天界面自然地与您的知识库交互，该界面理解上下文并提供来源参考。">
-                                Interact naturally with your knowledge base through an intuitive 
-                                chat interface that understands context and provides source references.
-                            </p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">📊</div>
-                            <h3 class="feature-title" data-en="Source Attribution" data-zh="来源归属">Source Attribution</h3>
-                            <p class="feature-description" data-en="Every response includes clear references to original sources, timestamps, and confidence levels for full transparency." data-zh="每个响应都包含对原始来源、时间戳和置信度的清晰引用，确保完全透明。">
-                                Every response includes clear references to original sources, 
-                                timestamps, and confidence levels for full transparency.
-                            </p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">🔒</div>
-                            <h3 class="feature-title" data-en="Enterprise Security" data-zh="企业级安全">Enterprise Security</h3>
-                            <p class="feature-description" data-en="Bank-level encryption, private cloud deployment, and compliance with GDPR, HIPAA, and other industry standards." data-zh="银行级加密、私有云部署，并符合GDPR、HIPAA和其他行业标准。">
-                                Bank-level encryption, private cloud deployment, and compliance 
-                                with GDPR, HIPAA, and other industry standards.
+                    </div>
+                </div>
+
+                <!-- Ending section with white background -->
+                <div class="about-conclusion">
+                    <div class="container">
+                        <div class="conclusion-content">
+                            <h3 data-en="🎯 Science-Based Support for Your Journey Forward" data-zh="🎯 科学指导，陪伴上岸之路">🎯 Science-Based Support for Your Journey Forward</h3>
+                            <p data-en="Sunny Knows How works best when combined with SunnyMindED's online courses, intervention camps, or professional consultation services. Feel free to share it with other families who may benefit." data-zh="「晴心知道」适合搭配晴心咨询的线上课程、亲子营、个别督导等服务共同使用，效果更佳。欢迎您将本工具分享给其他有需要的家长朋友。">
+                                Sunny Knows How works best when combined with SunnyMindED's online courses, 
+                                intervention camps, or professional consultation services. 
+                                Feel free to share it with other families who may benefit.
                             </p>
                         </div>
                     </div>
                 </div>
             </section>
         </div>
+        <div class="bottom-bar-container"></div>
     </div>
 
     <!-- Login Page -->
@@ -1843,7 +1974,7 @@
 
         <div class="login-page">
             <div class="login-form">
-                <h1 id="form-title" data-en="Welcome to SunnyMentor" data-zh="欢迎来到SunnyMentor">Welcome to SunnyMentor</h1>
+                <h1 id="form-title" data-en="Welcome to SunnyMentor" data-zh="欢迎来到晴心知道">Welcome to SunnyMentor</h1>
                 
                 <!-- Phone Number Input Phase -->
                 <div id="phone-input-phase">
@@ -1943,7 +2074,7 @@
         <div class="chat-layout">
             <div class="sidebar">
                 <!-- Black text logo for the chat page -->
-                <span style="font-size: 24px; padding: 8px;" data-en="SunnyMentor" data-zh="阳光教练">SunnyMentor</span>
+                <span style="font-size: 24px; padding: 8px;" data-en="SunnyMentor" data-zh="晴心知道">SunnyMentor</span>
 
                 <!-- Chat history header -->
                 <div class="sidebar-header" style="margin: 0 0 20px 0; padding: 8px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e9ecef;">
@@ -2131,6 +2262,7 @@
                 </div>
             </div>
         </div>
+        <div class="bottom-bar-container"></div>
     </div>
 
     <!-- Donate Page -->
@@ -2195,6 +2327,7 @@
                 </div>
             </div>
         </div>
+        <div class="bottom-bar-container"></div>
     </div>
 
     <!-- Notification -->
@@ -2230,7 +2363,7 @@
         // Translation object for dynamic content
         const translations = {
             EN: {
-                welcomeMessage: "Hello! I'm your selective mutism virtual coach. I have access to comprehensive knowledge about selective mutism, including treatment approaches, parent guidance, and educational strategies. How can I help you today?",
+                welcomeMessage: "Hello! I'm Sunny, your AI-powered virtual coach for selective mutism.\n\n📘 Whether you're just starting to understand SM or already supporting your child through intervention, I'm here to offer evidence-based guidance and practical tips.\n\nYou can ask me things like:\n- Why doesn't my child speak at school?\n- How can I help them start talking at home and beyond?\n- What can teachers do to support them?\n…Or any other SM-related questions on your mind.\n\n💡 Please remember, I provide information and guidance only, not medical advice. Always consult a qualified professional when needed.",
                 errorMessage: "I apologize, but I encountered an error:",
                 newChatTitle: "New Chat",
                 typingIndicator: "Assistant is typing...",
@@ -2243,7 +2376,7 @@
                 saving: "Saving"
             },
             ZH: {
-                welcomeMessage: "你好！我是你的选择性缄默症虚拟教练。我拥有关于选择性缄默症的全面知识，包括治疗方法、家长指导和教育策略。今天我能如何帮助你？",
+                welcomeMessage: "您好，我是晴心，一位专为选择性缄默症家长打造的AI小助手。\n\n📘 无论您是刚刚接触选择性缄默，还是已经在干预的路上，我都可以为您提供科学的指导和实用的建议。\n\n您可以问我：\n- 孩子为什么在学校不说话？\n- 我该怎么帮助孩子逐步开口？\n- 老师可以做些什么？\n…或者其他您正在困扰的问题。\n\n💡 请随时提问，我会尽力为您解答。但请注意，我提供的是信息指导，并不能替代专业人士的诊断与治疗建议哦～",
                 errorMessage: "抱歉，我遇到了一个错误：",
                 newChatTitle: "新聊天",
                 typingIndicator: "助手正在输入...",
@@ -2294,8 +2427,8 @@
             
             const clickableClass = clickable ? 'clickable-logo' : '';
             const onClickHandler = clickable ? 'onclick="handleLogoClick()" style="cursor: pointer;"' : '';
-            const languageAttrs = showLanguageData ? 'data-en="Sunny" data-zh="阳光"' : '';
-            const languageAttrsMentor = showLanguageData ? 'data-en="Mentor" data-zh="教练"' : '';
+            const languageAttrs = showLanguageData ? 'data-en="Sunny" data-zh="晴心"' : '';
+            const languageAttrsMentor = showLanguageData ? 'data-en="Mentor" data-zh="知道"' : '';
             
             return `
                 <div class="logo-container ${clickableClass}" ${onClickHandler}>
@@ -2317,18 +2450,17 @@
                     <div class="nav-content">
                         ${generateStandardLogo({ showLanguageData: true })}
                         <div class="nav-menu">
-                            <a href="#features" data-en="Features" data-zh="功能">Features</a>
+                            <a href="#about" data-en="About" data-zh="关于">About</a>
                             <a href="#demo" data-en="Demo" data-zh="演示">Demo</a>
                             <a href="#pricing" data-en="Pricing" data-zh="价格">Pricing</a>
                             <a href="#support" data-en="Support" data-zh="支持">Support</a>
                         </div>
                         <div class="nav-auth">
-                            <button class="label" data-en="About" data-zh="关于">About</button>
-                            <button class="label" data-en="FAQ" data-zh="常见问题">FAQ</button>
+                            <button class="label" onclick="window.location.href='faq.html'" data-en="FAQ" data-zh="常见问题">FAQ</button>
                             <button class="label" data-en="Contact" data-zh="联系我们">Contact</button>
                             <button class="btn btn-white" onclick="goToLogin()" data-en="Log In" data-zh="登录">Log In</button>
                             <button class="btn btn-primary" onclick="goToSignup()" data-en="Get Full Access" data-zh="获取完整功能">Get Full Access</button>
-                            <div id="landing-language-switcher-container"></div>
+                            <div id="landing-language-switcher-container" style="min-width: 60px; min-height: 20px;"></div>
                         </div>
                     </div>
                 </nav>`;
@@ -2336,23 +2468,97 @@
         
         // Function to initialize navbar for a page
         async function initializeNavbar(pageId) {
+            console.log('Initializing navbar for page:', pageId);
             const pageElement = document.getElementById(pageId);
             if (pageElement) {
                 const navbarContainer = pageElement.querySelector('.navbar-container');
                 if (navbarContainer) {
+                    console.log('Found navbar container, generating navbar...');
                     navbarContainer.innerHTML = generateNavbar();
                     
                     // Load language switcher component
                     const langContainer = navbarContainer.querySelector('#landing-language-switcher-container');
                     if (langContainer) {
+                        console.log('Loading language switcher for landing page...');
                         await loadComponent('landing-language-switcher-container', 'components/language-switcher.html');
+                        console.log('Language switcher loaded, container content:', langContainer.innerHTML);
+                        
+                        // Fallback if component loading failed
+                        if (langContainer.innerHTML.trim() === '') {
+                            console.log('Component loading failed, using fallback...');
+                            langContainer.innerHTML = '<div class="language-switcher" onclick="toggleLanguage()" title="Switch Language" data-title-en="Switch Language" data-title-zh="切换语言"><img src="graphics/language-switcher.svg" alt="Language Switcher" class="globe-icon" /><span class="language-code">EN</span></div>';
+                        }
+                    } else {
+                        console.error('Language switcher container not found in landing page navbar');
                     }
                     
                     // Update language content in the newly created navbar
                     setTimeout(() => {
                         initializeLanguage();
                     }, 100);
+                } else {
+                    console.error('Navbar container not found in page:', pageId);
                 }
+            } else {
+                console.error('Page element not found:', pageId);
+            }
+        }
+        
+        // Bottom bar generation function
+        function generateBottomBar() {
+            return `
+                <footer class="bottom-bar">
+                    <div class="bottom-bar-content">
+                        <div class="support-section">
+                            <p class="support-intro">
+                                If you would like to speak with a human advisor, please contact our support team using the options below. We're here to support you and your child every step of the way.
+                            </p>
+                            
+                            <div class="contact-info">
+                                <h4>How to Reach Us</h4>
+                                
+                                <div class="contact-method">
+                                    <h5>Email</h5>
+                                    <p><a href="mailto:support@sunnyminded.com">support@sunnyminded.com</a></p>
+                                    <p class="response-time">We typically respond within 2 business days.</p>
+                                </div>
+                                
+                                <div class="contact-method">
+                                    <h5>WeChat Service Account</h5>
+                                    <p>Search and follow: <strong>junwang08837</strong></p>
+                                </div>
+                            </div>
+                            
+                            <div class="website-info">
+                                <h5>Official Website</h5>
+                                <p><a href="https://www.sunnyminded.com" target="_blank" rel="noopener noreferrer">https://www.sunnyminded.com</a></p>
+                                <p>Explore selective mutism resources, course details, and SunnyMindED updates.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="disclaimer">
+                            <p><strong>Important Note:</strong> SunnyMentor is an AI-powered assistant that offers reference-based support, not a substitute for professional medical advice. If you have clinical or diagnostic concerns, please consult a qualified healthcare or mental health professional.</p>
+                        </div>
+                    </div>
+                </footer>`;
+        }
+        
+        // Function to initialize bottom bar for a page
+        function initializeBottomBar(pageId) {
+            console.log('🚨 Initializing bottom bar for page:', pageId);
+            const pageElement = document.getElementById(pageId);
+            if (pageElement) {
+                console.log('✅ Page element found:', pageId);
+                const bottomBarContainer = pageElement.querySelector('.bottom-bar-container');
+                if (bottomBarContainer) {
+                    console.log('✅ Found bottom bar container, generating bottom bar...');
+                    bottomBarContainer.innerHTML = generateBottomBar();
+                    console.log('✅ Bottom bar generated and inserted');
+                } else {
+                    console.error('❌ Bottom bar container not found in page:', pageId);
+                }
+            } else {
+                console.error('❌ Page element not found:', pageId);
             }
         }
         
@@ -2385,8 +2591,8 @@
                 // Special handling for hero title with spans
                 if (element.querySelector('.hero-title-line1, .hero-title-line2')) {
                     const text = currentLanguage === 'EN' ? element.getAttribute('data-en') : element.getAttribute('data-zh');
-                    if (text === 'Your 24/7 Virtual Coach for Selective Mutism Support') {
-                        element.innerHTML = '<span class="hero-title-line1">Your 24/7 Virtual Coach</span><span class="hero-title-line2">for Selective Mutism Support</span>';
+                    if (text === 'Your AI Assistant for Selective Mutism Support') {
+                        element.innerHTML = '<span class="hero-title-line1">Your AI Assistant</span><span class="hero-title-line2">for Selective Mutism Support</span>';
                     } else {
                         // For Chinese, keep it on one line
                         element.innerHTML = '<span class="hero-title-line1">' + text + '</span>';
@@ -2437,8 +2643,11 @@
             // Check backend health immediately on user interaction
             await checkBackendHealthOnInteraction();
             
-            // Initialize navbar
+            // Initialize navbar and bottom bar
             initializeNavbar('landing-page');
+            console.log('🚨 About to initialize bottom bar for landing page');
+            initializeBottomBar('landing-page');
+            console.log('🚨 Bottom bar initialization called');
             
             // Stop any existing health monitoring
             stopBackendHealthMonitoring();
@@ -2467,8 +2676,9 @@
             // Check backend health immediately on user interaction
             await checkBackendHealthOnInteraction();
             
-            // Initialize navbar
+            // Initialize navbar and bottom bar
             initializeNavbar('login-page');
+            initializeBottomBar('login-page');
             
             // Stop any existing health monitoring
             stopBackendHealthMonitoring();
@@ -2515,6 +2725,12 @@
             
             // Load language switcher component
             await loadComponent('chat-language-switcher-container', 'components/language-switcher.html');
+            
+            // Generate bottom bar
+            const bottomBarContainer = document.querySelector('.bottom-bar-container');
+            if (bottomBarContainer) {
+                bottomBarContainer.innerHTML = generateBottomBar();
+            }
             
             // Debug: Check if language switcher loaded
             const langContainer = document.getElementById('chat-language-switcher-container');
@@ -2660,8 +2876,9 @@
             document.getElementById('donate-page').style.display = 'block';
             currentPage = 'donate';
             
-            // Initialize navbar
+            // Initialize navbar and bottom bar
             initializeNavbar('donate-page');
+            initializeBottomBar('donate-page');
             
             // Stop health monitoring when leaving chat
             stopBackendHealthMonitoring();
@@ -4013,7 +4230,7 @@ Error: ${error.message}
             try {
                 const initialMessage = {
                     from: 'chatbot',
-                    content: "Hello! I'm your selective mutism virtual coach. I have access to comprehensive knowledge about selective mutism, including treatment approaches, parent guidance, and educational strategies. How can I help you today?"
+                    content: "Hello! I'm Sunny, your AI-powered virtual coach for selective mutism.\n\n📘 Whether you're just starting to understand SM or already supporting your child through intervention, I'm here to offer evidence-based guidance and practical tips.\n\nYou can ask me things like:\n- Why doesn't my child speak at school?\n- How can I help them start talking at home and beyond?\n- What can teachers do to support them?\n…Or any other SM-related questions on your mind.\n\n💡 Please remember, I provide information and guidance only, not medical advice. Always consult a qualified professional when needed."
                 };
                 
                 const userFirstMessage = {

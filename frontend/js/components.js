@@ -120,7 +120,12 @@ async function loadComponent(elementId, componentPath) {
         const html = await response.text();
         console.log('Component HTML loaded, length:', html.length, 'Content:', html);
         
-        const element = document.getElementById(elementId);
+        let element = document.getElementById(elementId);
+        if (!element) {
+            // If not found by ID, try to find by class
+            element = document.querySelector('.' + elementId);
+        }
+        
         if (element) {
             console.log('Found element:', elementId, 'Current innerHTML:', element.innerHTML);
             element.innerHTML = html;
@@ -140,6 +145,10 @@ async function loadComponent(elementId, componentPath) {
             console.log('Available elements with similar IDs:');
             document.querySelectorAll('[id*="language"]').forEach(el => {
                 console.log('  -', el.id, el.tagName);
+            });
+            console.log('Available elements with similar classes:');
+            document.querySelectorAll('[class*="bottom-bar"]').forEach(el => {
+                console.log('  -', el.className, el.tagName);
             });
         }
     } catch (error) {

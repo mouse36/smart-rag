@@ -246,6 +246,108 @@ body {
     color: #2d3748;
 }
 
+/* Bottom Bar */
+.bottom-bar {
+    background: #f8f9fa;
+    border-top: 1px solid #e2e8f0;
+    padding: 40px 0 20px;
+    margin-top: 60px;
+    font-size: 14px;
+    color: #4a5568;
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    display: block;
+    min-height: 200px;
+}
+
+.bottom-bar-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.support-section {
+    margin-bottom: 30px;
+}
+
+.support-intro {
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.contact-info {
+    margin-bottom: 25px;
+}
+
+.contact-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #2d3748;
+}
+
+.contact-method {
+    margin-bottom: 15px;
+}
+
+.contact-method h5 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #2d3748;
+}
+
+.contact-method p {
+    margin-bottom: 5px;
+}
+
+.contact-method a {
+    color: #3182ce;
+    text-decoration: none;
+}
+
+.contact-method a:hover {
+    text-decoration: underline;
+}
+
+.response-time {
+    font-size: 13px;
+    color: #718096;
+    font-style: italic;
+}
+
+.website-info {
+    margin-bottom: 25px;
+}
+
+.website-info h5 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #2d3748;
+}
+
+.website-info a {
+    color: #3182ce;
+    text-decoration: none;
+}
+
+.website-info a:hover {
+    text-decoration: underline;
+}
+
+.disclaimer {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+}
+
+.disclaimer p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #718096;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .nav-content {
@@ -267,5 +369,22 @@ body {
 
     .navbar .logo-text {
         font-size: 16px;
+    }
+    
+    .bottom-bar {
+        padding: 30px 0 15px;
+        margin-top: 40px;
+    }
+    
+    .bottom-bar-content {
+        padding: 0 15px;
+    }
+    
+    .support-section {
+        margin-bottom: 25px;
+    }
+    
+    .contact-info {
+        margin-bottom: 20px;
     }
 }

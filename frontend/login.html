@@ -234,6 +234,43 @@
             width: 100%;
         }
 
+        /* Navigation styles */
+        .nav-auth {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .language-switcher {
+            display: flex !important;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            color: #4a5568;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .language-switcher:hover {
+            background: rgba(255, 137, 0, 0.1);
+            color: #ff8900;
+        }
+
+        .globe-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .language-code {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .main-content {
@@ -269,12 +306,12 @@
             <div class="logo-container clickable-logo" onclick="handleLogoClick()" style="cursor: pointer;">
                 <img src="graphics/logo.svg" alt="SunnyMentor" class="logo">
                 <span class="logo-text" style="font-size: 48px;">
-                    <span class="logo-sunny" data-en="Sunny" data-zh="阳光">Sunny</span><span class="logo-mentor" data-en="Mentor" data-zh="教练">Mentor</span>
+                    <span class="logo-sunny" data-en="Sunny" data-zh="晴心">Sunny</span><span class="logo-mentor" data-en="Mentor" data-zh="知道">Mentor</span>
                 </span>
             </div>
             <div class="nav-auth">
                 <button class="btn btn-secondary" onclick="goToSignup()" data-en="Don't have an account? Sign up" data-zh="还没有账户？注册">Don't have an account? Sign up</button>
-                <div id="login-language-switcher-container"></div>
+                <div id="login-language-switcher-container" style="min-width: 60px; min-height: 20px;"></div>
             </div>
         </div>
     </nav>
@@ -377,6 +414,9 @@
             </div>
         </div>
     </div>
+    
+    <!-- Bottom Bar -->
+    <div class="bottom-bar-container"></div>
 
     <!-- Configuration -->
     <script src="js/config.js"></script>
@@ -734,7 +774,56 @@
             // Error components are now embedded directly in the HTML
             
             // Load language switcher component
+            console.log('Loading language switcher for login page...');
             await loadComponent('login-language-switcher-container', 'components/language-switcher.html');
+            
+            // Generate bottom bar
+            console.log('Loading bottom bar for login page...');
+            const bottomBarContainer = document.querySelector('.bottom-bar-container');
+            if (bottomBarContainer) {
+                bottomBarContainer.innerHTML = `
+                    <footer class="bottom-bar">
+                        <div class="bottom-bar-content">
+                            <div class="support-section">
+                                <p class="support-intro">
+                                    If you would like to speak with a human advisor, please contact our support team using the options below. We're here to support you and your child every step of the way.
+                                </p>
+                                
+                                <div class="contact-info">
+                                    <h4>How to Reach Us</h4>
+                                    
+                                    <div class="contact-method">
+                                        <h5>Email</h5>
+                                        <p><a href="mailto:support@sunnyminded.com">support@sunnyminded.com</a></p>
+                                        <p class="response-time">We typically respond within 2 business days.</p>
+                                    </div>
+                                    
+                                    <div class="contact-method">
+                                        <h5>WeChat Service Account</h5>
+                                        <p>Search and follow: <strong>junwang08837</strong></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="website-info">
+                                    <h5>Official Website</h5>
+                                    <p><a href="https://www.sunnyminded.com" target="_blank" rel="noopener noreferrer">https://www.sunnyminded.com</a></p>
+                                    <p>Explore selective mutism resources, course details, and SunnyMindED updates.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="disclaimer">
+                                <p><strong>Important Note:</strong> SunnyMentor is an AI-powered assistant that offers reference-based support, not a substitute for professional medical advice. If you have clinical or diagnostic concerns, please consult a qualified healthcare or mental health professional.</p>
+                            </div>
+                        </div>
+                    </footer>`;
+            }
+            
+            // Fallback if component loading failed
+            const langContainer = document.getElementById('login-language-switcher-container');
+            if (langContainer && langContainer.innerHTML.trim() === '') {
+                console.log('Component loading failed, using fallback...');
+                langContainer.innerHTML = '<div class="language-switcher" onclick="toggleLanguage()" title="Switch Language" data-title-en="Switch Language" data-title-zh="切换语言"><img src="graphics/language-switcher.svg" alt="Language Switcher" class="globe-icon" /><span class="language-code">EN</span></div>';
+            }
             
             // Sync with global language manager
             if (window.languageManager) {

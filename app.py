@@ -7,7 +7,7 @@ Features:
 - JWT-based authentication for secure session management
 """
 
-from flask import Flask, request, jsonify, send_from_directory, send_file
+from flask import Flask, request, jsonify, send_from_directory, send_file, Response
 from flask_cors import CORS
 import os
 import json
@@ -275,6 +275,82 @@ def chat():
         logger.error(f"Error in chat endpoint: {str(e)}")
         return jsonify({'error': 'Failed to process message'}), 500
 
+
+@app.route('/chat/stream', methods=['POST'])
+@require_auth
+def chat_stream():
+    """Streaming chat endpoint for real-time responses - requires authentication"""
+    try:
+        # Parse request data
+        data = request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({'error': 'Message is required'}), 400
+        
+        user_message = data['message'].strip()
+        if not user_message:
+            return jsonify({'error': 'Message cannot be empty'}), 400
+        
+        # Check if API calls are enabled
+        if not config.API_CALLS_ENABLED:
+            def generate_placeholder():
+                yield f"data: {json.dumps({'content': 'API calls are currently disabled. This is a placeholder response.', 'done': True})}\n\n"
+            return Response(generate_placeholder(), mimetype='text/event-stream')
+        
+        # Check if AI components are available
+        if vector_engine is None or deepseek_client is None:
+            def generate_error():
+                yield f"data: {json.dumps({'content': 'AI components are not available. Please check the backend configuration.', 'done': True})}\n\n"
+            return Response(generate_error(), mimetype='text/event-stream')
+        
+        # Lazy initialize vector engine if needed
+        if not vector_engine.is_ready():
+            logger.info("Initializing vector search engine on first use...")
+            try:
+                vector_engine.initialize()
+                logger.info("Vector search engine initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize vector search engine: {str(e)}")
+                def generate_error():
+                    yield f"data: {json.dumps({'content': 'Failed to initialize AI components. Please try again later.', 'done': True})}\n\n"
+                return Response(generate_error(), mimetype='text/event-stream')
+        
+        # Retrieve relevant context from knowledge base
+        relevant_passages = vector_engine.search(user_message, top_k=7)
+        
+        def generate_stream():
+            try:
+                # Generate streaming response using DeepSeek API
+                full_response = ""
+                for chunk in deepseek_client.generate_response_stream(
+                    user_message=user_message,
+                    context_passages=relevant_passages
+                ):
+                    full_response += chunk
+                    yield f"data: {json.dumps({'content': chunk, 'done': False})}\n\n"
+                
+                # Add context information if available
+                if relevant_passages:
+                    context_info = f"\n\n<div style=\"font-size: 0.8em; color: rgba(100,100,100,0.7); margin-top: 8px; font-style: italic;\">📚 Based on {len(relevant_passages)} relevant sources from our knowledge base</div>"
+                    yield f"data: {json.dumps({'content': context_info, 'done': False})}\n\n"
+                
+                # Send completion signal
+                yield f"data: {json.dumps({'content': '', 'done': True, 'context_sources': len(relevant_passages)})}\n\n"
+                
+                # Log the interaction with user info
+                user_email = request.user.get('email', 'unknown')
+                logger.info(f"Generated streaming response for user {user_email}: {user_message[:50]}... (Context passages: {len(relevant_passages)})")
+                
+            except Exception as e:
+                logger.error(f"Error in streaming response: {str(e)}")
+                yield f"data: {json.dumps({'content': f'Error generating response: {str(e)}', 'done': True})}\n\n"
+        
+        return Response(generate_stream(), mimetype='text/event-stream')
+        
+    except Exception as e:
+        logger.error(f"Error in streaming chat endpoint: {str(e)}")
+        def generate_error():
+            yield f"data: {json.dumps({'content': f'Failed to process message: {str(e)}', 'done': True})}\n\n"
+        return Response(generate_error(), mimetype='text/event-stream')
 
 
 @app.route('/search', methods=['POST'])

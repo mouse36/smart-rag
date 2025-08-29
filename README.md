@@ -196,7 +196,7 @@ netstat -an | grep 6379
 |----------|---------|-------------|
 | `DEEPSEEK_API_KEY` | *(required)* | Your DeepSeek API key |
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek API base URL |
-| `DEEPSEEK_MODEL` | `DeepSeek-V3.1` | Model to use |
+| `DEEPSEEK_MODEL` | `deepseek-chat` | Model to use |
 | `HOST` | `127.0.0.1` | Server host |
 | `PORT` | `5000` | Server port |
 | `DEBUG` | `True` | Debug mode |

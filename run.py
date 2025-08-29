@@ -28,7 +28,7 @@ except ImportError:
 env_vars = {
     'DEEPSEEK_API_KEY': 'your_deepseek_api_key_here',  # MUST be set by user
     'DEEPSEEK_BASE_URL': 'https://api.deepseek.com',
-    'DEEPSEEK_MODEL': 'DeepSeek-V3.1',
+    'DEEPSEEK_MODEL': 'deepseek-chat',
     'HOST': '0.0.0.0',
     'PORT': os.getenv('PORT', '5000'),  # Use Railway's PORT environment variable
     'DEBUG': 'False',  # Set to False for production

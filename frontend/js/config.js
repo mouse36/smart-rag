@@ -27,7 +27,7 @@ class Config {
         if (this.isDevelopment) {
             // Local development - connect to local backend
             return {
-                baseUrl: 'http://127.0.0.1:5000',
+                baseUrl: 'http://127.0.0.1:8080',
                 timeout: 10000,
                 retryAttempts: 3
             };

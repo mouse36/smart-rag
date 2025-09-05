@@ -1,0 +1,35 @@
+flowchart TD
+    A[User Types URL/Clicks Link] --> B{User Logged In?}
+    
+    B -->|No| C[Landing Page]
+    B -->|Yes| D[Main Chat Interface]
+    
+    C --> E[Browse Features & Content]
+    E --> F[Click Sign Up Button]
+    F --> G[Enter Credentials & Sign Up]
+    G --> H[Account Created Successfully]
+    H --> D
+    
+    D --> I[Chat with Virtual Assistant]
+    I --> J[Receive Response from Assistant]
+    J --> K{Response Contains External Links?}
+    K -->|Yes| L[Click External Link]
+    K -->|No| AA[Continue Using Chat Interface]
+    L --> N[Navigate to External Website]
+    AA --> I
+    
+    D --> O[Click Profile Picture Icon]
+    O --> P[Account Menu Opens]
+    P --> Q{User Selection?}
+    
+    Q -->|Sign Out| R[Sign Out of Account]
+    Q -->|Settings| S[Settings Page]
+    Q -->|Admin Dashboard| T{User is Admin?}
+    
+    R --> C
+    
+    S --> U[Change Settings]
+    U --> V[Click Done Button]
+    V --> D
+    
+    T

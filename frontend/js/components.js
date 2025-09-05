@@ -67,7 +67,7 @@ class LanguageManager {
             } else {
                 if (this.currentLanguage === 'EN') {
                     el.textContent = englishText;
-                } else {
+                } else if (this.currentLanguage === 'ZH') {
                     el.textContent = chineseText || englishText;
                 }
             }
@@ -80,7 +80,7 @@ class LanguageManager {
             const chinesePlaceholder = el.getAttribute('data-placeholder-zh');
             if (this.currentLanguage === 'EN') {
                 el.placeholder = englishPlaceholder;
-            } else {
+            } else if (this.currentLanguage === 'ZH') {
                 el.placeholder = chinesePlaceholder || englishPlaceholder;
             }
         });
@@ -92,7 +92,7 @@ class LanguageManager {
             const chineseTitle = el.getAttribute('data-title-zh');
             if (this.currentLanguage === 'EN') {
                 el.title = englishTitle;
-            } else {
+            } else if (this.currentLanguage === 'ZH') {
                 el.title = chineseTitle || englishTitle;
             }
         });

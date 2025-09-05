@@ -349,13 +349,56 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .nav-content {
-        padding: 0 15px;
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 20px;
+    }
+    
+    .nav-left {
+        order: 1;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .logo-container {
+        order: 2;
+        justify-content: center;
     }
     
     .nav-auth {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
         gap: 10px;
+    }
+    
+    .navbar .logo-text {
+        font-size: 18px;
+    }
+    
+    /* Adjust navbar height for stacked layout */
+    .navbar {
+        padding: 15px 0;
+    }
+    
+    /* Adjust main content margin for taller navbar */
+    .landing-main,
+    .login-page {
+        margin-top: 140px;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-content {
+        padding: 0 15px;
+        gap: 12px;
+    }
+    
+    .nav-auth {
+        gap: 8px;
     }
     
     .btn {
@@ -369,6 +412,12 @@ body {
 
     .navbar .logo-text {
         font-size: 16px;
+    }
+    
+    /* Adjust main content margin for mobile */
+    .landing-main,
+    .login-page {
+        margin-top: 120px;
     }
     
     .bottom-bar {
@@ -386,5 +435,36 @@ body {
     
     .contact-info {
         margin-bottom: 20px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .nav-content {
+        padding: 0 10px;
+        gap: 10px;
+    }
+    
+    .nav-auth {
+        gap: 6px;
+    }
+    
+    .btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .navbar .logo-text {
+        font-size: 14px;
+    }
+    
+    .logo {
+        height: 60px;
+    }
+    
+    /* Adjust main content margin for very small screens */
+    .landing-main,
+    .login-page {
+        margin-top: 110px;
     }
 }

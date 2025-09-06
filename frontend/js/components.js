@@ -37,7 +37,7 @@ class LanguageManager {
     }
 
     toggleLanguage() {
-        const newLanguage = this.currentLanguage === 'EN' ? 'ZH' : 'EN';
+        const newLanguage = this.currentLanguage === 'EN' ? '中文' : 'EN';
         this.saveLanguage(newLanguage);
         return newLanguage;
     }
@@ -67,7 +67,7 @@ class LanguageManager {
             } else {
                 if (this.currentLanguage === 'EN') {
                     el.textContent = englishText;
-                } else if (this.currentLanguage === 'ZH') {
+                } else if (this.currentLanguage === '中文') {
                     el.textContent = chineseText || englishText;
                 }
             }
@@ -80,7 +80,7 @@ class LanguageManager {
             const chinesePlaceholder = el.getAttribute('data-placeholder-zh');
             if (this.currentLanguage === 'EN') {
                 el.placeholder = englishPlaceholder;
-            } else if (this.currentLanguage === 'ZH') {
+            } else if (this.currentLanguage === '中文') {
                 el.placeholder = chinesePlaceholder || englishPlaceholder;
             }
         });
@@ -92,7 +92,7 @@ class LanguageManager {
             const chineseTitle = el.getAttribute('data-title-zh');
             if (this.currentLanguage === 'EN') {
                 el.title = englishTitle;
-            } else if (this.currentLanguage === 'ZH') {
+            } else if (this.currentLanguage === '中文') {
                 el.title = chineseTitle || englishTitle;
             }
         });

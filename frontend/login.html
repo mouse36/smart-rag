@@ -323,7 +323,7 @@
                 <h1 id="form-title" data-en="Welcome to SunnyMentor" data-zh="欢迎来到SunnyMentor">Welcome to SunnyMentor</h1>
                 
                 <!-- Phone Number Input Phase -->
-                <div id="phone-input-phase">
+                <div id="phone-input-phase" style="display: none;">
                     <form id="phone-form">
                         <div class="form-group">
                             <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" data-placeholder-en="Enter your phone number" data-placeholder-zh="请输入您的手机号码" required>
@@ -344,7 +344,7 @@
                 </div>
                 
                 <!-- Email/Password Input Phase -->
-                <div id="email-input-phase" style="display: none;">
+                <div id="email-input-phase">
                     <form id="email-form">
                         <div class="form-group">
                             <input type="email" id="email" class="form-input" placeholder="Enter your email address" data-placeholder-en="Enter your email address" data-placeholder-zh="请输入您的邮箱地址" required>
@@ -367,7 +367,7 @@
                     </form>
                     
                     <p style="text-align: center; color: #718096; font-size: 14px; margin-top: 15px;">
-                        <a href="#" onclick="switchToPhoneSignup()" style="color: #667eea; text-decoration: none;">Use phone number instead</a>
+                        <a href="#" onclick="switchToPhoneSignup()" style="color: #667eea; text-decoration: none;" data-en="Use phone number instead" data-zh="改用手机号码登录">Use phone number instead</a>
                     </p>
                 </div>
                 
@@ -427,8 +427,8 @@
 
     <script>
         // API Configuration
-        // Backend API base URL - use global config
-        const API_BASE_URL = window.appConfig ? window.appConfig.getApiUrl('') : 'https://sunnymentor-production.up.railway.app';
+        // Backend API base URL - always use Railway backend
+        const API_BASE_URL = 'https://sunnymentor-production.up.railway.app';
         
         // Global state
         let currentLanguage = 'EN'; // Fallback, will be overridden by languageManager
@@ -748,8 +748,7 @@
         async function checkBackendHealth() {
             try {
                 const response = await fetch(`${API_BASE_URL}/health`, {
-                    method: 'GET',
-                    timeout: 5000
+                    method: 'GET'
                 });
                 if (response.ok) {
                     const data = await response.json();
@@ -953,6 +952,8 @@
 
                     const email = document.getElementById('email').value.trim();
                     const password = document.getElementById('password').value.trim();
+                    
+                    console.log(`🔐 [EMAIL LOGIN] Starting login attempt for email: ${email}`);
                     
                     // Clear previous errors
                     clearErrors();

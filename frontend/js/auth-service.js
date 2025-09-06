@@ -7,8 +7,8 @@ class AuthService {
     constructor() {
         this.tokenKey = 'sunnymentor_jwt_token';
         this.userKey = 'sunnymentor_user_data';
-        // Use global config for API base URL
-        this.apiBaseUrl = window.appConfig ? window.appConfig.getApiUrl('') : 'https://sunnymentor-production.up.railway.app';
+        // Always use Railway backend
+        this.apiBaseUrl = 'https://sunnymentor-production.up.railway.app';
     }
 
     /**
@@ -109,7 +109,14 @@ class AuthService {
      * @returns {Promise<Object>} Login result
      */
     async login(email, password) {
+        const startTime = Date.now();
+        console.log(`🔐 [AUTH SERVICE] Starting login for email: ${email}`);
+        console.log(`📤 [AUTH SERVICE] Sending request to: ${this.apiBaseUrl}/auth/login`);
+        
         try {
+            const requestBody = { email, password: '[REDACTED]' };
+            console.log(`📦 [AUTH SERVICE] Request body:`, requestBody);
+            
             const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
                 method: 'POST',
                 headers: {
@@ -118,9 +125,17 @@ class AuthService {
                 body: JSON.stringify({ email, password })
             });
 
+            const responseTime = Date.now() - startTime;
+            console.log(`⏱️ [AUTH SERVICE] Response received in ${responseTime}ms`);
+            console.log(`📊 [AUTH SERVICE] Response status: ${response.status} ${response.statusText}`);
+
             const data = await response.json();
+            console.log(`📥 [AUTH SERVICE] Response data:`, data);
 
             if (data.success && data.token) {
+                console.log(`✅ [AUTH SERVICE] Login successful for: ${email}`);
+                console.log(`🔑 [AUTH SERVICE] Token received, storing securely`);
+                
                 // Store token and user data
                 this.setToken(data.token, data);
                 return {
@@ -128,6 +143,11 @@ class AuthService {
                     user: data
                 };
             } else {
+                console.error(`❌ [AUTH SERVICE] Login failed for ${email}:`, {
+                    error: data.error,
+                    message: data.message,
+                    status: response.status
+                });
                 return {
                     success: false,
                     error: data.error,
@@ -135,7 +155,13 @@ class AuthService {
                 };
             }
         } catch (error) {
-            console.error('Login error:', error);
+            const responseTime = Date.now() - startTime;
+            console.error(`💥 [AUTH SERVICE] Login failed after ${responseTime}ms:`, error);
+            console.error(`🔍 [AUTH SERVICE] Error details:`, {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            });
             return {
                 success: false,
                 error: 'network_error',

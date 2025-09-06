@@ -304,7 +304,10 @@
             </div>
             <div class="nav-auth">
                 <button class="btn btn-secondary" onclick="goToLogin()" data-en="Already have an account? Log in" data-zh="已有账户？登录">Already have an account? Log in</button>
-                <div id="signup-language-switcher-container" style="min-width: 60px; min-height: 20px;"></div>
+                <div class="language-switcher" onclick="toggleLanguage()" title="Switch Language" data-title-en="Switch Language" data-title-zh="切换语言">
+                    <img src="graphics/language-switcher.svg" alt="Language Switcher" class="globe-icon" />
+                    <span class="language-code">EN</span>
+                </div>
             </div>
         </div>
     </nav>
@@ -424,8 +427,8 @@
 
     
     <script>
-        // API Configuration - use global config
-        const API_BASE_URL = window.appConfig ? window.appConfig.getApiUrl('') : 'https://sunnymentor-production.up.railway.app';
+        // API Configuration - always use Railway backend
+        const API_BASE_URL = 'https://sunnymentor-production.up.railway.app';
         
         // Global state
         let currentLanguage = 'EN'; // Fallback, will be overridden by languageManager
@@ -579,20 +582,33 @@
         }
 
         async function isPhoneNumberApproved(phone) {
+            const startTime = Date.now();
+            console.log(`📱 [PHONE VALIDATION] Starting validation for phone: ${phone}`);
+            
             try {
+                const requestBody = { phone: phone };
+                console.log(`📤 [PHONE VALIDATION] Sending request to: ${API_BASE_URL}/auth/validate-phone`);
+                console.log(`📦 [PHONE VALIDATION] Request body:`, requestBody);
+                
                 const response = await fetch(`${API_BASE_URL}/auth/validate-phone`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ phone: phone })
+                    body: JSON.stringify(requestBody)
                 });
                 
+                const responseTime = Date.now() - startTime;
+                console.log(`⏱️ [PHONE VALIDATION] Response received in ${responseTime}ms`);
+                console.log(`📊 [PHONE VALIDATION] Response status: ${response.status} ${response.statusText}`);
+                
                 if (!response.ok) {
-                    console.error('Failed to validate phone number:', response.statusText);
+                    const errorText = await response.text();
+                    console.error(`❌ [PHONE VALIDATION] Failed with status ${response.status}:`, errorText);
                     
                     // Show error banner if this is a connection issue
                     if (shouldShowErrorBanner()) {
+                        console.warn(`🚨 [PHONE VALIDATION] Showing error banner due to connection issue`);
                         showErrorBanner();
                     }
                     
@@ -600,16 +616,25 @@
                 }
                 
                 const result = await response.json();
+                console.log(`📥 [PHONE VALIDATION] Response data:`, result);
+                console.log(`✅ [PHONE VALIDATION] Phone ${phone} is ${result.is_approved ? 'APPROVED' : 'NOT APPROVED'}`);
                 
                 // Hide backend error banner since we successfully connected
                 closeBackendErrorBanner();
                 
                 return { approved: result.is_approved, error: result.is_approved ? null : 'not_approved' };
             } catch (error) {
-                console.error('Error validating phone number:', error);
+                const responseTime = Date.now() - startTime;
+                console.error(`💥 [PHONE VALIDATION] Failed after ${responseTime}ms:`, error);
+                console.error(`🔍 [PHONE VALIDATION] Error details:`, {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
                 
                 // Only show error banner if this is a server connectivity issue
                 if (isBackendServerError(error) && shouldShowErrorBanner()) {
+                    console.warn(`🚨 [PHONE VALIDATION] Showing error banner due to server connectivity issue`);
                     showErrorBanner();
                 }
                 
@@ -729,23 +754,47 @@
 
         // Backend health check
         async function checkBackendHealth() {
+            const startTime = Date.now();
+            console.log(`🔍 [HEALTH CHECK] Starting backend health check to: ${API_BASE_URL}/health`);
+            
             try {
                 const response = await fetch(`${API_BASE_URL}/health`, {
                     method: 'GET',
-                    timeout: 5000
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
                 });
+                
+                const responseTime = Date.now() - startTime;
+                console.log(`⏱️ [HEALTH CHECK] Response received in ${responseTime}ms`);
+                console.log(`📊 [HEALTH CHECK] Response status: ${response.status} ${response.statusText}`);
+                console.log(`📋 [HEALTH CHECK] Response headers:`, Object.fromEntries(response.headers.entries()));
+                
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Backend health check:', data);
+                    console.log('✅ [HEALTH CHECK] Backend is healthy:', data);
+                    console.log(`🔧 [HEALTH CHECK] Components status:`, data.components);
+                    console.log(`⚙️ [HEALTH CHECK] API mode:`, data.api_mode);
                     closeBackendErrorBanner();
                     return true;
                 } else {
-                    throw new Error('Health check failed');
+                    const errorText = await response.text();
+                    console.error(`❌ [HEALTH CHECK] Failed with status ${response.status}:`, errorText);
+                    throw new Error(`Health check failed with status ${response.status}: ${errorText}`);
                 }
             } catch (error) {
-                console.warn('Backend health check failed:', error);
+                const responseTime = Date.now() - startTime;
+                console.error(`💥 [HEALTH CHECK] Failed after ${responseTime}ms:`, error);
+                console.error(`🔍 [HEALTH CHECK] Error details:`, {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
                 // Only show banner if this is a server connectivity issue
                 if (isBackendServerError(error) && shouldShowErrorBanner()) {
+                    console.warn(`🚨 [HEALTH CHECK] Showing error banner due to server connectivity issue`);
                     showErrorBanner();
                 }
                 return false;
@@ -754,11 +803,12 @@
 
         // Form submission handlers
         document.addEventListener('DOMContentLoaded', async function() {
-            // Error components are now embedded directly in the HTML
+            console.log('🚀 [PAGE INIT] Signup page DOM loaded, initializing...');
+            console.log('🌐 [PAGE INIT] Current URL:', window.location.href);
+            console.log('🔧 [PAGE INIT] API Base URL:', API_BASE_URL);
+            console.log('🌍 [PAGE INIT] Current language:', currentLanguage);
             
-            // Load language switcher component
-            console.log('Loading language switcher for signup page...');
-            await loadComponent('signup-language-switcher-container', 'components/language-switcher.html');
+            // Error components are now embedded directly in the HTML
             
             // Generate bottom bar
             console.log('Loading bottom bar for signup page...');
@@ -799,13 +849,6 @@
                             </div>
                         </div>
                     </footer>`;
-            }
-            
-            // Fallback if component loading failed
-            const langContainer = document.getElementById('signup-language-switcher-container');
-            if (langContainer && langContainer.innerHTML.trim() === '') {
-                console.log('Component loading failed, using fallback...');
-                langContainer.innerHTML = '<div class="language-switcher" onclick="toggleLanguage()" title="Switch Language" data-title-en="Switch Language" data-title-zh="切换语言"><img src="graphics/language-switcher.svg" alt="Language Switcher" class="globe-icon" /><span class="language-code">EN</span></div>';
             }
             
             // Sync with global language manager
@@ -968,6 +1011,12 @@
                     
                     try {
                         // Register new user
+                        const startTime = Date.now();
+                        const requestBody = { email: email, password: '[REDACTED]' };
+                        console.log(`📧 [EMAIL REGISTRATION] Starting registration for email: ${email}`);
+                        console.log(`📤 [EMAIL REGISTRATION] Sending request to: ${API_BASE_URL}/auth/register`);
+                        console.log(`📦 [EMAIL REGISTRATION] Request body:`, { email: email, password: '[REDACTED]' });
+                        
                         const response = await fetch(`${API_BASE_URL}/auth/register`, {
                             method: 'POST',
                             headers: {
@@ -979,19 +1028,32 @@
                             })
                         });
                         
+                        const responseTime = Date.now() - startTime;
+                        console.log(`⏱️ [EMAIL REGISTRATION] Response received in ${responseTime}ms`);
+                        console.log(`📊 [EMAIL REGISTRATION] Response status: ${response.status} ${response.statusText}`);
+                        
                         const result = await response.json();
+                        console.log(`📥 [EMAIL REGISTRATION] Response data:`, result);
                         
                         if (response.ok && result.success) {
+                            console.log(`✅ [EMAIL REGISTRATION] Registration successful for: ${email}`);
                             // Registration successful - show pending approval
                             document.getElementById('email-input-phase').style.display = 'none';
                             document.getElementById('pending-approval-phase').style.display = 'block';
                         } else {
                             // Registration failed - show red error messages
                             const errorMessage = result.message || 'Registration failed';
+                            console.error(`❌ [EMAIL REGISTRATION] Registration failed:`, {
+                                status: response.status,
+                                error: result.error,
+                                message: errorMessage
+                            });
                             
                             if (result.error === 'user_exists') {
+                                console.warn(`⚠️ [EMAIL REGISTRATION] Email already exists: ${email}`);
                                 showError('email-error', 'Email address already exists. Please use a different email address.');
                             } else if (result.error === 'validation_error') {
+                                console.warn(`⚠️ [EMAIL REGISTRATION] Validation error:`, errorMessage);
                                 if (errorMessage.includes('email')) {
                                     showError('email-error', errorMessage);
                                 } else if (errorMessage.includes('password')) {
@@ -1000,21 +1062,30 @@
                                     showError('email-error', errorMessage);
                                 }
                             } else {
+                                console.error(`💥 [EMAIL REGISTRATION] Unknown error:`, result);
                                 showError('email-error', errorMessage);
                             }
                             
                             // Show error banner if connection issues
                             if (!response.ok && response.status >= 500) {
+                                console.warn(`🚨 [EMAIL REGISTRATION] Server error (${response.status}), showing error banner`);
                                 if (shouldShowErrorBanner()) {
                                     showErrorBanner();
                                 }
                             }
                         }
                     } catch (error) {
-                        console.error('Signup error:', error);
+                        const responseTime = Date.now() - startTime;
+                        console.error(`💥 [EMAIL REGISTRATION] Failed after ${responseTime}ms:`, error);
+                        console.error(`🔍 [EMAIL REGISTRATION] Error details:`, {
+                            name: error.name,
+                            message: error.message,
+                            stack: error.stack
+                        });
                         
                         // Check if this is a server connectivity issue
                         if (isBackendServerError(error)) {
+                            console.warn(`🚨 [EMAIL REGISTRATION] Server connectivity issue detected`);
                             showError('email-error', 'Unable to connect to server. Please check your connection and try again.');
                             
                             // Show error banner on connection failure
@@ -1022,6 +1093,7 @@
                                 showErrorBanner();
                             }
                         } else {
+                            console.error(`💥 [EMAIL REGISTRATION] Non-server error:`, error);
                             showError('email-error', 'Registration failed. Please try again.');
                         }
                     } finally {

@@ -56,6 +56,53 @@ app = Flask(__name__)
 # Configure CORS for frontend integration
 CORS(app, origins=['https://ai.sunnyminded.com', 'http://localhost:3000', 'http://127.0.0.1:8080', 'http://localhost:8080'])
 
+# Request logging middleware
+@app.before_request
+def log_request_info():
+    """Log all incoming requests with detailed information"""
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
+    user_agent = request.headers.get('User-Agent', 'unknown')
+    method = request.method
+    path = request.path
+    query_string = request.query_string.decode('utf-8') if request.query_string else ''
+    
+    logger.info(f"🌐 [REQUEST] {method} {path}{'?' + query_string if query_string else ''} from {client_ip}")
+    logger.info(f"🔍 [REQUEST] User-Agent: {user_agent}")
+    
+    # Log request body for POST/PUT requests (excluding sensitive data)
+    if method in ['POST', 'PUT', 'PATCH'] and request.is_json:
+        try:
+            data = request.get_json()
+            if data:
+                # Redact sensitive fields
+                safe_data = {}
+                for key, value in data.items():
+                    if key.lower() in ['password', 'token', 'secret', 'key']:
+                        safe_data[key] = '[REDACTED]'
+                    else:
+                        safe_data[key] = value
+                logger.info(f"📦 [REQUEST] Request body: {safe_data}")
+        except Exception as e:
+            logger.warning(f"⚠️ [REQUEST] Could not parse request body: {str(e)}")
+
+@app.after_request
+def log_response_info(response):
+    """Log response information"""
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
+    method = request.method
+    path = request.path
+    status_code = response.status_code
+    
+    # Determine log level based on status code
+    if status_code >= 500:
+        logger.error(f"💥 [RESPONSE] {method} {path} -> {status_code} to {client_ip}")
+    elif status_code >= 400:
+        logger.warning(f"⚠️ [RESPONSE] {method} {path} -> {status_code} to {client_ip}")
+    else:
+        logger.info(f"✅ [RESPONSE] {method} {path} -> {status_code} to {client_ip}")
+    
+    return response
+
 # Initialize components
 jsonbin_client = JSONBinClient(config)
 
@@ -153,30 +200,48 @@ def require_auth(f):
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint to verify backend status"""
+    start_time = time.time()
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
+    user_agent = request.headers.get('User-Agent', 'unknown')
+    
+    logger.info(f"🏥 [HEALTH CHECK] Request from {client_ip} - User-Agent: {user_agent}")
+    
     try:
         # Safely check component readiness
         vector_ready = False
         deepseek_ready = False
         jsonbin_ready = False
         
+        logger.info("🔍 [HEALTH CHECK] Checking component readiness...")
+        
         try:
             if vector_engine:
                 vector_ready = vector_engine.is_ready()
+                logger.info(f"🧠 [HEALTH CHECK] Vector engine: {'✅ Ready' if vector_ready else '❌ Not ready'}")
+            else:
+                logger.warning("🧠 [HEALTH CHECK] Vector engine: Not initialized")
         except Exception as e:
-            logger.warning(f"Vector engine readiness check failed: {str(e)}")
+            logger.warning(f"🧠 [HEALTH CHECK] Vector engine readiness check failed: {str(e)}")
         
         try:
             if deepseek_client:
                 deepseek_ready = deepseek_client.is_ready()
+                logger.info(f"🤖 [HEALTH CHECK] DeepSeek client: {'✅ Ready' if deepseek_ready else '❌ Not ready'}")
+            else:
+                logger.warning("🤖 [HEALTH CHECK] DeepSeek client: Not initialized")
         except Exception as e:
-            logger.warning(f"DeepSeek client readiness check failed: {str(e)}")
+            logger.warning(f"🤖 [HEALTH CHECK] DeepSeek client readiness check failed: {str(e)}")
         
         try:
             jsonbin_ready = jsonbin_client.is_ready()
+            logger.info(f"💾 [HEALTH CHECK] JSONBin client: {'✅ Ready' if jsonbin_ready else '❌ Not ready'}")
         except Exception as e:
-            logger.warning(f"JSONBin client readiness check failed: {str(e)}")
+            logger.warning(f"💾 [HEALTH CHECK] JSONBin client readiness check failed: {str(e)}")
         
-        return jsonify({
+        stripe_configured = config.is_stripe_configured()
+        logger.info(f"💳 [HEALTH CHECK] Stripe: {'✅ Configured' if stripe_configured else '❌ Not configured'}")
+        
+        response_data = {
             'status': 'healthy',
             'timestamp': datetime.now().isoformat(),
             'api_mode': {
@@ -187,11 +252,17 @@ def health_check():
                 'vector_engine': vector_ready,
                 'deepseek_client': deepseek_ready,
                 'jsonbin_client': jsonbin_ready,
-                'stripe_configured': config.is_stripe_configured()
+                'stripe_configured': stripe_configured
             }
-        }), 200
+        }
+        
+        response_time = (time.time() - start_time) * 1000
+        logger.info(f"✅ [HEALTH CHECK] Completed in {response_time:.2f}ms - Status: Healthy")
+        
+        return jsonify(response_data), 200
     except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
+        response_time = (time.time() - start_time) * 1000
+        logger.error(f"💥 [HEALTH CHECK] Failed after {response_time:.2f}ms: {str(e)}")
         return jsonify({
             'status': 'unhealthy',
             'error': str(e),
@@ -399,87 +470,136 @@ def search_knowledge_base():
 @app.route('/auth/validate-phone', methods=['POST'])
 def validate_phone():
     """Validate if a phone number is approved for authentication"""
+    start_time = time.time()
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
+    user_agent = request.headers.get('User-Agent', 'unknown')
+    
+    logger.info(f"📱 [PHONE VALIDATION] Request from {client_ip} - User-Agent: {user_agent}")
+    
     try:
         data = request.get_json()
+        logger.info(f"📦 [PHONE VALIDATION] Request data: {data}")
+        
         if not data or 'phone' not in data:
+            logger.warning("❌ [PHONE VALIDATION] Missing phone number in request")
             return jsonify({'error': 'Phone number is required'}), 400
         
         phone = data['phone'].strip()
         if not phone:
+            logger.warning("❌ [PHONE VALIDATION] Empty phone number provided")
             return jsonify({'error': 'Phone number cannot be empty'}), 400
+        
+        logger.info(f"📞 [PHONE VALIDATION] Validating phone: {phone}")
         
         # Normalize the phone number
         normalized_phone = _normalize_phone_number(phone)
+        logger.info(f"🔧 [PHONE VALIDATION] Normalized phone: {normalized_phone}")
         
         # Check if the normalized phone number is in the approved list
         approved_phones = [_normalize_phone_number(p) for p in config.APPROVED_PHONE_NUMBERS]
+        logger.info(f"📋 [PHONE VALIDATION] Approved phones list: {approved_phones}")
+        
         is_approved = normalized_phone in approved_phones
+        logger.info(f"✅ [PHONE VALIDATION] Phone {phone} (normalized: {normalized_phone}) - {'APPROVED' if is_approved else 'REJECTED'}")
         
-        logger.info(f"Phone validation request for: {phone} (normalized: {normalized_phone}) - {'Approved' if is_approved else 'Rejected'}")
-        
-        return jsonify({
+        response_data = {
             'phone': phone,
             'normalized_phone': normalized_phone,
             'is_approved': is_approved,
             'success': is_approved,  # Add success field for frontend compatibility
             'timestamp': datetime.now().isoformat()
-        })
+        }
+        
+        response_time = (time.time() - start_time) * 1000
+        logger.info(f"⏱️ [PHONE VALIDATION] Completed in {response_time:.2f}ms")
+        
+        return jsonify(response_data)
         
     except Exception as e:
-        logger.error(f"Error in phone validation endpoint: {str(e)}")
+        response_time = (time.time() - start_time) * 1000
+        logger.error(f"💥 [PHONE VALIDATION] Failed after {response_time:.2f}ms: {str(e)}")
         return jsonify({'error': 'Phone validation failed'}), 500
 
 @app.route('/auth/register', methods=['POST'])
 def register_user():
     """Register a new user with email and password"""
+    start_time = time.time()
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
+    user_agent = request.headers.get('User-Agent', 'unknown')
+    
+    logger.info(f"📧 [USER REGISTRATION] Request from {client_ip} - User-Agent: {user_agent}")
+    
     try:
         data = request.get_json()
+        logger.info(f"📦 [USER REGISTRATION] Request data: {data}")
+        
         if not data:
+            logger.warning("❌ [USER REGISTRATION] Missing request body")
             return jsonify({'error': 'Request body is required'}), 400
         
         email = data.get('email', '').strip()
         password = data.get('password', '').strip()
         
+        logger.info(f"📧 [USER REGISTRATION] Attempting registration for email: {email}")
+        
         if not email or not password:
+            logger.warning(f"❌ [USER REGISTRATION] Missing required fields - Email: {'✅' if email else '❌'}, Password: {'✅' if password else '❌'}")
             return jsonify({'error': 'Email and password are required'}), 400
         
         # Register user using JSONBin client
+        logger.info(f"💾 [USER REGISTRATION] Calling JSONBin client to register user: {email}")
         success, result = jsonbin_client.register_user(email, password)
         
         if success:
-            logger.info(f"User registered successfully: {email}")
-            return jsonify({
+            logger.info(f"✅ [USER REGISTRATION] User registered successfully: {email}")
+            response_data = {
                 'success': True,
                 'message': result['message'],
                 'email': result.get('email', result.get('username')),  # Handle both old and new response formats
                 'created_at': result['created_at'],
                 'timestamp': datetime.now().isoformat()
-            }), 201
+            }
+            
+            response_time = (time.time() - start_time) * 1000
+            logger.info(f"⏱️ [USER REGISTRATION] Completed in {response_time:.2f}ms")
+            
+            return jsonify(response_data), 201
         else:
             # Handle different error types
             error_type = result.get('error', 'unknown_error')
             error_message = result.get('message', 'Registration failed')
             
+            logger.warning(f"❌ [USER REGISTRATION] Registration failed for {email}: {error_message} (Error type: {error_type})")
+            
             if error_type == 'user_exists':
                 status_code = 409  # Conflict
+                logger.info(f"👤 [USER REGISTRATION] User already exists: {email}")
             elif error_type == 'validation_error':
                 status_code = 400  # Bad Request
+                logger.warning(f"⚠️ [USER REGISTRATION] Validation error for {email}: {error_message}")
             elif error_type in ['api_auth_failed', 'bin_not_found', 'rate_limit', 'timeout', 'connection_error']:
                 status_code = 503  # Service Unavailable
                 error_message = 'Authentication service temporarily unavailable'
+                logger.error(f"🚨 [USER REGISTRATION] Service unavailable error for {email}: {error_type}")
             else:
                 status_code = 500  # Internal Server Error
+                logger.error(f"💥 [USER REGISTRATION] Unknown error for {email}: {error_type}")
             
-            logger.warning(f"User registration failed for {email}: {error_message}")
-            return jsonify({
+            response_data = {
                 'success': False,
                 'error': error_type,
                 'message': error_message,
                 'timestamp': datetime.now().isoformat()
-            }), status_code
+            }
+            
+            response_time = (time.time() - start_time) * 1000
+            logger.info(f"⏱️ [USER REGISTRATION] Failed after {response_time:.2f}ms")
+            
+            return jsonify(response_data), status_code
             
     except Exception as e:
-        logger.error(f"Error in user registration endpoint: {str(e)}")
+        response_time = (time.time() - start_time) * 1000
+        logger.error(f"💥 [USER REGISTRATION] Exception after {response_time:.2f}ms: {str(e)}")
         return jsonify({
             'success': False,
             'error': 'registration_error',
@@ -490,27 +610,41 @@ def register_user():
 @app.route('/auth/login', methods=['POST'])
 def login_user():
     """Authenticate user login with email and password and return JWT token"""
+    start_time = time.time()
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
+    user_agent = request.headers.get('User-Agent', 'unknown')
+    
+    logger.info(f"🔐 [USER LOGIN] Request from {client_ip} - User-Agent: {user_agent}")
+    
     try:
         data = request.get_json()
+        logger.info(f"📦 [USER LOGIN] Request data: {data}")
+        
         if not data:
+            logger.warning("❌ [USER LOGIN] Missing request body")
             return jsonify({'error': 'Request body is required'}), 400
         
         email = data.get('email', '').strip()
         password = data.get('password', '').strip()
         
+        logger.info(f"🔐 [USER LOGIN] Attempting login for email: {email}")
+        
         if not email or not password:
+            logger.warning(f"❌ [USER LOGIN] Missing required fields - Email: {'✅' if email else '❌'}, Password: {'✅' if password else '❌'}")
             return jsonify({'error': 'Email and password are required'}), 400
         
         # Authenticate user using JSONBin client
+        logger.info(f"💾 [USER LOGIN] Calling JSONBin client to authenticate user: {email}")
         success, result = jsonbin_client.login_user(email, password)
         
         if success:
-            logger.info(f"User logged in successfully: {email}")
+            logger.info(f"✅ [USER LOGIN] User authenticated successfully: {email}")
             
             # Generate JWT token
+            logger.info(f"🔑 [USER LOGIN] Generating JWT token for user: {email}")
             token = generate_jwt_token(result)
             
-            return jsonify({
+            response_data = {
                 'success': True,
                 'message': result['message'],
                 'email': result.get('email'),
@@ -521,34 +655,51 @@ def login_user():
                 'token': token,
                 'token_expires_in': JWT_EXPIRATION_HOURS * 3600,  # seconds
                 'timestamp': datetime.now().isoformat()
-            }), 200
+            }
+            
+            response_time = (time.time() - start_time) * 1000
+            logger.info(f"⏱️ [USER LOGIN] Login completed in {response_time:.2f}ms for: {email}")
+            
+            return jsonify(response_data), 200
         else:
             # Handle different error types
             error_type = result.get('error', 'unknown_error')
             error_message = result.get('message', 'Login failed')
             
+            logger.warning(f"❌ [USER LOGIN] Authentication failed for {email}: {error_message} (Error type: {error_type})")
+            
             if error_type in ['user_not_found', 'invalid_password']:
                 status_code = 401  # Unauthorized
+                logger.info(f"🔒 [USER LOGIN] Unauthorized access attempt for: {email}")
             elif error_type == 'account_disabled':
                 status_code = 403  # Forbidden
+                logger.warning(f"🚫 [USER LOGIN] Disabled account login attempt: {email}")
             elif error_type == 'validation_error':
                 status_code = 400  # Bad Request
+                logger.warning(f"⚠️ [USER LOGIN] Validation error for {email}: {error_message}")
             elif error_type in ['api_auth_failed', 'bin_not_found', 'rate_limit', 'timeout', 'connection_error']:
                 status_code = 503  # Service Unavailable
                 error_message = 'Authentication service temporarily unavailable'
+                logger.error(f"🚨 [USER LOGIN] Service unavailable error for {email}: {error_type}")
             else:
                 status_code = 500  # Internal Server Error
+                logger.error(f"💥 [USER LOGIN] Unknown error for {email}: {error_type}")
             
-            logger.warning(f"User login failed for {email}: {error_message}")
-            return jsonify({
+            response_data = {
                 'success': False,
                 'error': error_type,
                 'message': error_message,
                 'timestamp': datetime.now().isoformat()
-            }), status_code
+            }
+            
+            response_time = (time.time() - start_time) * 1000
+            logger.info(f"⏱️ [USER LOGIN] Failed after {response_time:.2f}ms")
+            
+            return jsonify(response_data), status_code
             
     except Exception as e:
-        logger.error(f"Error in user login endpoint: {str(e)}")
+        response_time = (time.time() - start_time) * 1000
+        logger.error(f"💥 [USER LOGIN] Exception after {response_time:.2f}ms: {str(e)}")
         return jsonify({
             'success': False,
             'error': 'login_error',

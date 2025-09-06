@@ -2873,8 +2873,7 @@
         async function checkBackendHealth() {
             try {
                 const response = await fetch(window.appConfig.getApiUrl('health'), {
-                    method: 'GET',
-                    timeout: 5000
+                    method: 'GET'
                 });
                 
                 if (response.ok) {
@@ -2997,8 +2996,8 @@
         let currentPhoneNumber = '';
         let generatedCode = '';
         
-        // Backend API base URL - use global config
-        const API_BASE_URL = window.appConfig ? window.appConfig.getApiUrl('') : 'https://sunnymentor-production.up.railway.app';
+        // Backend API base URL - always use Railway backend
+        const API_BASE_URL = 'https://sunnymentor-production.up.railway.app';
         
         function normalizePhoneNumber(phone) {
             // Remove all non-digit characters
@@ -4789,8 +4788,7 @@ Error: ${error.message}
             console.log('checkLoginBackendHealth called');
             try {
                 const response = await fetch(`${API_BASE_URL}/health`, {
-                    method: 'GET',
-                    timeout: 5000
+                    method: 'GET'
                 });
                 
                 if (response.ok) {

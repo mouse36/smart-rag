@@ -6,11 +6,22 @@
 class Config {
     constructor() {
         // Environment detection - check if we're on a production domain
-        this.isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        this.isDevelopment = window.location.hostname === 'localhost' || 
+                            window.location.hostname === '127.0.0.1' || 
+                            window.location.protocol === 'file:';
         this.isProduction = !this.isDevelopment || window.location.hostname === 'ai.sunnyminded.com';
+        
+        // Debug logging for environment detection
+        console.log('🔧 [CONFIG] Environment detection:', {
+            hostname: window.location.hostname,
+            protocol: window.location.protocol,
+            isDevelopment: this.isDevelopment,
+            isProduction: this.isProduction
+        });
         
         // API Configuration
         this.apiConfig = this.getApiConfig();
+        console.log('🌐 [CONFIG] API Configuration:', this.apiConfig);
         
         // Feature flags
         this.features = {
@@ -24,22 +35,12 @@ class Config {
      * Get API configuration based on environment
      */
     getApiConfig() {
-        if (this.isDevelopment) {
-            // Local development - connect to local backend
-            return {
-                baseUrl: 'http://127.0.0.1:8080',
-                timeout: 10000,
-                retryAttempts: 3
-            };
-        } else {
-            // Production - connect to Railway backend
-            // You'll need to replace this with your actual Railway URL
-            return {
-                baseUrl: 'https://sunnymentor-production.up.railway.app', // Your actual Railway URL
-                timeout: 15000,
-                retryAttempts: 3
-            };
-        }
+        // Always use Railway backend regardless of environment
+        return {
+            baseUrl: 'https://sunnymentor-production.up.railway.app',
+            timeout: 15000,
+            retryAttempts: 3
+        };
     }
     
     /**
@@ -63,8 +64,7 @@ class Config {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
-            },
-            timeout: this.apiConfig.timeout
+            }
         };
         
         return {

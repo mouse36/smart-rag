@@ -104,41 +104,6 @@ class DeepSeekClient:
             logger.error(f"Unexpected error generating response: {str(e)}")
             return self._get_enhanced_fallback_response(user_message, context_passages, "unexpected error")
     
-    def generate_response_stream(self, user_message: str, context_passages: List[Dict[str, Any]]):
-        """Generate a streaming response using DeepSeek API with context"""
-        if not self.is_ready():
-            logger.warning("DeepSeek client not ready, returning placeholder response")
-            yield self._get_placeholder_response(user_message, context_passages)
-            return
-        
-        # If API calls are disabled, return placeholder response
-        if not self.config.API_CALLS_ENABLED:
-            yield self._get_placeholder_response(user_message, context_passages)
-            return
-        
-        try:
-            # Prepare the context
-            context = self._prepare_context(context_passages)
-            
-            # Create the messages for the API
-            messages = [
-                {
-                    "role": "system",
-                    "content": self.config.get_system_prompt()
-                },
-                {
-                    "role": "user", 
-                    "content": self._format_user_message(user_message, context)
-                }
-            ]
-            
-            # Make the streaming API request
-            for chunk in self._make_streaming_request(messages):
-                yield chunk
-                
-        except Exception as e:
-            logger.error(f"Unexpected error generating streaming response: {str(e)}")
-            yield self._get_enhanced_fallback_response(user_message, context_passages, "unexpected error")
 
     def _prepare_context(self, passages: List[Dict[str, Any]]) -> str:
         """Prepare context from relevant passages"""
@@ -304,81 +269,6 @@ Please provide a helpful, accurate response based on the context provided. If th
         logger.error(f"All {retries} attempts failed. Last error: {str(last_exception)}")
         raise last_exception
 
-    def _make_streaming_request(self, messages: List[Dict[str, str]], max_tokens: Optional[int] = None, retries: int = 3):
-        """Make a streaming request to the DeepSeek API with retry logic"""
-        url = f"{self.base_url}/chat/completions"
-        
-        payload = {
-            "model": self.model,
-            "messages": messages,
-            "max_tokens": max_tokens or self.config.MAX_RESPONSE_LENGTH,
-            "temperature": self.config.TEMPERATURE,
-            "top_p": self.config.TOP_P,
-            "stream": True
-        }
-        
-        last_exception = None
-        
-        for attempt in range(retries):
-            try:
-                # Increase timeout progressively with each retry
-                timeout = 30 + (attempt * 15)  # 30s, 45s, 60s
-                
-                logger.info(f"Making streaming API request (attempt {attempt + 1}/{retries}) with {timeout}s timeout")
-                
-                response = requests.post(
-                    url, 
-                    headers=self.headers, 
-                    json=payload,
-                    timeout=timeout,
-                    stream=True
-                )
-                response.raise_for_status()
-                
-                # Process streaming response
-                for line in response.iter_lines():
-                    if line:
-                        line = line.decode('utf-8')
-                        if line.startswith('data: '):
-                            data = line[6:]  # Remove 'data: ' prefix
-                            if data == '[DONE]':
-                                return
-                            try:
-                                chunk = json.loads(data)
-                                if 'choices' in chunk and len(chunk['choices']) > 0:
-                                    delta = chunk['choices'][0].get('delta', {})
-                                    if 'content' in delta:
-                                        yield delta['content']
-                            except json.JSONDecodeError:
-                                continue
-                
-                return
-                
-            except requests.exceptions.Timeout as e:
-                last_exception = e
-                logger.warning(f"Streaming request timeout on attempt {attempt + 1}/{retries}: {str(e)}")
-                if attempt < retries - 1:
-                    import time
-                    time.sleep(2 ** attempt)  # Exponential backoff: 1s, 2s, 4s
-                    continue
-                
-            except requests.exceptions.RequestException as e:
-                last_exception = e
-                logger.error(f"Streaming HTTP request failed on attempt {attempt + 1}/{retries}: {str(e)}")
-                if hasattr(e, 'response') and e.response is not None:
-                    logger.error(f"Response status: {e.response.status_code}")
-                    logger.error(f"Response text: {e.response.text}")
-                    # Don't retry on client errors (4xx)
-                    if 400 <= e.response.status_code < 500:
-                        raise
-                if attempt < retries - 1:
-                    import time
-                    time.sleep(2 ** attempt)  # Exponential backoff
-                    continue
-        
-        # If we get here, all retries failed
-        logger.error(f"All {retries} streaming attempts failed. Last error: {str(last_exception)}")
-        raise last_exception
     
     def _get_placeholder_response(self, user_message: str, context_passages: List[Dict[str, Any]]) -> str:
         """Get a placeholder response when API calls are disabled"""

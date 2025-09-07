@@ -328,11 +328,6 @@ def chat_stream():
                     full_response += chunk
                     yield f"data: {json.dumps({'content': chunk, 'done': False})}\n\n"
                 
-                # Add context information if available
-                if relevant_passages:
-                    context_info = f"\n\n<div style=\"font-size: 0.8em; color: rgba(100,100,100,0.7); margin-top: 8px; font-style: italic;\">📚 Based on {len(relevant_passages)} relevant sources from our knowledge base</div>"
-                    yield f"data: {json.dumps({'content': context_info, 'done': False})}\n\n"
-                
                 # Send completion signal
                 yield f"data: {json.dumps({'content': '', 'done': True, 'context_sources': len(relevant_passages)})}\n\n"
                 

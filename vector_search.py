@@ -256,7 +256,8 @@ class VectorSearchEngine:
         text = re.sub(r'\s+', ' ', text)
         
         # Remove special characters that might interfere with processing
-        text = re.sub(r'[^\w\s\.,!?;:()\-"\']+', ' ', text)
+        # Preserve Chinese characters and other Unicode letters
+        text = re.sub(r'[^\w\s\.,!?;:()\-"\'，。！？；：（）—""''「」『』【】《》〈〉]', ' ', text, flags=re.UNICODE)
         
         # Normalize quotes
         text = re.sub(r'["""]', '"', text)
